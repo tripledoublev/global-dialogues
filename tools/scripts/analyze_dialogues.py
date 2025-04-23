@@ -16,6 +16,7 @@ CACHE_FILENAME = "processed_data.pkl"
 pd.set_option('display.max_rows', 100)
 pd.set_option('display.max_columns', 50)
 pd.set_option('display.width', 1000)
+pd.set_option('display.max_colwidth', 150) # Adjust display width for reports
 
 # --- Helper Functions ---
 
@@ -276,8 +277,142 @@ def load_and_preprocess_data(csv_path, cache_path, force_reparse=False, padding_
     return processed_data
 
 # --- Analysis Functions ---
-# Placeholder for future functions (divergence, bridging, plotting, etc.)
-# ...
+
+def calculate_divergence_report(questions_data, output_dir, top_n_per_question=20, top_n_overall=50):
+    """
+    Calculates divergence for Ask Opinion questions and generates reports.
+
+    Args:
+        questions_data (list): The list of (metadata, df) tuples.
+        output_dir (str): Directory to save the report CSV files.
+        top_n_per_question (int): Number of top divergent responses to show per question.
+        top_n_overall (int): Number of top divergent responses to show overall.
+
+    Returns:
+        pd.DataFrame: DataFrame containing all divergence results (score > 0).
+                    Returns empty DataFrame if no Ask Opinion questions found or processed.
+    """
+    print("\n--- Calculating Divergence Report --- ")
+    all_divergence_results = []
+
+    for metadata, df in questions_data:
+        q_id = metadata.get('id')
+        q_text = metadata.get('text')
+        q_type = metadata.get('type')
+
+        if q_type != 'Ask Opinion':
+            continue
+
+        analysis_segments = metadata.get('analysis_segment_cols', [])
+
+        # Need at least two segments to calculate divergence
+        if len(analysis_segments) < 2:
+            print(f"  Skipping QID {q_id} (Ask Opinion) - Fewer than 2 valid segments ({len(analysis_segments)}) for divergence calculation.")
+            continue
+
+        # Check if expected columns exist
+        response_col = 'English Response' # As per DATA_GUIDE.md
+        if response_col not in df.columns:
+             # Fallback check (based on notebook, might differ in actual data)
+             response_col_fallback = 'English Responses'
+             if response_col_fallback in df.columns:
+                 response_col = response_col_fallback
+             else:
+                 print(f"  Skipping QID {q_id} - Could not find response column ('{response_col}' or '{response_col_fallback}'). Columns: {df.columns}")
+                 continue
+
+        print(f"  Processing QID {q_id} ('{q_text[:50]}...') with {len(analysis_segments)} segments.")
+        question_results = []
+
+        # Select only the valid segment columns for calculation
+        segment_data = df[analysis_segments].copy()
+
+        # Ensure data is numeric, converting errors to NaN
+        for col in analysis_segments:
+            segment_data[col] = pd.to_numeric(segment_data[col], errors='coerce')
+
+        for index, row in segment_data.iterrows():
+            # Get the agreement rates for valid segments for this specific response
+            # Drop NaNs for this row's min/max calculation
+            valid_rates = row.dropna()
+
+            if len(valid_rates) < 2:
+                # Cannot calculate divergence without at least two valid data points
+                continue
+
+            min_rate = valid_rates.min()
+            max_rate = valid_rates.max()
+
+            # Calculate divergence score
+            max_div = max(max_rate - 0.5, 0)
+            min_div = max(0.5 - min_rate, 0)
+            divergence_score = math.sqrt(max_div * min_div) if (max_div > 0 and min_div > 0) else 0
+
+            if divergence_score > 0:
+                # Find segment names corresponding to min/max rates for this row
+                # Handle potential ties by taking the first occurrence
+                min_segment = valid_rates.idxmin()
+                max_segment = valid_rates.idxmax()
+
+                # Get response text using the original DataFrame index
+                response_text = df.loc[index, response_col]
+
+                question_results.append({
+                    'Question ID': q_id,
+                    'Question Text': q_text,
+                    'Response Text': response_text,
+                    'Divergence Score': divergence_score,
+                    'Min Segment': min_segment,
+                    'Min Agreement': min_rate,
+                    'Max Segment': max_segment,
+                    'Max Agreement': max_rate
+                })
+
+        all_divergence_results.extend(question_results)
+
+    if not all_divergence_results:
+        print("No responses with positive divergence found across any Ask Opinion questions.")
+        return pd.DataFrame() # Return empty DataFrame
+
+    # Create DataFrame from all results
+    results_df = pd.DataFrame(all_divergence_results)
+    results_df = results_df.sort_values(by='Divergence Score', ascending=False)
+
+    # --- Generate Reports ---
+
+    # 1. Top N per Question Report
+    top_per_question = results_df.groupby('Question ID').head(top_n_per_question)
+    report_path_per_q = os.path.join(output_dir, 'divergence_by_question.csv')
+    try:
+        top_per_question.to_csv(report_path_per_q, index=False, float_format='%.4f')
+        print(f"  Saved top {top_n_per_question} divergent responses per question to: {report_path_per_q}")
+    except Exception as e:
+        print(f"  Error saving per-question divergence report: {e}")
+
+    # 2. Top N Overall Report
+    top_overall = results_df.head(top_n_overall)
+    report_path_overall = os.path.join(output_dir, 'divergence_overall.csv')
+    try:
+        top_overall.to_csv(report_path_overall, index=False, float_format='%.4f')
+        print(f"  Saved top {top_n_overall} divergent responses overall to: {report_path_overall}")
+    except Exception as e:
+        print(f"  Error saving overall divergence report: {e}")
+
+    print("--- Divergence Calculation Complete ---")
+    return results_df # Return the full results DataFrame
+
+# Placeholder for consensus function
+def calculate_consensus_profiles(questions_data, output_dir):
+    print("\n--- Consensus Analysis (Not Implemented Yet) ---")
+    # ... implementation needed ...
+    return None
+
+# Placeholder for heatmap function
+def generate_indicator_heatmaps(indicator_codesheet_path, questions_data, output_dir):
+    print("\n--- Indicator Heatmap Generation (Not Implemented Yet) ---")
+    # ... implementation needed ...
+    return None
+
 
 # --- Main Execution ---
 if __name__ == "__main__":
@@ -294,6 +429,8 @@ if __name__ == "__main__":
     parser.add_argument("--force_reparse", action="store_true", help="Force reparsing from CSV, ignoring cache.")
     # Set default padding based on notebook observation
     parser.add_argument("--padding_rows", type=int, default=9, help="Number of header/junk rows to skip at the start of the CSV.")
+    parser.add_argument("--top_n_divergence", type=int, default=20, help="Number of top divergent responses to report per question.")
+    parser.add_argument("--top_n_divergence_overall", type=int, default=50, help="Number of top divergent responses to report overall.")
 
     args = parser.parse_args()
 
@@ -400,11 +537,30 @@ if __name__ == "__main__":
     print(f"Segment filtering complete. Total segments kept for analysis: {filtered_total_segments} / {original_total_segments}.")
 
 
-    # --- Placeholder for calling analysis functions ---
-    print("\nAnalysis functions (divergence, consensus, heatmaps) need to be implemented next.")
-    # Example (future):
-    # divergence_results = calculate_divergence(all_questions_data, args.output_dir)
-    # consensus_results = calculate_consensus_profiles(all_questions_data, args.output_dir)
-    # generate_indicator_heatmaps(indicator_codesheet_path, all_questions_data, args.output_dir)
+    # --- Run Analysis Functions --- 
+    divergence_results = calculate_divergence_report(
+        all_questions_data,
+        args.output_dir,
+        top_n_per_question=args.top_n_divergence,
+        top_n_overall=args.top_n_divergence_overall
+        )
+
+    # Call other analysis functions (when implemented)
+    consensus_results = calculate_consensus_profiles(all_questions_data, args.output_dir)
+    # generate_indicator_heatmaps(args.indicator_codesheet, all_questions_data, args.output_dir)
+
+
+    # --- Optional: Further summary based on results ---
+    if divergence_results is not None and not divergence_results.empty:
+        # Example: Find most divergent question overall
+        most_divergent_q_group = divergence_results.loc[divergence_results['Divergence Score'].idxmax()]
+        print("\n--- Overall Summary Snippets ---")
+        print(f"Most Divergent Response Overall (Score: {most_divergent_q_group['Divergence Score']:.4f}):")
+        print(f"  Question : {most_divergent_q_group['Question Text'][:100]}...")
+        print(f"  Response : {most_divergent_q_group['Response Text'][:100]}...")
+        print(f"  Segments : {most_divergent_q_group['Min Segment']} ({most_divergent_q_group['Min Agreement']:.1%}) vs {most_divergent_q_group['Max Segment']} ({most_divergent_q_group['Max Agreement']:.1%})")
+    else:
+        print("\nNo divergence results to summarize.")
+
 
     print("\nScript finished.") 
