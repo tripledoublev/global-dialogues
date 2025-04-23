@@ -28,6 +28,20 @@ Starting with `GD3`, *Global Dialogues Indicators* are recurring Poll questions 
 
 ## Data Files
 
+### **`discussion_guide.csv`**
+
+This file outlines the structure and content of the dialogue as experienced by participants, in chronological order.
+
+| Column                                           | Description                                                                                                                                                                                                                                                                             |
+| :----------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Item type (dropdown)`                           | Type of interaction: <br> - `onboarding single select`: Poll used for demographic segmentation. Appears as `Poll Single Select` elsewhere. <br> - `speak`: Moderator context; no participant input. <br> - `poll single select`: Standard poll question. <br> - `ask opinion`: Open-ended question with peer voting. <br> - `ask experience multi select`: Open-ended question without peer voting. |
+| `Content`                                        | Text of the dialogue item (question or moderator statement). Corresponds to `Question Text` in other files.                                                                                                                                                                             |
+| `Duration in minutes (dropdown)`                 | Estimated time for the participant to complete the item.                                                                                                                                                                                                                                |
+| `Randomize options or categories for each participant` | Indicates if poll options were presented in random order (`yes`/`no`).                                                                                                                                                                                                                      |
+| `Add 'Other' as an option`                       | Indicates if an 'Other' option was available for polls (`yes`/`no`).                                                                                                                                                                                                                      |
+| `Add 'None of the above' as an option`           | Indicates if a 'None of the above' option was available for polls (`yes`/`no`).                                                                                                                                                                                                         |
+| `Poll or Category Option 1`, `...Option N`       | Predefined response options for `poll single select` questions.                                                                                                                                                                                                                       |
+
 ### **`aggregate.csv`**
 
 This file compiles Global Dialogue data aggregated by question, showing the breakdown of each Segment's agreement rate with each question response.
