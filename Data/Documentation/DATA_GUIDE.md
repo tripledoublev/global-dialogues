@@ -1,0 +1,107 @@
+# Data Guide
+
+## Overview
+
+Global Dialogues is a recurring, cross-national survey program designed to collect public perspectives on AI. Each cadence involves an online, AI-moderated dialogue session (30-60 minutes) hosted on Remesh.ai. Participants, recruited through Prolific, answer standard poll questions and open-ended opinion questions, and vote on peer statements, generating quantitative evidence of agreement.
+
+Some standard initial *Poll Single Select* questions are used to define participant *Segments*. These standard Segments primarily include:
+
+-   Age groups (~10-year buckets)
+-   Gender (Male/Female/Non-binary)
+-   Religion
+-   Country (also grouped into various regions and subregions)
+-   Environment (Urban/Rural/Suburban)
+
+Other *Poll Single Select* questions simply collect additional survey information. All Polls use pre-defined responses.
+
+*Ask Opinion* questions pose an open-ended question. Participants respond with freeform text and are then prompted to vote 'agree' or 'disagree' on a random set of 5 other participants' responses. Segments are used to express the "agreement rate" – the estimated percentage of participants in that Segment who agree with a particular *Ask Opinion* response based on the vote data.
+
+*Ask Experience* questions are also open-ended but do not prompt participants to vote on others' responses.
+
+Participants are guided through an experience designed to feel like a moderated "dialogue", led by a named moderator. Context is provided to prepare them for each set of questions. This context might not always be clear from the question text itself and may need to be referenced from the separate Dialogue Guide, which includes the full moderation prompts.
+
+Global Dialogues were conducted in multiple languages (Arabic, English, Russian, Chinese, Hindi, French, Portuguese, Spanish), with questions translated accordingly. When participants responded to *Ask Opinion* questions, their answers were machine-translated into the voter's selected language for the subsequent voting phase. For transparency, the *Original Responses* are preserved as written, alongside a machine-translated *English Response* for easier analysis.
+
+## Data Files
+
+### **`aggregate.csv`**
+
+This file compiles Global Dialogue data aggregated by question, showing the breakdown of each Segment's agreement rate with each question response.
+
+| Column                | Description                                                                                                                                                                                                                                                                                                                      |
+| :-------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Question ID`         | Unique ID for the question.                                                                                                                                                                                                                                                                                                      |
+| `Question Type`       | Identifies the type of question: *Poll* or *Ask Opinion*. <br> - *Polls* provide participants with a list of options to select from. Some initial Poll questions define population segments (indicated in columns like `O1`, `O2`, etc.). <br> - *Ask Opinion* questions allow open-ended responses, followed by peer voting. |
+| `Question`            | Text of the question presented to participants.                                                                                                                                                                                                                                                                                  |
+| `Responses`           | (Poll Questions only) The multiple-choice response selected by the participant.                                                                                                                                                                                                                                                  |
+| `English Response`    | (Opinion Questions only) Participant's response, machine-translated to English if necessary. Character limit: 500.                                                                                                                                                                                                               |
+| `Original Response`   | (Opinion Questions only) Participant's verbatim response in the original language. Character limit: 500.                                                                                                                                                                                                                         |
+| `Response Language`   | (Opinion Questions only) Original language of the submitted response.                                                                                                                                                                                                                                                            |
+| `Submitted by`        | (Opinion Questions only) Segment description of the participant who submitted the response.                                                                                                                                                                                                                                      |
+| `Participant ID`      | (Opinion Questions only) Unique ID for the participant who submitted the response.                                                                                                                                                                                                                                               |
+| `Sentiment`           | (Opinion Questions only) Sentiment analysis (Positive/Neutral/Negative) of the response text, determined by the dialogue platform.                                                                                                                                                                                               |
+| `All(N)`              | Shows the calculated agreement rate\* among ALL participants for the given response. `(N)` indicates the total number of participants in this segment.                                                                                                                                                                             |
+| `O1: <language> (N)`  | Agreement rate among participants segmented by language.                                                                                                                                                                                                                                                                         |
+| `O2: <age> (N)`       | Agreement rate among participants segmented by age.                                                                                                                                                                                                                                                                              |
+| `O3: <gender> (N)`    | Agreement rate among participants segmented by gender.                                                                                                                                                                                                                                                                           |
+| `O4: <urban/rural> (N)`| Agreement rate among participants segmented by urban/rural environment.                                                                                                                                                                                                                                                          |
+| `O5: <concern AI> (N)`| Agreement rate among participants segmented by 'concern about AI'.                                                                                                                                                                                                                                                               |
+| `O6: <religion> (N)`  | Agreement rate among participants segmented by religion.                                                                                                                                                                                                                                                                         |
+| `O7: <country> (N)`   | Agreement rate among participants segmented by country.                                                                                                                                                                                                                                                                          |
+| `<Region> (N)`        | Agreement rate among participants grouped by region.                                                                                                                                                                                                                                                                             |
+
+\* **Agreement Rate Definition:**
+-   For *Poll* Questions: The percentage of participants who selected a specific response.
+-   For *Ask Opinion* Questions: An estimated measure of the percentage of participants who indicated "Agree" with the given response (vs. "Disagree"). Due to the impracticality of all participants voting on every response, a prediction algorithm (~85% accuracy) imputes votes based on a limited sample (5 votes per participant per question).
+
+### **`binary.csv`**
+
+This file documents all individual votes cast on *Ask Opinion* question responses.
+
+| Column           | Description                                                                   |
+| :--------------- | :---------------------------------------------------------------------------- |
+| `Question ID`    | Unique ID for the *Ask Opinion* question.                                     |
+| `Participant ID` | Unique ID for the participant who voted.                                      |
+| `Thought ID`     | Unique ID for the specific response (thought) being voted on.                 |
+| `Vote`           | The vote cast: `agree`, `disagree`, or `neutral`.                             |
+| `Timestamp`      | Timestamp of when the vote was cast.                                          |
+
+### **`participants.csv`**
+
+This file contains responses to every question, organized by participant.
+
+| Column               | Description                                                                                                                                                                                                                                                                                             |
+| :------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Participant Id`     | Unique ID for the participant in the survey.                                                                                                                                                                                                                                                            |
+| `Sample Provider Id` | Unique ID linking the participant to the originating survey platform (Prolific).                                                                                                                                                                                                                        |
+| *Subsequent Columns* | Each subsequent column represents a question text in the order presented during the dialogue. Rows contain the participant's response. <br> - *Poll* questions show the selected response directly. <br> - *Ask Opinion* responses are shown in `(English)` (translated/verbatim) and `(Original)` columns. |
+| `Sentiment`          | (Follows *Ask Opinion* columns) Automated sentiment analysis score for the text response.                                                                                                                                                                                                             |
+| `All (%agree)`       | (Follows *Ask Opinion* columns) Estimated percentage agreement among all participants for this specific response.                                                                                                                                                                                       |
+
+### **`preference.csv`**
+
+This file documents participant preferences between pairs of *Ask Opinion* responses, collected via pairwise comparison tasks. This data helps inform the machine learning algorithm used for calculating agreement rates.
+
+| Column           | Description                                                                        |
+| :--------------- | :--------------------------------------------------------------------------------- |
+| `Question ID`    | Unique ID for the *Ask Opinion* question.                                          |
+| `Participant ID` | Unique ID for the participant who voted.                                           |
+| `Thought A ID`   | Unique ID for one response in the pair.                                            |
+| `Thought B ID`   | Unique ID for the other response in the pair.                                      |
+| `Vote`           | The preference indicated: `Thought A`, `Thought B`, `I agree with both`, `I disagree with both`. |
+| `Timestamp`      | Timestamp of when the preference vote was cast.                                    |
+
+### **`verbatim_map.csv`**
+
+This file maps *Ask Opinion* question responses (thoughts) to their authors and the corresponding question.
+
+| Column           | Description                                                     |
+| :--------------- | :-------------------------------------------------------------- |
+| `Question ID`    | Unique ID for the *Ask Opinion* question.                       |
+| `Question Text`  | Text of the *Ask Opinion* question.                             |
+| `Participant ID` | Unique ID for the participant who authored the response.        |
+| `Thought ID`     | Unique ID for the response (thought).                           |
+| `Thought Text`   | Verbatim text of the participant's response to the question.    |
+
+
+
