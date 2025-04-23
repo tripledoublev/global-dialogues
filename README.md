@@ -31,7 +31,7 @@ Each cadence folder contains the following core data files (raw outputs from Rem
 
 ## Analysis Tools
 
-Analysis scripts and notebooks can be found in the `/scripts` directory.
+Analysis scripts and notebooks can be found in the `/tools` directory.
 
  
 

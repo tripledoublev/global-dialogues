@@ -22,6 +22,10 @@ Participants are guided through an experience designed to feel like a moderated 
 
 Global Dialogues were conducted in multiple languages (Arabic, English, Russian, Chinese, Hindi, French, Portuguese, Spanish), with questions translated accordingly. When participants responded to *Ask Opinion* questions, their answers were machine-translated into the voter's selected language for the subsequent voting phase. For transparency, the *Original Responses* are preserved as written, alongside a machine-translated *English Response* for easier analysis.
 
+## Global Dialogues Indicators
+
+Starting with `GD3`, *Global Dialogues Indicators* are recurring Poll questions that will be asked in every cadence (with minimal modification). These intend to capture a "global pulse" over time to capture changes in attitudes and establish baselines for subsequent questions in the rest of the dialogue. Nothing in the data files distinguishes Indicator questions, so these are outlined and categorized for easy reference in `INDICATOR_CODESHEET.csv`.
+
 ## Data Files
 
 ### **`aggregate.csv`**
