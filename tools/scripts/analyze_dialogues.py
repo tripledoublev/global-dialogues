@@ -42,7 +42,7 @@ def parse_percentage(value):
 
 def get_segment_columns(df_columns):
     """
-    Identifies segment columns (typically containing '(N)') and extracts N.
+    Identifies segment columns (typically ending in '(Number)') and extracts the number N.
 
     Args:
         df_columns (list): List of column names from a DataFrame.
@@ -52,55 +52,41 @@ def get_segment_columns(df_columns):
     """
     segment_cols = []
     segment_sizes = {}
-    # Regex to find columns like "Segment Name (N)" or "All(N)" or "O1: xxx (N)"
-    # Allows for variations in spacing, capitalization, and optional ':' before segment name
-    pattern = re.compile(r'.*?\s*\(\s*([Nn])\s*\)\s*$')
-    size_pattern = re.compile(r'\((\d+)\)') # Extracts the number N
+    # Regex updated to find columns ending in (Number), allowing for whitespace variations.
+    # It captures the digits within the parentheses.
+    pattern = re.compile(r'.*?\s*\(\s*(\d+)\s*\)\s*$') # Updated pattern
 
     for col in df_columns:
-        # Check if column name broadly matches segment pattern
-        if pattern.match(col):
-            segment_cols.append(col)
-            # Try to extract the specific size N
-            match = size_pattern.search(col)
-            if match:
-                try:
-                    segment_sizes[col] = int(match.group(1))
-                except ValueError:
-                    segment_sizes[col] = np.nan # Failed to parse N
-                    print(f"Warning: Could not parse size 'N' from segment column: {col}")
-            else:
-                 segment_sizes[col] = np.nan # Pattern matched but size extraction failed
-                 # This might happen for 'All(N)' if N isn't numeric, handle later if needed
-                 print(f"Warning: Could not extract numeric size 'N' from segment column: {col}")
-
-
-    # Ensure 'All(N)' or 'All (N)' is included if missed by regex but present
-    # And attempt to calculate its size if needed (e.g., sum of others? Needs context)
-    all_n_col = None
-    if 'All(N)' in df_columns and 'All(N)' not in segment_cols:
-        all_n_col = 'All(N)'
-    elif 'All (N)' in df_columns and 'All (N)' not in segment_cols:
-         all_n_col = 'All (N)'
-
-    if all_n_col:
-        segment_cols.insert(0, all_n_col)
-        match = size_pattern.search(all_n_col)
+        match = pattern.match(col)
         if match:
+            segment_cols.append(col)
             try:
-                segment_sizes[all_n_col] = int(match.group(1))
+                # The number is captured by group 1 of the updated pattern
+                segment_sizes[col] = int(match.group(1))
             except ValueError:
-                segment_sizes[all_n_col] = np.nan
-        else:
-             # If size wasn't in 'All(N)' column name, we might need to calculate it
-             # For now, mark as NaN
-             segment_sizes[all_n_col] = np.nan
-             print(f"Warning: Size 'N' for '{all_n_col}' not found or calculable yet.")
+                # This should be less likely now pattern requires digits, but handle just in case
+                segment_sizes[col] = np.nan
+                print(f"Warning: Could not parse extracted size digits from segment column: {col}")
+            except IndexError:
+                 # Should not happen if pattern matched, means regex logic error
+                 segment_sizes[col] = np.nan
+                 print(f"Warning: Regex matched but failed to extract size group from segment column: {col}")
 
-    if not segment_cols and len(df_columns) > 7:
-         print(f"Warning: Regex pattern did not find any segment columns like '(N)' in headers: {df_columns[:10]}... Check CSV format.")
+    # Sort to bring 'All(...)' column(s) to the front if they exist
+    all_cols = [col for col in segment_cols if col.startswith('All(') or col.startswith('All (')]
+    other_cols = [col for col in segment_cols if not (col.startswith('All(') or col.startswith('All ('))]
+    # Ensure sorting is stable if needed, though order of non-'All' segments may not matter
+    sorted_segment_cols = sorted(all_cols) + sorted(other_cols)
 
-    return segment_cols, segment_sizes
+    if not sorted_segment_cols and len(df_columns) > 5: # Adjusted threshold slightly
+         # Check standard non-segment columns first before warning
+         standard_cols = {'Question ID', 'Question Type', 'Question', 'Responses', 'English Response', 'Original Response'}
+         potential_segments = [c for c in df_columns if c not in standard_cols and '(' in c]
+         if potential_segments:
+              print(f"Warning: Regex pattern did not find segment columns ending like '(Number)' in headers: {df_columns[:10]}... Check CSV format or regex pattern.")
+         # Else: Likely a question type without segments (e.g. Ask Experience), so no warning needed.
+
+    return sorted_segment_cols, segment_sizes
 
 
 # --- Data Loading and Preprocessing ---
