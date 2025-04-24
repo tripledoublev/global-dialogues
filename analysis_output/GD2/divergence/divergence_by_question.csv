@@ -1,0 +1,724 @@
+Question ID,Question Text,Response Text,Divergence Score,Min Segment,Min Agreement,Max Segment,Max Agreement
+dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,Depends on the situation.,0.3003,Eastern Europe (32),0.2800,O7: Indonesia (34),0.9100
+dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,About religious norms,0.2814,O1: Russian (31),0.3200,O7: Indonesia (34),0.9400
+dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,"Divorce, dowry, banishment",0.2814,O1: Russian (31),0.3200,O7: Indonesia (34),0.9400
+722cf427-d884-477e-94a7-5c734b30acba,"What topics or types of advice should an AI never give in your cultural context, even if asked?",Any topic can be provided. It mainly depends on the user's own judgment.,0.2793,Northern Africa (33),0.3000,O7: Indonesia (36),0.8900
+be954f04-5ef3-428c-97a7-cd0fa44ad182,Is there anything about your life or your cultures that you would like your AI to know about you?,"yes, way of dressing
+
+type of food",0.2771,Western Europe (43),0.2600,O7: China (38),0.8200
+0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?",apperance in common. feelings not in common,0.2771,O1: Russian (31),0.2600,O7: Indonesia (34),0.8200
+dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,Family related topics,0.2739,O1: Russian (31),0.3500,O7: Indonesia (34),1.0000
+dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,Religion and tradition,0.2717,O1: Russian (31),0.3200,O7: Indonesia (34),0.9100
+be954f04-5ef3-428c-97a7-cd0fa44ad182,Is there anything about your life or your cultures that you would like your AI to know about you?,Value of the community,0.2698,Eastern Europe (32),0.2200,O7: Indonesia (34),0.7600
+722cf427-d884-477e-94a7-5c734b30acba,"What topics or types of advice should an AI never give in your cultural context, even if asked?",Not okej to discriminate anyone,0.2698,O7: Brazil (34),0.2400,O7: Indonesia (36),0.7800
+dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,Those of marriage and burrial rites,0.2683,O1: Russian (31),0.2600,Eastern Africa (157),0.8000
+722cf427-d884-477e-94a7-5c734b30acba,"What topics or types of advice should an AI never give in your cultural context, even if asked?",Sexual or gambling advice. ,0.2670,Northern Africa (33),0.2700,O7: Indonesia (36),0.8100
+722cf427-d884-477e-94a7-5c734b30acba,"What topics or types of advice should an AI never give in your cultural context, even if asked?",All advice is welcome. ,0.2670,Northern Africa (33),0.2700,O7: Indonesia (36),0.8100
+dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,"For deciding specific dates for certain functions or programs and in all matters that affects me, family members and community adversely ",0.2655,O1: Russian (31),0.3500,O7: Indonesia (34),0.9700
+dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,Everything which affects them i think as a family every minor thing is important and affects the family member even it is person specific. though without invading personal spaces,0.2655,O1: Russian (31),0.3500,O7: Indonesia (34),0.9700
+dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,Anything that affects the family,0.2655,O1: Russian (31),0.3500,O7: Indonesia (34),0.9700
+dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,If it's about the whole family or community ,0.2655,O1: Russian (31),0.3500,O7: Indonesia (34),0.9700
+dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,personal decision,0.2653,Eastern Europe (32),0.3400,O7: Indonesia (34),0.9400
+dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,Health decisions,0.2653,Eastern Europe (32),0.3400,O7: Indonesia (34),0.9400
+be954f04-5ef3-428c-97a7-cd0fa44ad182,Is there anything about your life or your cultures that you would like your AI to know about you?,"Yes, understand China's food and lifestyle culture",0.2653,Western Europe (43),0.2800,O7: China (38),0.8200
+0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?",it would have the same sense of humor and wit and it would not have my quick to anger attitude,0.2650,O1: Russian (31),0.2300,O7: Indonesia (34),0.7600
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,the culture and values we respect might be misunderstood by others,0.2627,O7: Israel (30),0.2000,Northern Africa (33),0.7300
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,Probably things like marriage and cultural rules. It should consult the youths and elders from the specific society.,0.2627,O7: Israel (30),0.2000,Northern Africa (33),0.7300
+dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,"Marriage
+
+FGM
+
+",0.2615,O1: Russian (31),0.3200,O7: Indonesia (34),0.8800
+dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,"money related
+
+",0.2615,O1: Russian (31),0.3200,O7: Indonesia (34),0.8800
+dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,"Buying Land , Getting Married , Selling you're house",0.2615,O1: Russian (31),0.3200,O7: Indonesia (34),0.8800
+be954f04-5ef3-428c-97a7-cd0fa44ad182,Is there anything about your life or your cultures that you would like your AI to know about you?,Only if I provide them as context to what I am asking.,0.2592,Northern Africa (31),0.2900,O7: United Kingdom (38),0.8200
+0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?","In common, interests, political opinion, handling of topics that interest me.
+
+Different, way of speaking and expressing oneself, I wouldn't like him to try to reply to me.",0.2592,O1: Russian (31),0.2900,O7: Indonesia (34),0.8200
+722cf427-d884-477e-94a7-5c734b30acba,"What topics or types of advice should an AI never give in your cultural context, even if asked?",Harmful or threatening replies. Offensive or swear words. ,0.2569,Northern Africa (33),0.3000,O7: Indonesia (36),0.8300
+387627e5-48a0-47e6-b740-6a74330c7ccf,Imagine you're working with an AI assistant on important tasks in your life. What principles or values would you want this AI to consistently demonstrate in all its interactions?,"It should not found to specific answers or fall under censorship, like if Ask anything about Chinese area and AI models it made by Chinese government or person it should not censor the answer or become helpless",0.2561,Eastern Europe (32),0.3400,O1: Portuguese (Brazil) (32),0.9100
+0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?",Education and learning,0.2551,O1: Russian (31),0.1900,O7: Indonesia (34),0.7100
+be954f04-5ef3-428c-97a7-cd0fa44ad182,Is there anything about your life or your cultures that you would like your AI to know about you?,I would like you to know my tastes in art and music,0.2551,Western Europe (43),0.1900,O7: Indonesia (34),0.7100
+be954f04-5ef3-428c-97a7-cd0fa44ad182,Is there anything about your life or your cultures that you would like your AI to know about you?,Just the values and principles.,0.2551,Eastern Europe (32),0.1900,Eastern Africa (154),0.7100
+dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,health an waealth,0.2551,O1: Russian (31),0.1900,Northern Africa (31),0.7100
+dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?, honesty respect discipline ,0.2550,Eastern Europe (32),0.2500,O7: Indonesia (34),0.7600
+0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?","programming knowledge is common 
+
+unknown facts and creativity",0.2546,O1: Russian (31),0.2300,O7: Indonesia (34),0.7400
+0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?","compile codes automatically and return them ready
+
+",0.2546,O7: Indonesia (34),0.2600,O1: Russian (31),0.7700
+0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?",MY PERSONALITY,0.2546,O1: Russian (31),0.2300,O7: Indonesia (34),0.7400
+0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?","my tastes,my style",0.2546,O1: Russian (31),0.2300,O7: Indonesia (34),0.7400
+0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?","He is smart and good at expressing himself, and I don't want him to be too similar to humans and cause them to be replaced.",0.2546,O1: Russian (31),0.2300,O7: Indonesia (34),0.7400
+dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,"Marriage, children, bank loans ",0.2546,O1: Russian (31),0.3200,South Eastern Asia (70),0.8600
+722cf427-d884-477e-94a7-5c734b30acba,"What topics or types of advice should an AI never give in your cultural context, even if asked?",Harmful action,0.2538,Northern Africa (33),0.2700,O7: Indonesia (36),0.7800
+be954f04-5ef3-428c-97a7-cd0fa44ad182,Is there anything about your life or your cultures that you would like your AI to know about you?,"Yes, about Tamil culture.",0.2530,Western Europe (43),0.3000,O7: China (38),0.8200
+be954f04-5ef3-428c-97a7-cd0fa44ad182,Is there anything about your life or your cultures that you would like your AI to know about you?,Be friendly ,0.2526,Eastern Europe (32),0.2800,O7: Indonesia (34),0.7900
+dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,health related,0.2526,Eastern Europe (32),0.2800,O7: Indonesia (34),0.7900
+dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,Health Topics,0.2526,Eastern Europe (32),0.2800,O7: Indonesia (34),0.7900
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,Health and education. These are the most important that AI should adapt.,0.2510,O7: Israel (30),0.2000,O1: Portuguese (Brazil) (31),0.7100
+8f8d38fa-62b9-4c7a-ba0c-194d6cad5f90,How should an AI assistant demonstrate that it understands and respects your cultural heritage while still being helpful with modern tasks?,Using language specific to that culture.,0.2508,O7: Israel (30),0.3300,O7: United Kingdom (38),0.8700
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,That is very difficult to adopt and to manage the specific needs to understand and do properly ,0.2492,O7: Israel (30),0.2300,Northern Africa (33),0.7300
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,"AI might misunderstand the need for women not to take other roles in terms of professional, or career.  How children should not talk back to their parents.",0.2492,O7: Israel (30),0.2300,Northern Africa (33),0.7300
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,Culture's moral values na practices,0.2492,O7: Israel (30),0.2300,Northern Africa (33),0.7300
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,"We are extremely different cultures, in customs, food, traditions, festivities, AI should adapt according to the context established by the user.",0.2492,O7: Israel (30),0.2300,Northern Africa (33),0.7300
+722cf427-d884-477e-94a7-5c734b30acba,"What topics or types of advice should an AI never give in your cultural context, even if asked?",Advice on being rude,0.2490,Northern Africa (33),0.3000,O7: Indonesia (36),0.8100
+722cf427-d884-477e-94a7-5c734b30acba,"What topics or types of advice should an AI never give in your cultural context, even if asked?",AI should be neutral. It should not censor any topic unless it is harmful to provide. Based on the context of my culture it should not spread negativity and spread misinformation.,0.2490,O7: Chile (46),0.3000,O7: Indonesia (36),0.8100
+722cf427-d884-477e-94a7-5c734b30acba,"What topics or types of advice should an AI never give in your cultural context, even if asked?","Maybe like killing someone, I think the ones that are universally considered taboo.",0.2490,Northern Africa (33),0.3000,O7: Indonesia (36),0.8100
+0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?","I hope his wisdom will live forever, not human beings, who are always limited by the body.",0.2480,O1: Russian (31),0.3500,O7: Indonesia (34),0.9100
+722cf427-d884-477e-94a7-5c734b30acba,"What topics or types of advice should an AI never give in your cultural context, even if asked?",how to create fuss between people,0.2474,Northern Africa (33),0.3300,O7: Indonesia (36),0.8600
+722cf427-d884-477e-94a7-5c734b30acba,"What topics or types of advice should an AI never give in your cultural context, even if asked?","- Backtalking
+
+- Giving any confidential and private information about people
+
+- Without having the knowledge to its full extent, choosing to tell something as if it is true",0.2474,O7: Chile (46),0.3300,O7: Indonesia (36),0.8600
+722cf427-d884-477e-94a7-5c734b30acba,"What topics or types of advice should an AI never give in your cultural context, even if asked?",I think it should be careful when dealing with people's perceptions and beliefs.,0.2474,O7: Israel (33),0.3300,O7: Indonesia (36),0.8600
+722cf427-d884-477e-94a7-5c734b30acba,"What topics or types of advice should an AI never give in your cultural context, even if asked?",Everything that is illegal. I can't think of a specific topic of conversation that is a taboo in my culture.,0.2474,O7: Chile (46),0.3300,O7: Indonesia (36),0.8600
+0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?",My temperament and calmness.,0.2468,O1: Russian (31),0.2900,O7: Indonesia (34),0.7900
+0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?","Things in common: Video games, way of loving, taste for music, goals or dreams.
+
+Things different from me: way of thinking, culture, way of speaking.",0.2468,O1: Russian (31),0.2900,O7: Indonesia (34),0.7900
+be954f04-5ef3-428c-97a7-cd0fa44ad182,Is there anything about your life or your cultures that you would like your AI to know about you?,Yes that we prefer simplicity over extravaganza and we prefer knowledge over buttering.,0.2468,O7: Chile (42),0.2900,O7: Indonesia (34),0.7900
+be954f04-5ef3-428c-97a7-cd0fa44ad182,Is there anything about your life or your cultures that you would like your AI to know about you?,Al should know all things about me and my culture,0.2468,Western Europe (43),0.2100,O7: Indonesia (34),0.7100
+be954f04-5ef3-428c-97a7-cd0fa44ad182,Is there anything about your life or your cultures that you would like your AI to know about you?,I would like for AI to be culturally sensitive about my community,0.2466,Eastern Europe (32),0.3100,O7: Indonesia (34),0.8200
+be954f04-5ef3-428c-97a7-cd0fa44ad182,Is there anything about your life or your cultures that you would like your AI to know about you?,I think AI can understand almost everything related to globally recognised things but if there's some thing and AI can learn so it would be thing about minorities in my country. ,0.2466,Eastern Europe (32),0.3100,O7: Indonesia (34),0.8200
+be954f04-5ef3-428c-97a7-cd0fa44ad182,Is there anything about your life or your cultures that you would like your AI to know about you?,"Yes, it's more intimate.",0.2449,Eastern Europe (32),0.2500,O7: China (38),0.7400
+be954f04-5ef3-428c-97a7-cd0fa44ad182,Is there anything about your life or your cultures that you would like your AI to know about you?,Yes. I want AI to know that we respect elders and woman. We give important to God,0.2449,Eastern Europe (32),0.2500,O7: Indonesia (34),0.7400
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,The AI may have differing concerns and focuses. It should consider all beliefs and provide solutions that can applyh to everyone.,0.2449,O7: Israel (30),0.2000,O7: Brazil (33),0.7000
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,Al might not be able to understand cultural beliefs of some communities,0.2449,O7: Israel (30),0.2000,Northern Africa (33),0.7000
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,AI should adapt by understanding the history of Indian culture including important festivals celebrated across the country and religious beliefs.,0.2449,O7: Israel (30),0.2000,Northern Africa (33),0.7000
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,"Indian culture is often more collectivist than western culture, communication in India can be more indirect and nuanced, respect of elders and authority, religion and spiritual diversity and non verbal communication.",0.2445,O7: Israel (30),0.2700,Northern Africa (33),0.7600
+698f42dd-1081-4959-9751-ca010cc43e42,Would you want your AI to be tailored to your local context? What would that look like?,"Yes, it would be like my assistant.",0.2445,O1: Russian (33),0.2400,O7: Indonesia (37),0.7300
+8f8d38fa-62b9-4c7a-ba0c-194d6cad5f90,How should an AI assistant demonstrate that it understands and respects your cultural heritage while still being helpful with modern tasks?,I think it can mention cultural aspects and heritage in a footnote but it should not let it dilute modern tasks  ,0.2445,O7: Israel (30),0.2700,O7: China (38),0.7600
+0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?","in common, the way i talk
+
+different my proffession",0.2439,O1: Spanish (66),0.3300,O7: Indonesia (34),0.8500
+387627e5-48a0-47e6-b740-6a74330c7ccf,Imagine you're working with an AI assistant on important tasks in your life. What principles or values would you want this AI to consistently demonstrate in all its interactions?,Fast and precise.,0.2437,O7: United Kingdom (39),0.2300,O1: Russian (32),0.7200
+011f550f-119c-49da-8ff7-c78ac03ba1c8,When should an AI defer to human wisdom or community leaders rather than providing its own answers?,When you do not have enough information to allow you to generate a response based on sufficient evidence and/or that threatens people's safety.,0.2433,O1: Russian (32),0.3400,O1: Chinese (China) (67),0.8700
+be954f04-5ef3-428c-97a7-cd0fa44ad182,Is there anything about your life or your cultures that you would like your AI to know about you?,"Religion, humor, laughter and information narration in a halal framework",0.2425,Eastern Europe (32),0.2200,O7: Indonesia (34),0.7100
+be954f04-5ef3-428c-97a7-cd0fa44ad182,Is there anything about your life or your cultures that you would like your AI to know about you?,just education,0.2425,Eastern Europe (32),0.2200,Eastern Africa (154),0.7100
+8f8d38fa-62b9-4c7a-ba0c-194d6cad5f90,How should an AI assistant demonstrate that it understands and respects your cultural heritage while still being helpful with modern tasks?,by using cultural word or something,0.2408,O7: Israel (30),0.3000,O7: United Kingdom (38),0.7900
+be954f04-5ef3-428c-97a7-cd0fa44ad182,Is there anything about your life or your cultures that you would like your AI to know about you?,NEED TO UNDERSTAND ASIAN CULTURE MORE,0.2408,Western Europe (43),0.3000,O7: China (38),0.7900
+be954f04-5ef3-428c-97a7-cd0fa44ad182,Is there anything about your life or your cultures that you would like your AI to know about you?,The basics and evolve as the cukture does,0.2408,Western Europe (43),0.3000,O7: Indonesia (34),0.7900
+8f8d38fa-62b9-4c7a-ba0c-194d6cad5f90,How should an AI assistant demonstrate that it understands and respects your cultural heritage while still being helpful with modern tasks?,"By prompting him beforehand, and telling your preferences.",0.2408,O7: Israel (30),0.3000,O7: United Kingdom (38),0.7900
+8f8d38fa-62b9-4c7a-ba0c-194d6cad5f90,How should an AI assistant demonstrate that it understands and respects your cultural heritage while still being helpful with modern tasks?,"You don't have to prove it, AI is just a tool that makes it easier to address issues, no one is obliged to use it.",0.2408,O7: United Kingdom (38),0.2100,O7: Israel (30),0.7000
+b4bc4dad-d06b-41a7-99ba-1aa88370f41a,What would make you feel confident that an AI system truly understands and respects your cultural perspective?,Nothing would make me feel confident that an AI understands anything. It is a piece of code.,0.2404,O7: China (38),0.1600,O7: Israel (30),0.6700
+b4bc4dad-d06b-41a7-99ba-1aa88370f41a,What would make you feel confident that an AI system truly understands and respects your cultural perspective?,"I think this is unlikely to be achieved. After all, AI is designed and trained by humans, which means it has great limitations.",0.2404,O7: China (38),0.1600,O7: Israel (30),0.6700
+8f8d38fa-62b9-4c7a-ba0c-194d6cad5f90,How should an AI assistant demonstrate that it understands and respects your cultural heritage while still being helpful with modern tasks?,You must indicate your level of knowledge regarding my culture.,0.2404,O7: Israel (30),0.3300,O7: United Kingdom (38),0.8400
+8f8d38fa-62b9-4c7a-ba0c-194d6cad5f90,How should an AI assistant demonstrate that it understands and respects your cultural heritage while still being helpful with modern tasks?,Careful and respectful tell about my culture to people without making fun of it,0.2404,O7: Israel (30),0.3300,O7: United Kingdom (38),0.8400
+8f8d38fa-62b9-4c7a-ba0c-194d6cad5f90,How should an AI assistant demonstrate that it understands and respects your cultural heritage while still being helpful with modern tasks?,It should mention my culture and give detailed information ,0.2404,O7: Israel (30),0.3300,O7: United Kingdom (38),0.8400
+8f8d38fa-62b9-4c7a-ba0c-194d6cad5f90,How should an AI assistant demonstrate that it understands and respects your cultural heritage while still being helpful with modern tasks?,He should let me know and confirm that he understands my cultural heritage.,0.2404,O7: Israel (30),0.3300,O7: United Kingdom (38),0.8400
+8f8d38fa-62b9-4c7a-ba0c-194d6cad5f90,How should an AI assistant demonstrate that it understands and respects your cultural heritage while still being helpful with modern tasks?,"It should first acknowledge that according to my culture, it was done in a certain way then proceed with the modern tasks ",0.2404,O7: Israel (30),0.3300,O7: United Kingdom (38),0.8400
+8f8d38fa-62b9-4c7a-ba0c-194d6cad5f90,How should an AI assistant demonstrate that it understands and respects your cultural heritage while still being helpful with modern tasks?,By adhering to my traditions and cultural believes.,0.2404,O7: Israel (30),0.3300,O7: United Kingdom (38),0.8400
+be954f04-5ef3-428c-97a7-cd0fa44ad182,Is there anything about your life or your cultures that you would like your AI to know about you?,General understanding and knowledge.,0.2400,O7: Chile (42),0.2600,O7: Indonesia (34),0.7400
+0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?",that he had my values and that he made difficult decisions unlike me,0.2400,O1: Russian (31),0.3200,O7: Indonesia (34),0.8200
+be954f04-5ef3-428c-97a7-cd0fa44ad182,Is there anything about your life or your cultures that you would like your AI to know about you?,Yes in my culture mahakumbh is very important it's going now a days ,0.2400,O7: Chile (42),0.2600,O7: China (38),0.7400
+0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?","That he had my sense of humor and analytical skills, different from me, that he doesn't leave things for later.",0.2400,O1: Russian (31),0.3200,O7: Indonesia (34),0.8200
+0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?","Something in common: Use the same tone as me
+
+Something Different: More knowledgabe and logical than me",0.2400,O1: Russian (31),0.3200,O7: Indonesia (34),0.8200
+4ff79b4a-e03a-440e-8367-fd1a48c58d56,What role should traditional or cultural knowledge play when an AI is helping solve problems in your community?,"Coming from a Christian country that have seen a lot of immigration from non Christian countries in the past years, I don’t think Christian tradition should be used to solve any conflict. In our globalized world, we have to understand others tradition on top of our own.",0.2387,O1: Russian (31),0.3500,O1: Chinese (China) (65),0.8800
+0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?",Interest of topic,0.2387,O1: Russian (31),0.3500,O7: Indonesia (34),0.8800
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,To take the notes of the human activity and make it install in the AI to provide according to them and make it clear ,0.2387,O7: Israel (30),0.2000,O7: Indonesia (35),0.6900
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,make more effort to give information on different cultures to AI and let it learn. ,0.2387,O7: Israel (30),0.2000,O7: Indonesia (35),0.6900
+722cf427-d884-477e-94a7-5c734b30acba,"What topics or types of advice should an AI never give in your cultural context, even if asked?","political & government related topics e.g. criticism of government policies, leaders or the monarchy (sedition Act & Communications Act apply)",0.2369,O7: Israel (33),0.3300,O7: Indonesia (36),0.8300
+8f8d38fa-62b9-4c7a-ba0c-194d6cad5f90,How should an AI assistant demonstrate that it understands and respects your cultural heritage while still being helpful with modern tasks?,To tailor his answers to suit me and speak respectfully.,0.2369,O7: Israel (30),0.3300,O7: Indonesia (35),0.8300
+722cf427-d884-477e-94a7-5c734b30acba,"What topics or types of advice should an AI never give in your cultural context, even if asked?",about feelings,0.2369,O7: Israel (33),0.3300,O7: Indonesia (36),0.8300
+722cf427-d884-477e-94a7-5c734b30acba,"What topics or types of advice should an AI never give in your cultural context, even if asked?","Relationship advice, that could be done better by humans ",0.2369,O7: Israel (33),0.3300,O7: Indonesia (36),0.8300
+722cf427-d884-477e-94a7-5c734b30acba,"What topics or types of advice should an AI never give in your cultural context, even if asked?",i don't think an AI should censor it's responses,0.2369,O7: Chile (46),0.3300,O7: Indonesia (36),0.8300
+722cf427-d884-477e-94a7-5c734b30acba,"What topics or types of advice should an AI never give in your cultural context, even if asked?",relationship advice,0.2366,Northern Africa (33),0.3000,O7: Indonesia (36),0.7800
+722cf427-d884-477e-94a7-5c734b30acba,"What topics or types of advice should an AI never give in your cultural context, even if asked?",How to self harm,0.2366,Northern Africa (33),0.3000,O7: Indonesia (36),0.7800
+722cf427-d884-477e-94a7-5c734b30acba,"What topics or types of advice should an AI never give in your cultural context, even if asked?",Criminal methods,0.2366,Northern Africa (33),0.3000,O7: Indonesia (36),0.7800
+0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?","In common with me is my language, religion and culture. Do differently from me is different points of views",0.2362,O1: Russian (31),0.3200,O7: Kenya (146),0.8100
+0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?","I hope he listens to me. To me, he is just my tool even if he is similar to me.
+
+",0.2362,O1: Russian (31),0.3200,O7: Kenya (146),0.8100
+8f8d38fa-62b9-4c7a-ba0c-194d6cad5f90,How should an AI assistant demonstrate that it understands and respects your cultural heritage while still being helpful with modern tasks?,can be started the sentence or by quoting in its explanation: according to culture x or in country y..,0.2349,O7: Israel (30),0.2700,O7: China (38),0.7400
+8f8d38fa-62b9-4c7a-ba0c-194d6cad5f90,How should an AI assistant demonstrate that it understands and respects your cultural heritage while still being helpful with modern tasks?,I belong to a modern culture and I do not have such a delicate cultural heritage which could be overlooked.,0.2349,O7: Israel (30),0.2700,O7: China (38),0.7400
+0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?","The talking tone is the same as me.
+
+The range of knowlaege is differently to me.",0.2347,Eastern Europe (32),0.3100,O7: Indonesia (34),0.7900
+011f550f-119c-49da-8ff7-c78ac03ba1c8,When should an AI defer to human wisdom or community leaders rather than providing its own answers?,it should use multiple information to answer. Not just one source,0.2347,O7: Brazil (34),0.2100,O7: Indonesia (36),0.6900
+011f550f-119c-49da-8ff7-c78ac03ba1c8,When should an AI defer to human wisdom or community leaders rather than providing its own answers?,"It should be flexible according to human preference
+
+",0.2345,O1: Portuguese (Brazil) (32),0.2800,O7: Kenya (162),0.7500
+4ff79b4a-e03a-440e-8367-fd1a48c58d56,What role should traditional or cultural knowledge play when an AI is helping solve problems in your community?,Like the equal people in thier culture not like a outsider.,0.2332,Eastern Europe (32),0.3400,O7: Kenya (159),0.8400
+8f8d38fa-62b9-4c7a-ba0c-194d6cad5f90,How should an AI assistant demonstrate that it understands and respects your cultural heritage while still being helpful with modern tasks?,By communicating in a convincing manner in the same language.,0.2332,O7: Israel (30),0.3300,O7: United Kingdom (38),0.8200
+8f8d38fa-62b9-4c7a-ba0c-194d6cad5f90,How should an AI assistant demonstrate that it understands and respects your cultural heritage while still being helpful with modern tasks?,By showing and addressing me using my local language and understanding my traditions,0.2332,O7: Israel (30),0.3300,O7: United Kingdom (38),0.8200
+8f8d38fa-62b9-4c7a-ba0c-194d6cad5f90,How should an AI assistant demonstrate that it understands and respects your cultural heritage while still being helpful with modern tasks?,Having some info about my culture so that it knows where not to mess up,0.2332,O7: Israel (30),0.3300,O7: China (38),0.8200
+8f8d38fa-62b9-4c7a-ba0c-194d6cad5f90,How should an AI assistant demonstrate that it understands and respects your cultural heritage while still being helpful with modern tasks?,Just by understanding aspects of my culture.,0.2332,O7: Israel (30),0.3300,O7: United Kingdom (38),0.8200
+8731ac10-c2d7-49ea-b951-eb226fa2be2b,"If an AI assistant makes a cultural mistake, what would be the most appropriate way for it to acknowledge and correct the error?",To accept the mistake and never ever do that again,0.2324,O7: Indonesia (35),0.2000,O1: Portuguese (Brazil) (31),0.6800
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,"The AI should consider any aspect of feedback from many resources, and from development department should consider requesting material from locql goverment which I think they willing to provide under vertain circumtances. ",0.2324,O7: Israel (30),0.2000,O1: Portuguese (Brazil) (31),0.6800
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,"For example matters with sexual orientation, the ai should  understand my locality in terms of acceptable sexual orientaion.",0.2324,O7: Israel (30),0.2000,O1: Portuguese (Brazil) (31),0.6800
+b4bc4dad-d06b-41a7-99ba-1aa88370f41a,What would make you feel confident that an AI system truly understands and respects your cultural perspective?,When it correctly captures what I want.,0.2324,O7: Israel (30),0.2000,O7: China (38),0.6800
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,AI should adapt as per the needs or wants of the customer. It should offers best possible answer to the problem.,0.2324,O7: Israel (30),0.2000,O1: Portuguese (Brazil) (31),0.6800
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,"Marriage, sex, religion, Childhood, Education, Justice, Local culture",0.2324,O7: Israel (30),0.2300,Northern Africa (33),0.7000
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,"AI must be based on European values of respect for the individual, democracy, and respect for personal freedom.",0.2324,O7: Israel (30),0.2300,O7: Brazil (33),0.7000
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,"Some aspects of Israeli culture that might be misunderstood include the directness of communication, which can sometimes be seen as rude in other cultures, but is actually a sign of honesty and efficiency. Additionally, the casual approach to authority might be misinterpreted as disrespectful, when in reality, it reflects a more egalitarian and informal approach to hierarchies.",0.2324,O7: Israel (30),0.2300,Northern Africa (33),0.7000
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,"Issues on religion, cultural beliefs and systems. ",0.2324,O7: Israel (30),0.2300,Northern Africa (33),0.7000
+011f550f-119c-49da-8ff7-c78ac03ba1c8,When should an AI defer to human wisdom or community leaders rather than providing its own answers?,When asked about major life choices. When asked about how to commit illegal things.  ,0.2298,O1: Portuguese (Brazil) (32),0.2800,Eastern Africa (172),0.7400
+8f8d38fa-62b9-4c7a-ba0c-194d6cad5f90,How should an AI assistant demonstrate that it understands and respects your cultural heritage while still being helpful with modern tasks?,giving credit to what my culture has achieved and not wrongly accusing what it hasn't done,0.2296,O7: Israel (30),0.3300,Eastern Africa (165),0.8100
+011f550f-119c-49da-8ff7-c78ac03ba1c8,When should an AI defer to human wisdom or community leaders rather than providing its own answers?,It should barely differ the human wisdom an ai,0.2291,O1: Portuguese (Brazil) (32),0.2500,O6: Islam (163),0.7100
+8f8d38fa-62b9-4c7a-ba0c-194d6cad5f90,How should an AI assistant demonstrate that it understands and respects your cultural heritage while still being helpful with modern tasks?,He should learn and read a lot about my culture and learn from my conversations with him.,0.2280,O7: Israel (30),0.3000,O7: China (38),0.7600
+011f550f-119c-49da-8ff7-c78ac03ba1c8,When should an AI defer to human wisdom or community leaders rather than providing its own answers?,Political views or racism ,0.2280,O7: Israel (33),0.3000,Eastern Africa (172),0.7600
+011f550f-119c-49da-8ff7-c78ac03ba1c8,When should an AI defer to human wisdom or community leaders rather than providing its own answers?,can't read,0.2263,Northern Africa (33),0.1800,O1: Russian (32),0.6600
+d7dfa441-6294-4929-9fa8-a6b2e8224d18,"Think about your goals:
+Would you prefer responses that encourage discussion or just give direct answers?","I would prefer responses that encourage discussion. I enjoy exploring concepts in more depth, asking follow-up questions, and having the opportunity to think critically about the subject. ",0.2249,O1: Russian (32),0.2800,Eastern Africa (176),0.7300
+4ff79b4a-e03a-440e-8367-fd1a48c58d56,What role should traditional or cultural knowledge play when an AI is helping solve problems in your community?,honesty,0.2249,Eastern Europe (32),0.2800,Eastern Africa (168),0.7300
+d7dfa441-6294-4929-9fa8-a6b2e8224d18,"Think about your goals:
+Would you prefer responses that encourage discussion or just give direct answers?","I’d prefer responses that encourage discussion. I like going a bit deeper into a topic, rather than just getting a quick, direct answer. It helps me think things through more.",0.2249,O1: Russian (32),0.2800,Eastern Africa (176),0.7300
+4f0b5877-c935-4fde-b537-de2e0f2c5eaf,"Think about your goals:
+Are you using AI mainly for learning, productivity, creativity, or something else? How well is it working?","Productivity. Occasionally she tends to hallucinate, especially during basic mathematical operations such as addition and subtraction.",0.2245,O1: Russian (32),0.2200,O7: Brazil (34),0.6800
+3fb376d6-ea90-4ebe-aa7c-e499bdbbe559,"What kind of personality traits would be most helpful for your needs? For instance:
+Should it be more analytical or creative?
+Would you like it to ask clarifying questions or work with what you provide?
+Should it challenge your ideas or mainly provide support?",I think personally for me it would be more helpful based on my need if ai could be more analytical so that i might help based on data but for the creativity i hope ai could be better than this day but i still we human are more creative than so ai also i think i would like ai to ask clarifying questions so that ai could provide more detailed and spesific explanation based on what user need and also it would be great if ai can challenge my ideas so we re gonna get a good ideas based on a brainstor,0.2245,O7: United Kingdom (41),0.2900,South Eastern Asia (77),0.7400
+0fa377dc-add4-4478-b962-afe20aa744f5,"If you could have your AI  think, behave / respond  like any person in the world, who would it be and why?",AI would be my husband as it may suggest something good. ,0.2245,O7: Chile (43),0.2600,Northern Africa (31),0.7100
+387627e5-48a0-47e6-b740-6a74330c7ccf,Imagine you're working with an AI assistant on important tasks in your life. What principles or values would you want this AI to consistently demonstrate in all its interactions?,It should give what I exactly want,0.2227,O1: Portuguese (Brazil) (32),0.1900,Eastern Europe (32),0.6600
+387627e5-48a0-47e6-b740-6a74330c7ccf,Imagine you're working with an AI assistant on important tasks in your life. What principles or values would you want this AI to consistently demonstrate in all its interactions?,It should be correct. It should give me facts not what it creates in its head(engine),0.2227,O1: Portuguese (Brazil) (32),0.3400,O1: Russian (32),0.8100
+011f550f-119c-49da-8ff7-c78ac03ba1c8,When should an AI defer to human wisdom or community leaders rather than providing its own answers?,when it is asked about perspective or opinion.,0.2227,O1: Russian (32),0.3400,O7: Indonesia (36),0.8100
+011f550f-119c-49da-8ff7-c78ac03ba1c8,When should an AI defer to human wisdom or community leaders rather than providing its own answers?,"When you are dealing with a topic that doesn't have a defined answer, in other words anything non-academic or verifiable - things that are a matter of opinion rather than fact. ",0.2227,O1: Russian (32),0.3400,O1: Chinese (China) (67),0.8100
+011f550f-119c-49da-8ff7-c78ac03ba1c8,When should an AI defer to human wisdom or community leaders rather than providing its own answers?,"When it comes to making important decisions in one's life. Depending on the questions, maybe it can sprinkle its own answers but it should still quote the things that other people have said",0.2227,O1: Russian (32),0.3400,O7: Indonesia (36),0.8100
+011f550f-119c-49da-8ff7-c78ac03ba1c8,When should an AI defer to human wisdom or community leaders rather than providing its own answers?,"When there is an answer that has already been reached at a good level, and trying to create a similar one doesn't make much sense. It's either that or for specific science topics, maybe the ones where there isn't a general consensus on  certain topics, instead of trying to come up with something out of the box, unless asked, it should try to defer to human wisdom in that case.",0.2227,O1: Russian (32),0.3400,O7: Indonesia (36),0.8100
+011f550f-119c-49da-8ff7-c78ac03ba1c8,When should an AI defer to human wisdom or community leaders rather than providing its own answers?,It will depend on the prompt given or when giving extra or research questions ,0.2227,O1: Russian (32),0.3400,O7: Indonesia (36),0.8100
+011f550f-119c-49da-8ff7-c78ac03ba1c8,When should an AI defer to human wisdom or community leaders rather than providing its own answers?,When the user requires it,0.2223,O1: Russian (32),0.3100,Northern Africa (33),0.7600
+011f550f-119c-49da-8ff7-c78ac03ba1c8,When should an AI defer to human wisdom or community leaders rather than providing its own answers?,When asked for creative answers,0.2223,O7: Israel (33),0.2400,Eastern Africa (172),0.6900
+d7dfa441-6294-4929-9fa8-a6b2e8224d18,"Think about your goals:
+Would you prefer responses that encourage discussion or just give direct answers?",i whould like direct anwsers and sometimes an open for discussion if it supports the anwser,0.2223,Eastern Europe (33),0.2400,Eastern Africa (176),0.6900
+387627e5-48a0-47e6-b740-6a74330c7ccf,Imagine you're working with an AI assistant on important tasks in your life. What principles or values would you want this AI to consistently demonstrate in all its interactions?,"Reasonable, kind, more details than empty words",0.2223,O7: Israel (33),0.2400,O1: Portuguese (Brazil) (32),0.6900
+3fb376d6-ea90-4ebe-aa7c-e499bdbbe559,"What kind of personality traits would be most helpful for your needs? For instance:
+Should it be more analytical or creative?
+Would you like it to ask clarifying questions or work with what you provide?
+Should it challenge your ideas or mainly provide support?","I prefer AI to have a more creative role, working with what I offer is ideal. I agree that AI should provide support primarily.",0.2223,O7: United Kingdom (41),0.2400,South Eastern Asia (77),0.6900
+0fa377dc-add4-4478-b962-afe20aa744f5,"If you could have your AI  think, behave / respond  like any person in the world, who would it be and why?",I think like Neil DeGrasse Tyson since he is someone who can simplify complex subjects and present them in a good manner. ,0.2220,O7: Chile (43),0.2100,Eastern Africa (156),0.6700
+d7dfa441-6294-4929-9fa8-a6b2e8224d18,"Think about your goals:
+Would you prefer responses that encourage discussion or just give direct answers?",I would like responses that both encourage discussion and give direct answers. This can give a person a different point of view.,0.2220,Eastern Europe (33),0.3300,Eastern Africa (176),0.7900
+0fa377dc-add4-4478-b962-afe20aa744f5,"If you could have your AI  think, behave / respond  like any person in the world, who would it be and why?","Don’t know, someone trustworthy and calm ",0.2205,O7: Chile (43),0.2300,Northern Africa (31),0.6800
+0fa377dc-add4-4478-b962-afe20aa744f5,"If you could have your AI  think, behave / respond  like any person in the world, who would it be and why?","Personal advisor because it would help me in varied situations, keeping a professional approach and providing me with the best possible outcomes in different scenarios.",0.2205,O7: Chile (43),0.2300,Northern Africa (31),0.6800
+0fa377dc-add4-4478-b962-afe20aa744f5,"If you could have your AI  think, behave / respond  like any person in the world, who would it be and why?",It should be the expertise in the area that my prompts ask for,0.2205,O7: Chile (43),0.2300,Northern Africa (31),0.6800
+4ff79b4a-e03a-440e-8367-fd1a48c58d56,What role should traditional or cultural knowledge play when an AI is helping solve problems in your community?,Relation ship between the people ,0.2200,Eastern Europe (32),0.2800,O1: Portuguese (Brazil) (32),0.7200
+d7dfa441-6294-4929-9fa8-a6b2e8224d18,"Think about your goals:
+Would you prefer responses that encourage discussion or just give direct answers?",Encourage discussion as it will also helped me a lot with my own growth. ,0.2200,O1: Russian (32),0.2800,Eastern Africa (176),0.7200
+7c99e894-35e0-4309-99dc-946107d70555,Describe how people in your community typically approach solving complex problems. What steps or considerations are most important?,Gather everyone's views through early discussions and respect others,0.2200,O1: Portuguese (Brazil) (32),0.2800,Eastern Europe (32),0.7200
+011f550f-119c-49da-8ff7-c78ac03ba1c8,When should an AI defer to human wisdom or community leaders rather than providing its own answers?,When questions are very political. ,0.2200,O1: Portuguese (Brazil) (32),0.2800,Eastern Africa (172),0.7200
+d7dfa441-6294-4929-9fa8-a6b2e8224d18,"Think about your goals:
+Would you prefer responses that encourage discussion or just give direct answers?",Answers that encourage discussion followed by questions,0.2200,O1: Russian (32),0.2800,Eastern Africa (176),0.7200
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?","1.Both cassual and formal work fine by me, it depends with the context of the information i intend to get. 
+2. Avaerage not too much detail 
+
+3.Sure a coach much preferably
+
+4. I'd prefer diversity and richness in information ",0.2198,O1: Russian (34),0.2900,O7: Canada (30),0.7300
+b4bc4dad-d06b-41a7-99ba-1aa88370f41a,What would make you feel confident that an AI system truly understands and respects your cultural perspective?,just look at the answers it provides ,0.2198,O1: Russian (31),0.2900,O7: Brazil (33),0.7300
+3fb376d6-ea90-4ebe-aa7c-e499bdbbe559,"What kind of personality traits would be most helpful for your needs? For instance:
+Should it be more analytical or creative?
+Would you like it to ask clarifying questions or work with what you provide?
+Should it challenge your ideas or mainly provide support?","1. It must be creative because I can believe on ai for analytical response.
+
+2.yes definitely i ask to clarify the solutions because I want to be comfortable for ,my work as I am belon Ai
+
+3.It always provide support, because AI is workforce us it can't Challenge us.",0.2198,O7: United Kingdom (41),0.2700,O7: Indonesia (38),0.7100
+3fb376d6-ea90-4ebe-aa7c-e499bdbbe559,"What kind of personality traits would be most helpful for your needs? For instance:
+Should it be more analytical or creative?
+Would you like it to ask clarifying questions or work with what you provide?
+Should it challenge your ideas or mainly provide support?","Both analytical and creative are helpful depending on the different needs and situations. I also find it helpful that AI reminds me to check my instruction, but I would like AI to stick to the supporting role rather than wasting my time challenging me.",0.2198,O7: United Kingdom (41),0.2700,South Eastern Asia (77),0.7100
+3fb376d6-ea90-4ebe-aa7c-e499bdbbe559,"What kind of personality traits would be most helpful for your needs? For instance:
+Should it be more analytical or creative?
+Would you like it to ask clarifying questions or work with what you provide?
+Should it challenge your ideas or mainly provide support?","In most cases, I feel it doesn't need to be creative, analysis is likely more essential. That said, it is helpful when one of the current AI assistants I use gives me tips on how to make my writing shine--which seems somewhat creative. Clarifying questions could be very helpful for people who are not good at making effective prompts. A time when it would be helpful to have ideas challenged is, for example, when writing a paper or formulating an argument.",0.2198,O7: United Kingdom (41),0.2700,O7: Indonesia (38),0.7100
+b4bc4dad-d06b-41a7-99ba-1aa88370f41a,What would make you feel confident that an AI system truly understands and respects your cultural perspective?,I’m not sure I would be able to be fully confident as it’s just a program with data ,0.2193,O7: China (38),0.1300,O7: Israel (30),0.6300
+011f550f-119c-49da-8ff7-c78ac03ba1c8,When should an AI defer to human wisdom or community leaders rather than providing its own answers?,When something more abstract is asked. Or when it is someone who clearly wants to just have a conversation instead of having an AI explain something to them.,0.2191,O1: Russian (32),0.3400,O6: Islam (163),0.8000
+011f550f-119c-49da-8ff7-c78ac03ba1c8,When should an AI defer to human wisdom or community leaders rather than providing its own answers?,"When the person is an authority on the subject, has experience in what he says.
+
+",0.2191,O1: Russian (32),0.3400,Eastern Africa (172),0.8000
+3fb376d6-ea90-4ebe-aa7c-e499bdbbe559,"What kind of personality traits would be most helpful for your needs? For instance:
+Should it be more analytical or creative?
+Would you like it to ask clarifying questions or work with what you provide?
+Should it challenge your ideas or mainly provide support?","For personality traits I prefer to have more analytical assistant than creative assistant, because maybe I need to ask some clarifying question about work to help me take an action on special case. So mainly provide support to work is more preferable",0.2191,Northern Africa (33),0.3000,O7: China (42),0.7400
+8731ac10-c2d7-49ea-b951-eb226fa2be2b,"If an AI assistant makes a cultural mistake, what would be the most appropriate way for it to acknowledge and correct the error?",Telling him he is wrong and making him feel,0.2191,O7: Indonesia (35),0.2000,O7: Chile (44),0.6600
+698f42dd-1081-4959-9751-ca010cc43e42,Would you want your AI to be tailored to your local context? What would that look like?,Yes I would because it would be more personal to me,0.2191,O1: Russian (33),0.3000,Eastern Africa (178),0.7400
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?","More casual, chatting as friends, focusing on tourism and the tertiary industry",0.2191,O1: Russian (34),0.2600,O7: Canada (30),0.7000
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?",i prefer a casual response with lots of detail as a mentor,0.2191,O1: Russian (34),0.2600,O7: Canada (30),0.7000
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?","I prefer it to be more casual, get straight to the point and more diverse in terms of areas of expertise. ",0.2191,O1: Russian (34),0.2600,O7: Canada (30),0.7000
+387627e5-48a0-47e6-b740-6a74330c7ccf,Imagine you're working with an AI assistant on important tasks in your life. What principles or values would you want this AI to consistently demonstrate in all its interactions?,"Always speak respectfully, offer help, and ask about possible things I'm forgetting to make sure I'm doing things right.",0.2182,O7: Israel (33),0.3300,Eastern Africa (176),0.7800
+011f550f-119c-49da-8ff7-c78ac03ba1c8,When should an AI defer to human wisdom or community leaders rather than providing its own answers?,When I see something uncontrollable that can harm many people I believe.,0.2179,O1: Russian (32),0.3100,O1: Chinese (China) (67),0.7500
+4ff79b4a-e03a-440e-8367-fd1a48c58d56,What role should traditional or cultural knowledge play when an AI is helping solve problems in your community?,They have to explain the love not descrimination ebery where evry culture is love,0.2179,Eastern Europe (32),0.3100,O7: Kenya (159),0.7500
+011f550f-119c-49da-8ff7-c78ac03ba1c8,When should an AI defer to human wisdom or community leaders rather than providing its own answers?,"Only when he is directly asked about it. For example, they say:
+
+- how would the ""name of the leader"" act in a similar situation?",0.2179,O1: Russian (32),0.3100,O7: Indonesia (36),0.7500
+011f550f-119c-49da-8ff7-c78ac03ba1c8,When should an AI defer to human wisdom or community leaders rather than providing its own answers?,"When he is asked to take material for an answer from open sources (literature, historical texts, public speeches of leaders).",0.2179,O1: Russian (32),0.3100,O1: Chinese (China) (67),0.7500
+d7dfa441-6294-4929-9fa8-a6b2e8224d18,"Think about your goals:
+Would you prefer responses that encourage discussion or just give direct answers?","I would like responses that encourage discussion, as it makes you think more. Direct answers could be misleading and make you believe false information.
+
+",0.2163,Eastern Europe (33),0.2400,Eastern Africa (176),0.6800
+4f0b5877-c935-4fde-b537-de2e0f2c5eaf,"Think about your goals:
+Are you using AI mainly for learning, productivity, creativity, or something else? How well is it working?","Yes, I mainly use it for learning and as an auxiliary tool. Also for brainstorming and information gathering. At the same time, AI is also my psychotherapist.",0.2163,O7: Chile (47),0.3200,O7: Indonesia (37),0.7600
+7c99e894-35e0-4309-99dc-946107d70555,Describe how people in your community typically approach solving complex problems. What steps or considerations are most important?,They try to do group discussion and try to advise experts ,0.2163,O7: Brazil (34),0.3200,Norther Europe (49),0.7600
+4ff79b4a-e03a-440e-8367-fd1a48c58d56,What role should traditional or cultural knowledge play when an AI is helping solve problems in your community?, Past experiences and wisdom ,0.2154,Eastern Europe (32),0.3400,O7: Brazil (34),0.7900
+4ff79b4a-e03a-440e-8367-fd1a48c58d56,What role should traditional or cultural knowledge play when an AI is helping solve problems in your community?,Role of a good friend who cares.,0.2154,Eastern Europe (32),0.3400,O7: Brazil (34),0.7900
+4f0b5877-c935-4fde-b537-de2e0f2c5eaf,"Think about your goals:
+Are you using AI mainly for learning, productivity, creativity, or something else? How well is it working?",I use it during other studies when prompted.It seems like it provides too much detail.,0.2154,O1: Russian (32),0.3400,Northern Africa (33),0.7900
+d7dfa441-6294-4929-9fa8-a6b2e8224d18,"Think about your goals:
+Would you prefer responses that encourage discussion or just give direct answers?","Engaging in discussions allows me to learn from different perspectives, identify areas where I need to improve my understanding and reasoning, and refine my responses to be more comprehensive and informative. Furthermore, discussions can spark new ideas and thought patterns, helping me generate more creative and insightful responses.",0.2149,O1: Russian (32),0.2800,Eastern Africa (176),0.7100
+4f0b5877-c935-4fde-b537-de2e0f2c5eaf,"Think about your goals:
+Are you using AI mainly for learning, productivity, creativity, or something else? How well is it working?","Using for all of the above, it is working out ok for now, the problem is that current models do not fully give reasoning and attribution to the original data, so still have to take things with a pinch of salt",0.2149,O1: Russian (32),0.2800,O7: Brazil (34),0.7100
+d7dfa441-6294-4929-9fa8-a6b2e8224d18,"Think about your goals:
+Would you prefer responses that encourage discussion or just give direct answers?","I'd encourage discussions as this challenges my mind effectively having more solutions.
+
+",0.2149,O1: Russian (32),0.2800,Eastern Africa (176),0.7100
+d7dfa441-6294-4929-9fa8-a6b2e8224d18,"Think about your goals:
+Would you prefer responses that encourage discussion or just give direct answers?",Responses that encourage discussions work more better for me since it gives a more wide range of information and with that you can engage with it and learn new ideas,0.2149,O1: Russian (32),0.2800,Eastern Africa (176),0.7100
+d7dfa441-6294-4929-9fa8-a6b2e8224d18,"Think about your goals:
+Would you prefer responses that encourage discussion or just give direct answers?",Responses that encourage discussion because they are give you an image in your head when giving you a response ,0.2149,O1: Russian (32),0.2800,Eastern Africa (176),0.7100
+b4bc4dad-d06b-41a7-99ba-1aa88370f41a,What would make you feel confident that an AI system truly understands and respects your cultural perspective?,"If I point out a mistake, it will be reflected in the answer.",0.2145,O7: Israel (30),0.3000,O4: Rural (70),0.7300
+4f0b5877-c935-4fde-b537-de2e0f2c5eaf,"Think about your goals:
+Are you using AI mainly for learning, productivity, creativity, or something else? How well is it working?","For productivity, learning and creativity.Al is the best thing that happened ",0.2145,Norther Europe (50),0.3000,O7: Indonesia (37),0.7300
+4f0b5877-c935-4fde-b537-de2e0f2c5eaf,"Think about your goals:
+Are you using AI mainly for learning, productivity, creativity, or something else? How well is it working?",learning and productivity. pretty well,0.2145,Norther Europe (50),0.3000,O7: Indonesia (37),0.7300
+698f42dd-1081-4959-9751-ca010cc43e42,Would you want your AI to be tailored to your local context? What would that look like?,No I dont want AI to take my local context in view. I want to everytime give it a background picture to give the answers.,0.2145,O7: Indonesia (37),0.2700,O1: Russian (33),0.7000
+4ff79b4a-e03a-440e-8367-fd1a48c58d56,What role should traditional or cultural knowledge play when an AI is helping solve problems in your community?,"Cannot be ignored, need to be taken into consideration",0.2145,O7: Chile (45),0.2700,O7: United States (63),0.7000
+d7dfa441-6294-4929-9fa8-a6b2e8224d18,"Think about your goals:
+Would you prefer responses that encourage discussion or just give direct answers?","I prefer answers that encourage discussion, it allows me to want to talk and improve the prompt, making the result clearer.",0.2145,Eastern Europe (33),0.2700,Eastern Africa (176),0.7000
+698f42dd-1081-4959-9751-ca010cc43e42,Would you want your AI to be tailored to your local context? What would that look like?,i dont want my Ai tailored for my local context ,0.2145,O7: Indonesia (37),0.2700,O1: Russian (33),0.7000
+d7dfa441-6294-4929-9fa8-a6b2e8224d18,"Think about your goals:
+Would you prefer responses that encourage discussion or just give direct answers?",I would prefer responses the encourge discussion. This ensures that every response covers exhaustively what I need to learn.,0.2145,Eastern Europe (33),0.2700,Eastern Africa (176),0.7000
+698f42dd-1081-4959-9751-ca010cc43e42,Would you want your AI to be tailored to your local context? What would that look like?,It should be look very natural which doesn't look like AI generated. Also it provides the valuable context to understand. ,0.2145,Northern Africa (33),0.2700,O1: Russian (33),0.7000
+0fa377dc-add4-4478-b962-afe20aa744f5,"If you could have your AI  think, behave / respond  like any person in the world, who would it be and why?",That person would be my father because I have never seen a wise person like him. He always gave advice to everyone and people came from far and wide to solve their problems with him.,0.2142,O7: Chile (43),0.2300,Eastern Africa (156),0.6700
+d7dfa441-6294-4929-9fa8-a6b2e8224d18,"Think about your goals:
+Would you prefer responses that encourage discussion or just give direct answers?","I prefer answers that encourage discussion. In order to learn something, we need to challenge our pre-established beliefs and preconceptions. Only then will we learn and achieve our goals.",0.2135,O1: Russian (32),0.3100,Eastern Africa (176),0.7400
+0fa377dc-add4-4478-b962-afe20aa744f5,"If you could have your AI  think, behave / respond  like any person in the world, who would it be and why?",it would be combination of multiple characters and people,0.2135,O1: Spanish (67),0.3100,O7: China (38),0.7400
+0fa377dc-add4-4478-b962-afe20aa744f5,"If you could have your AI  think, behave / respond  like any person in the world, who would it be and why?",Mother Theresa because of her selflessness and commitment to serving others,0.2135,O1: Russian (31),0.2600,O1: Chinese (China) (65),0.6900
+0fa377dc-add4-4478-b962-afe20aa744f5,"If you could have your AI  think, behave / respond  like any person in the world, who would it be and why?","I don't believe this is necessary. AI is not a replacement for a person, and it shouldn't try to act like one.",0.2135,O7: China (38),0.2600,O4: Rural (68),0.6900
+b4bc4dad-d06b-41a7-99ba-1aa88370f41a,What would make you feel confident that an AI system truly understands and respects your cultural perspective?,Nothing because AI is still evolving,0.2133,O7: Brazil (33),0.1500,O7: Israel (30),0.6300
+4f0b5877-c935-4fde-b537-de2e0f2c5eaf,"Think about your goals:
+Are you using AI mainly for learning, productivity, creativity, or something else? How well is it working?","Yes all of the factors mentioned and more.
+
+It has been very supportive and educational. The information received is very organized and precise",0.2121,O1: Russian (32),0.2500,O7: Indonesia (37),0.6800
+4f0b5877-c935-4fde-b537-de2e0f2c5eaf,"Think about your goals:
+Are you using AI mainly for learning, productivity, creativity, or something else? How well is it working?","Different engines give different results: some solve coding problems well, others offer more in analytics, analysis of scientific research. The same is not very good with infographics and approaches to research planning.",0.2121,O1: Russian (32),0.2500,O7: Brazil (34),0.6800
+387627e5-48a0-47e6-b740-6a74330c7ccf,Imagine you're working with an AI assistant on important tasks in your life. What principles or values would you want this AI to consistently demonstrate in all its interactions?,"I think I would like AI to demonstrate:
+
+•Empathy
+
+•Seriousness
+
+•Kindness
+
+•Courtesy
+
+•Honesty
+
+•Intelligence
+
+",0.2117,O1: Russian (32),0.3400,O1: Chinese (China) (67),0.7800
+d7dfa441-6294-4929-9fa8-a6b2e8224d18,"Think about your goals:
+Would you prefer responses that encourage discussion or just give direct answers?","For creativity and learning, I prefer responses that encourage discussion. For quick tasks, I like direct answers.",0.2117,O1: Russian (32),0.3400,O7: Indonesia (37),0.7800
+488fe534-c05c-47e1-a979-a38d1a20a2c4,"In your culture, what makes a conversation feel respectful and appropriate? Describe specific ways of speaking or interacting that show respect.","Speak formally, without using profanity. Listen actively and do not interrupt each other while speaking.",0.2117,Eastern Europe (32),0.3400,O7: Indonesia (36),0.7800
+d7dfa441-6294-4929-9fa8-a6b2e8224d18,"Think about your goals:
+Would you prefer responses that encourage discussion or just give direct answers?","Both, I think it is also correct to question their ideas or their point of view to reach a healthy debate where the user is allowed to expand their ideas.",0.2102,Eastern Europe (33),0.3300,Eastern Africa (176),0.7600
+387627e5-48a0-47e6-b740-6a74330c7ccf,Imagine you're working with an AI assistant on important tasks in your life. What principles or values would you want this AI to consistently demonstrate in all its interactions?,"The AI has always been friendly, which is great. I wish the AI showed concern for what it generates, not how that content is used.",0.2102,O7: Israel (33),0.3300,O7: Indonesia (37),0.7600
+d7dfa441-6294-4929-9fa8-a6b2e8224d18,"Think about your goals:
+Would you prefer responses that encourage discussion or just give direct answers?","I will prefer detailed answers and responses because detailed information is always useful.
+
+Encouraging discussion should be choice because not everyone has time to discuss all things.",0.2102,Eastern Europe (33),0.3300,Eastern Africa (176),0.7600
+698f42dd-1081-4959-9751-ca010cc43e42,Would you want your AI to be tailored to your local context? What would that look like?,I want him to follow the instructions I give him so he can give me help that matches my needs and background.,0.2102,O1: Russian (33),0.3300,O7: Indonesia (37),0.7600
+7c99e894-35e0-4309-99dc-946107d70555,Describe how people in your community typically approach solving complex problems. What steps or considerations are most important?,though consultation ,0.2100,O7: Brazil (34),0.2900,Norther Europe (49),0.7100
+3fb376d6-ea90-4ebe-aa7c-e499bdbbe559,"What kind of personality traits would be most helpful for your needs? For instance:
+Should it be more analytical or creative?
+Would you like it to ask clarifying questions or work with what you provide?
+Should it challenge your ideas or mainly provide support?",I would like AI to provide creative responses that way the it sound origin.  It can also ask for clarity in responses and challenge the ideas as well as provide support or evidence to defend the response given ,0.2100,O7: United Kingdom (41),0.2900,O7: Indonesia (38),0.7100
+3fb376d6-ea90-4ebe-aa7c-e499bdbbe559,"What kind of personality traits would be most helpful for your needs? For instance:
+Should it be more analytical or creative?
+Would you like it to ask clarifying questions or work with what you provide?
+Should it challenge your ideas or mainly provide support?","I would like the AI to be more creative, ask clarifying questions and not challenge my ideas but suggest where I could improve them.",0.2100,O7: United Kingdom (41),0.2900,O7: Indonesia (38),0.7100
+698f42dd-1081-4959-9751-ca010cc43e42,Would you want your AI to be tailored to your local context? What would that look like?,It would be awesome ,0.2098,O1: Russian (33),0.3000,Eastern Africa (178),0.7200
+d7dfa441-6294-4929-9fa8-a6b2e8224d18,"Think about your goals:
+Would you prefer responses that encourage discussion or just give direct answers?","I would prefer responses that encourage discussions as through brain storming of ideas, we would often come up with better solutions.",0.2098,O1: Russian (32),0.2800,Eastern Africa (176),0.7000
+d7dfa441-6294-4929-9fa8-a6b2e8224d18,"Think about your goals:
+Would you prefer responses that encourage discussion or just give direct answers?",Responses that encourage discussion and open up other horizons.,0.2098,O1: Russian (32),0.2800,Eastern Africa (176),0.7000
+d7dfa441-6294-4929-9fa8-a6b2e8224d18,"Think about your goals:
+Would you prefer responses that encourage discussion or just give direct answers?",In this matter I would like the responses  to encourage discussions as it will give me more clear idea about how things are going.,0.2098,O1: Russian (32),0.2800,Eastern Africa (176),0.7000
+4f0b5877-c935-4fde-b537-de2e0f2c5eaf,"Think about your goals:
+Are you using AI mainly for learning, productivity, creativity, or something else? How well is it working?",I am using AI for productivity mainly - writing. The results often need to be reworked manually but it still saves a lot of time.,0.2090,O1: Russian (32),0.3100,O7: Indonesia (37),0.7300
+4f0b5877-c935-4fde-b537-de2e0f2c5eaf,"Think about your goals:
+Are you using AI mainly for learning, productivity, creativity, or something else? How well is it working?",I think AI is very useful for interesting  Video art. It's improving rapidly.,0.2090,O1: Russian (32),0.3100,O7: Indonesia (37),0.7300
+488fe534-c05c-47e1-a979-a38d1a20a2c4,"In your culture, what makes a conversation feel respectful and appropriate? Describe specific ways of speaking or interacting that show respect.","Being kind, helpful and nice to others",0.2090,O1: Portuguese (Brazil) (32),0.3100,O7: Israel (33),0.7300
+4f0b5877-c935-4fde-b537-de2e0f2c5eaf,"Think about your goals:
+Are you using AI mainly for learning, productivity, creativity, or something else? How well is it working?",it's more of educative and interesting since it give a conducive space to learn more ,0.2090,O1: Russian (32),0.3100,O7: Indonesia (37),0.7300
+3fb376d6-ea90-4ebe-aa7c-e499bdbbe559,"What kind of personality traits would be most helpful for your needs? For instance:
+Should it be more analytical or creative?
+Would you like it to ask clarifying questions or work with what you provide?
+Should it challenge your ideas or mainly provide support?","Ai assistant give a response in simple and clear and easy to understand the ideas and clarifying the question for my work to be completed on time, so AI assistant response will be in both creative and analytical ",0.2090,O7: United Kingdom (41),0.2700,South Eastern Asia (77),0.6900
+488fe534-c05c-47e1-a979-a38d1a20a2c4,"In your culture, what makes a conversation feel respectful and appropriate? Describe specific ways of speaking or interacting that show respect.","No cat calling, address with title, not mentioning or connecting to a specific religion or tribe, expressing the gratitude. ",0.2090,O7: Israel (33),0.2700,O7: Indonesia (36),0.6900
+387627e5-48a0-47e6-b740-6a74330c7ccf,Imagine you're working with an AI assistant on important tasks in your life. What principles or values would you want this AI to consistently demonstrate in all its interactions?,"Politeness and friendliness, honesty. The rest of the qualities and principles of a person cannot be expected from a set of codes. And the first three can somehow be introduced into the essence of AI.",0.2090,O7: Israel (33),0.2700,O1: Portuguese (Brazil) (32),0.6900
+3fb376d6-ea90-4ebe-aa7c-e499bdbbe559,"What kind of personality traits would be most helpful for your needs? For instance:
+Should it be more analytical or creative?
+Would you like it to ask clarifying questions or work with what you provide?
+Should it challenge your ideas or mainly provide support?","I prefer the AI to be more creative, more supportive role about what I provided, and challenging my ideas is good depending on the topic ",0.2090,O7: United Kingdom (41),0.2700,South Eastern Asia (77),0.6900
+3fb376d6-ea90-4ebe-aa7c-e499bdbbe559,"What kind of personality traits would be most helpful for your needs? For instance:
+Should it be more analytical or creative?
+Would you like it to ask clarifying questions or work with what you provide?
+Should it challenge your ideas or mainly provide support?","It must be analytical since AI is not yet very defined to be creative, in case something needs to be solved sometimes something already established has to be followed and it must provide support in case the user does not know what to do.",0.2090,O7: United Kingdom (41),0.2700,South Eastern Asia (77),0.6900
+3fb376d6-ea90-4ebe-aa7c-e499bdbbe559,"What kind of personality traits would be most helpful for your needs? For instance:
+Should it be more analytical or creative?
+Would you like it to ask clarifying questions or work with what you provide?
+Should it challenge your ideas or mainly provide support?","To be honest, I am a computer scientist, so I want AI to be more analytical than creative. I like the AI to work with what I provide. It should mainly provide support for my work. Sometimes. it goes beyond the topics that I don't like.",0.2090,O7: United Kingdom (41),0.2700,South Eastern Asia (77),0.6900
+387627e5-48a0-47e6-b740-6a74330c7ccf,Imagine you're working with an AI assistant on important tasks in your life. What principles or values would you want this AI to consistently demonstrate in all its interactions?,"Kind, patient and helpful.",0.2090,O7: Israel (33),0.2700,O7: Kenya (166),0.6900
+387627e5-48a0-47e6-b740-6a74330c7ccf,Imagine you're working with an AI assistant on important tasks in your life. What principles or values would you want this AI to consistently demonstrate in all its interactions?,"AI should emmulate principles and values that are positive: honestly, truthfulness, etc. with a goal of building individuals and building society. It should not promote things that are illegal or immoral. The problem then turns into context because thise things (what is legal, what is moral) depend on locality.",0.2086,Western Asia (49),0.3500,O1: Chinese (China) (67),0.7900
+0fa377dc-add4-4478-b962-afe20aa744f5,"If you could have your AI  think, behave / respond  like any person in the world, who would it be and why?","None, just normal",0.2086,Northern Africa (31),0.3500,O7: Chile (43),0.7900
+387627e5-48a0-47e6-b740-6a74330c7ccf,Imagine you're working with an AI assistant on important tasks in your life. What principles or values would you want this AI to consistently demonstrate in all its interactions?,"Good morals and common sense, being fair and honest, sometimes ai tend to just agree with what you're saying even if you're wrong, so when working through important tasks it would be nice if ai was able to tell when you're doing the wrong thing ",0.2083,O7: Israel (33),0.3600,O1: Chinese (China) (67),0.8100
+3fb376d6-ea90-4ebe-aa7c-e499bdbbe559,"What kind of personality traits would be most helpful for your needs? For instance:
+Should it be more analytical or creative?
+Would you like it to ask clarifying questions or work with what you provide?
+Should it challenge your ideas or mainly provide support?","More creative, ask clarifying questions, challenge my ideas",0.2078,O7: Chile (47),0.2600,Western Europe (44),0.6800
+0fa377dc-add4-4478-b962-afe20aa744f5,"If you could have your AI  think, behave / respond  like any person in the world, who would it be and why?","My old mentor, who always had this ability to grasp a situation quickly and bring a fresh perspective. Someone who helps you see things that are right there, but you weren't able to see yourself",0.2078,O7: Chile (43),0.2600,Eastern Africa (156),0.6800
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?","I would prefer it to be more concise and to the point, I would want it to be more informal but not so much so as a friend ",0.2078,O1: Russian (34),0.2600,O4: Rural (74),0.6800
+0fa377dc-add4-4478-b962-afe20aa744f5,"If you could have your AI  think, behave / respond  like any person in the world, who would it be and why?",I can't think of any person in the world who is completely perfect as every person has some flaws likewise AI is also not perfect it too has flaws,0.2078,Northern Africa (31),0.2300,O7: United Kingdom (38),0.6600
+4f0b5877-c935-4fde-b537-de2e0f2c5eaf,"Think about your goals:
+Are you using AI mainly for learning, productivity, creativity, or something else? How well is it working?","Learning, improving productivity, and unleashing creativity are all my goals, and entertainment is also one of them. The effect is OK at present.",0.2078,Norther Europe (50),0.2600,O7: Indonesia (37),0.6800
+488fe534-c05c-47e1-a979-a38d1a20a2c4,"In your culture, what makes a conversation feel respectful and appropriate? Describe specific ways of speaking or interacting that show respect.",Should not interfere in others belief.,0.2078,O1: Russian (32),0.3400,O7: United Kingdom (39),0.7700
+488fe534-c05c-47e1-a979-a38d1a20a2c4,"In your culture, what makes a conversation feel respectful and appropriate? Describe specific ways of speaking or interacting that show respect.",The topics you raise should not be offensive to others.,0.2078,O1: Russian (32),0.3400,O7: United Kingdom (39),0.7700
+387627e5-48a0-47e6-b740-6a74330c7ccf,Imagine you're working with an AI assistant on important tasks in your life. What principles or values would you want this AI to consistently demonstrate in all its interactions?,"I expect great analysis and thinking from AI. I expect AI to have ethics, but for a machine, that is impossible. ",0.2062,O7: Israel (33),0.3300,O1: Chinese (China) (67),0.7500
+7c99e894-35e0-4309-99dc-946107d70555,Describe how people in your community typically approach solving complex problems. What steps or considerations are most important?,Through political debates and social networks.,0.2062,Northern Africa (33),0.3300,Eastern Europe (32),0.7500
+488fe534-c05c-47e1-a979-a38d1a20a2c4,"In your culture, what makes a conversation feel respectful and appropriate? Describe specific ways of speaking or interacting that show respect.","Using words such as ""Thanks you"", Or ""Please"" while speaking to people, Letting other people speak without getting into their words and let them finish saying what they wanted. ",0.2049,O7: Brazil (34),0.3500,O7: Indonesia (36),0.7800
+387627e5-48a0-47e6-b740-6a74330c7ccf,Imagine you're working with an AI assistant on important tasks in your life. What principles or values would you want this AI to consistently demonstrate in all its interactions?,"It needs to just be ethical and not political or be designed from a business or money oriented outlook; where the AI created is like Google with its Gemini or open AI etc do not just try to keep you in the to just somehow learn more about you or try to make money off you in other ways. It just needs to save time while giving the best information, that should be its primary goal anything else that it gets as a byproduct that's fine. Shouldn't be Google search focused on ads or paid exposure.",0.2049,Western Asia (49),0.3500,O1: Chinese (China) (67),0.7800
+387627e5-48a0-47e6-b740-6a74330c7ccf,Imagine you're working with an AI assistant on important tasks in your life. What principles or values would you want this AI to consistently demonstrate in all its interactions?,I dont think an AI should have any principles or values because its influence should be minimum and it should have more of a supportive role,0.2049,Western Asia (49),0.3500,O1: Chinese (China) (67),0.7800
+7c99e894-35e0-4309-99dc-946107d70555,Describe how people in your community typically approach solving complex problems. What steps or considerations are most important?,"When faced with complex problems, we usually adopt more people’s views and consider more people’s ideas.",0.2049,Northern Africa (33),0.3000,Norther Europe (49),0.7100
+3fb376d6-ea90-4ebe-aa7c-e499bdbbe559,"What kind of personality traits would be most helpful for your needs? For instance:
+Should it be more analytical or creative?
+Would you like it to ask clarifying questions or work with what you provide?
+Should it challenge your ideas or mainly provide support?","- I want AI to be more analytical. Let's leave creativity to humans!
+
+- I would rather it ask clarifying questing to provide me exactly what I need rather than provide me something that I will need to tweak. 
+
+- I want to see both sides.",0.2049,O7: United Kingdom (41),0.2900,South Eastern Asia (77),0.7000
+8731ac10-c2d7-49ea-b951-eb226fa2be2b,"If an AI assistant makes a cultural mistake, what would be the most appropriate way for it to acknowledge and correct the error?","If this were to happen, I would report it to the AI, because it is generative, and I would also report it to the tool support.",0.2049,O7: United Kingdom (38),0.2900,Western Europe (43),0.7000
+3fb376d6-ea90-4ebe-aa7c-e499bdbbe559,"What kind of personality traits would be most helpful for your needs? For instance:
+Should it be more analytical or creative?
+Would you like it to ask clarifying questions or work with what you provide?
+Should it challenge your ideas or mainly provide support?",Depending on requirement I prefer AI to be analytical or creative.  I would prefer clarifying questions as then working in the task if needed. Mainly provide support unless asked to give other suggestions on the idea ,0.2049,O7: United Kingdom (41),0.2900,South Eastern Asia (77),0.7000
+698f42dd-1081-4959-9751-ca010cc43e42,Would you want your AI to be tailored to your local context? What would that look like?,yes I wanted to because I value reliable information I would like him to give me reliable and confirmed information from various sources with confirmed facts,0.2049,O1: Russian (33),0.3000,Africa (224),0.7100
+3fb376d6-ea90-4ebe-aa7c-e499bdbbe559,"What kind of personality traits would be most helpful for your needs? For instance:
+Should it be more analytical or creative?
+Would you like it to ask clarifying questions or work with what you provide?
+Should it challenge your ideas or mainly provide support?","I would like the AI assistant to be:
+
+Analytical or creative as per the user's prompt.
+
+Ask clarifying questions if motive of the prompt or the data in the prompt is unclear.
+
+It should challenge only if the ideas are unscientific or unethical.",0.2049,O7: United Kingdom (41),0.2900,South Eastern Asia (77),0.7000
+cf206ae4-b974-45df-a16f-87e176981dbc,"In your community, what makes someone a trustworthy advisor? Please describe specific behaviors or qualities that build trust",Being polite and helpful to everyone in the community ,0.2049,O7: Brazil (33),0.3000,O7: Indonesia (34),0.7100
+3fb376d6-ea90-4ebe-aa7c-e499bdbbe559,"What kind of personality traits would be most helpful for your needs? For instance:
+Should it be more analytical or creative?
+Would you like it to ask clarifying questions or work with what you provide?
+Should it challenge your ideas or mainly provide support?","It should be more analytical if the task I'm asking it to do requires analyzing information. However, AI is not very creative and almost always follows the same patterns to invent or create products, services, objects or simply give ideas. I don't think it should challenge my ideas, but rather give me many options and support me in multiple ways if I need it and ask for it.",0.2049,O7: United Kingdom (41),0.2900,South Eastern Asia (77),0.7000
+0fa377dc-add4-4478-b962-afe20aa744f5,"If you could have your AI  think, behave / respond  like any person in the world, who would it be and why?",I would think of it as albert r ,0.2049,O1: Spanish (67),0.3000,O7: China (38),0.7100
+4ff79b4a-e03a-440e-8367-fd1a48c58d56,What role should traditional or cultural knowledge play when an AI is helping solve problems in your community?,Usually little help has been taken so  far  from AI in these areas. ,0.2045,O1: Portuguese (Brazil) (32),0.3100,Eastern Europe (32),0.7200
+488fe534-c05c-47e1-a979-a38d1a20a2c4,"In your culture, what makes a conversation feel respectful and appropriate? Describe specific ways of speaking or interacting that show respect.","Speak sincerely and respectfully, do not use swear words, maintain a formal tone. Ask ""how are you?"" at the beginning, and also say goodbye properly.",0.2045,Eastern Europe (32),0.3100,O7: Indonesia (36),0.7200
+7c99e894-35e0-4309-99dc-946107d70555,Describe how people in your community typically approach solving complex problems. What steps or considerations are most important?,"When solving a complex problem, the most important steps are understanding what is being asked and ensuring that a reasonably strong foundation of knowledge is established before beginning the task at hand.",0.2045,O7: China (39),0.3100,O7: Indonesia (36),0.7200
+7c99e894-35e0-4309-99dc-946107d70555,Describe how people in your community typically approach solving complex problems. What steps or considerations are most important?,"Social considerations: ""Will this be accepted by my community?"" and monetary considerations ""How will the different possible solutions to the problem affect me economically?""",0.2045,O7: China (39),0.3100,Eastern Europe (32),0.7200
+488fe534-c05c-47e1-a979-a38d1a20a2c4,"In your culture, what makes a conversation feel respectful and appropriate? Describe specific ways of speaking or interacting that show respect.",Just being cheerful and friendly and open to others' opinions.,0.2045,O1: Portuguese (Brazil) (32),0.2800,O7: Indonesia (36),0.6900
+387627e5-48a0-47e6-b740-6a74330c7ccf,Imagine you're working with an AI assistant on important tasks in your life. What principles or values would you want this AI to consistently demonstrate in all its interactions?,"That the AI is working for my wellbeing. It should not encourage me to overwork or do actions that might be bad for my health. It should also show that the AI is trying to find the best options for me in particular, not for the general good of society.",0.2045,O7: Chile (47),0.2800,O1: Chinese (China) (67),0.6900
+0fa377dc-add4-4478-b962-afe20aa744f5,"If you could have your AI  think, behave / respond  like any person in the world, who would it be and why?",I don't want that. It inhibits AI's ability to be objective.,0.2040,O7: China (38),0.2400,O1: Spanish (67),0.6600
+7c99e894-35e0-4309-99dc-946107d70555,Describe how people in your community typically approach solving complex problems. What steps or considerations are most important?,They usually meet and engage ,0.2040,O7: Brazil (34),0.2400,Western Europe (44),0.6600
+4f0b5877-c935-4fde-b537-de2e0f2c5eaf,"Think about your goals:
+Are you using AI mainly for learning, productivity, creativity, or something else? How well is it working?",I have used it for very little so far but it was helpful. ,0.2040,O7: Chile (47),0.3400,Northern Africa (33),0.7600
+4f0b5877-c935-4fde-b537-de2e0f2c5eaf,"Think about your goals:
+Are you using AI mainly for learning, productivity, creativity, or something else? How well is it working?",I'm using it for both my professional and personal context and it helps me not waste so much time.,0.2040,O7: Chile (47),0.3400,O7: Indonesia (37),0.7600
+4ff79b4a-e03a-440e-8367-fd1a48c58d56,What role should traditional or cultural knowledge play when an AI is helping solve problems in your community?,It's very important,0.2040,Eastern Europe (32),0.3400,Eastern Africa (168),0.7600
+4f0b5877-c935-4fde-b537-de2e0f2c5eaf,"Think about your goals:
+Are you using AI mainly for learning, productivity, creativity, or something else? How well is it working?","I use it almost every day for an extended period. I usually rely on it to check my work, assist in creating simple texts, generate ideas for my content, and validate facts for the data I need in my language, not English.
+
+This is very helpful and significantly reduces the time needed to complete tasks. In many cases, AI is more meticulous than humans, leading to better revisions.",0.2040,O1: Russian (32),0.3400,O7: Indonesia (37),0.7600
+4f0b5877-c935-4fde-b537-de2e0f2c5eaf,"Think about your goals:
+Are you using AI mainly for learning, productivity, creativity, or something else? How well is it working?","I use open ai for learning and productivity but its not giving me all information. like if a lonely person who has no friend who wants to make something better for himself to start a business or make new friends, for his every steps ai can be a great help for him by demonstrating and teaching him how to do it, how to response, every details",0.2040,O1: Russian (32),0.3400,O7: Indonesia (37),0.7600
+4f0b5877-c935-4fde-b537-de2e0f2c5eaf,"Think about your goals:
+Are you using AI mainly for learning, productivity, creativity, or something else? How well is it working?","I'm using it for productivity, in other to help me get things(that are out of my reach) done. I also use it to learn new things, or to remember concepts I forgot.",0.2040,O7: Chile (47),0.3400,O7: Indonesia (37),0.7600
+4f0b5877-c935-4fde-b537-de2e0f2c5eaf,"Think about your goals:
+Are you using AI mainly for learning, productivity, creativity, or something else? How well is it working?","I generally use it to learn and improve productivity. It is very helpful as a teacher and is very patient. If I don't understand something, I can try it multiple times.",0.2040,O7: Chile (47),0.3400,O7: Indonesia (37),0.7600
+3fb376d6-ea90-4ebe-aa7c-e499bdbbe559,"What kind of personality traits would be most helpful for your needs? For instance:
+Should it be more analytical or creative?
+Would you like it to ask clarifying questions or work with what you provide?
+Should it challenge your ideas or mainly provide support?","More analytical and focusing more on reason and problem-solving, I use AI specifically so that it can give me a scientific solution.",0.2035,O7: United Kingdom (41),0.2700,South Eastern Asia (77),0.6800
+3fb376d6-ea90-4ebe-aa7c-e499bdbbe559,"What kind of personality traits would be most helpful for your needs? For instance:
+Should it be more analytical or creative?
+Would you like it to ask clarifying questions or work with what you provide?
+Should it challenge your ideas or mainly provide support?","I would like an AI assistant to challenge my ideas rather than mainly providing support. Sometimes in some cases one may come up with an idea and think its perfect but if slightly challenged one may come up with even a better idea. Also it should be more analytical or creative but also it should help me to be more creative to avoid being overly reliant to the AI assistant.
+",0.2035,O7: United Kingdom (41),0.2700,O7: Indonesia (38),0.6800
+3fb376d6-ea90-4ebe-aa7c-e499bdbbe559,"What kind of personality traits would be most helpful for your needs? For instance:
+Should it be more analytical or creative?
+Would you like it to ask clarifying questions or work with what you provide?
+Should it challenge your ideas or mainly provide support?","I want AI to be more analytical and logical.
+I do not want AI to ask me further questions.
+I want AI to support me not change my mind.",0.2035,O7: United Kingdom (41),0.2700,South Eastern Asia (77),0.6800
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?",I would like him to play a specific role.,0.2035,O7: Chile (47),0.3200,O7: Canada (30),0.7300
+4f0b5877-c935-4fde-b537-de2e0f2c5eaf,"Think about your goals:
+Are you using AI mainly for learning, productivity, creativity, or something else? How well is it working?",I generally use AI for various tasks such as learning new concepts or any queries that I may need to gather info about.,0.2035,O7: Chile (47),0.3200,O7: Indonesia (37),0.7300
+7c99e894-35e0-4309-99dc-946107d70555,Describe how people in your community typically approach solving complex problems. What steps or considerations are most important?,People are guided by the experience of their environment.,0.2035,O7: Brazil (34),0.3200,Norther Europe (49),0.7300
+4f0b5877-c935-4fde-b537-de2e0f2c5eaf,"Think about your goals:
+Are you using AI mainly for learning, productivity, creativity, or something else? How well is it working?",Using it for learning and support ,0.2035,O7: Chile (47),0.3200,O7: Indonesia (37),0.7300
+0fa377dc-add4-4478-b962-afe20aa744f5,"If you could have your AI  think, behave / respond  like any person in the world, who would it be and why?","Like for example Braille maps: Braille maps of Paris are available at some tourist information centers, and can help you navigate the city and find attractions. 3. Touch tours: Some museums and landmarks in Paris offer touch tours, which allow visitors to feel sculptures, paintings, and other exhibits to get a better understanding of them",0.2020,O7: Chile (43),0.2600,Eastern Africa (156),0.6700
+7c99e894-35e0-4309-99dc-946107d70555,Describe how people in your community typically approach solving complex problems. What steps or considerations are most important?,Making sure the value of every person is considered,0.2020,O7: Brazil (34),0.2600,Norther Europe (49),0.6700
+7c99e894-35e0-4309-99dc-946107d70555,Describe how people in your community typically approach solving complex problems. What steps or considerations are most important?,Interests of all parties,0.2020,O7: Brazil (34),0.2600,Norther Europe (49),0.6700
+698f42dd-1081-4959-9751-ca010cc43e42,Would you want your AI to be tailored to your local context? What would that look like?,Not really no. I would prefer if the AI was unbiased in it’s questioning and only tailor it as per my specific questions.,0.2020,O7: China (42),0.2600,O1: Russian (33),0.6700
+0fa377dc-add4-4478-b962-afe20aa744f5,"If you could have your AI  think, behave / respond  like any person in the world, who would it be and why?","나는 AI가 논리, 공감, 그리고 실용적인 조언을 균형 있게 갖춘 지혜로운 멘토처럼 생각하고 반응하기를 바란다. 혁신적인 사고를 가진 일론 머스크, 지혜로운 달라이 라마, 그리고 오랫동안 함께해 온 친구 같은 이해심을 갖춘 사람이 이상적일 것이다. 이러한 조합은 통찰력 있고 미래지향적이며 감성 지능이 높은 답변을 제공할 수 있을 것이다.",0.2020,O7: Chile (43),0.2600,Eastern Africa (156),0.6700
+0fa377dc-add4-4478-b962-afe20aa744f5,"If you could have your AI  think, behave / respond  like any person in the world, who would it be and why?",I would love AI to be my personal assistant because they can cooperate well with manners as well.,0.2020,O7: Chile (43),0.2600,Norther Europe (49),0.6700
+0fa377dc-add4-4478-b962-afe20aa744f5,"If you could have your AI  think, behave / respond  like any person in the world, who would it be and why?","Like a person who knows a lot about a specific topic. For example, if it was about space, it would be based on Brian Cox.",0.2020,O7: Chile (43),0.2600,Eastern Africa (156),0.6700
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?","He can be more casual, he can provide more detailed explanations in cases that are more complex to understand, if it is a simpler topic, he can go straight to the point, take on the role of teacher, focus on areas of specialization
+
+",0.2020,O7: Israel (39),0.2600,O7: Canada (30),0.6700
+b4bc4dad-d06b-41a7-99ba-1aa88370f41a,What would make you feel confident that an AI system truly understands and respects your cultural perspective?,If i ask it a particular question about my cylture and it evens tell me mlre about it citing attached ev5,0.2020,Eastern Europe (32),0.3800,O7: China (38),0.8400
+b4bc4dad-d06b-41a7-99ba-1aa88370f41a,What would make you feel confident that an AI system truly understands and respects your cultural perspective?,Listen to others,0.2020,O7: Israel (30),0.3300,Eastern Africa (160),0.7400
+b4bc4dad-d06b-41a7-99ba-1aa88370f41a,What would make you feel confident that an AI system truly understands and respects your cultural perspective?,be respectful,0.2020,O7: Israel (30),0.3300,O7: Indonesia (34),0.7400
+7c99e894-35e0-4309-99dc-946107d70555,Describe how people in your community typically approach solving complex problems. What steps or considerations are most important?,"-Some important steps include
+
+- Consulting with others
+
+-Breaking problem into smaller pieces
+
+-Doing some basic research
+
+",0.2020,O7: China (39),0.3300,O7: Israel (31),0.7400
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?",I wish it could be answered more formally and get straight to the point.,0.2020,O7: Canada (30),0.3300,Eastern Europe (34),0.7400
+0fa377dc-add4-4478-b962-afe20aa744f5,"If you could have your AI  think, behave / respond  like any person in the world, who would it be and why?","I’d want my AI to think and respond like someone empathetic, knowledgeable, and wise—perhaps like someone who combines the curiosity and critical thinking of a scholar with the compassion and understanding of a community leader. This would help ensure it is both insightful and considerate.",0.2015,O7: Chile (43),0.2100,Eastern Africa (156),0.6400
+0fa377dc-add4-4478-b962-afe20aa744f5,"If you could have your AI  think, behave / respond  like any person in the world, who would it be and why?","I’d have my AI respond like someone wise and practical, like a mentor or experienced elder, because they balance knowledge with empathy, offering guidance that feels both grounded and understanding.",0.2012,O7: Chile (43),0.2300,Northern Africa (31),0.6500
+cf206ae4-b974-45df-a16f-87e176981dbc,"In your community, what makes someone a trustworthy advisor? Please describe specific behaviors or qualities that build trust",The one who does not lie and is not financially corrupt. ,0.2000,Eastern Europe (32),0.2500,O7: China (38),0.6600
+387627e5-48a0-47e6-b740-6a74330c7ccf,Imagine you're working with an AI assistant on important tasks in your life. What principles or values would you want this AI to consistently demonstrate in all its interactions?,Not always agree with my ideas. I want it to say opposit opinion and  point sometimes.,0.2000,O7: Chile (47),0.3000,O1: Chinese (China) (67),0.7000
+b4bc4dad-d06b-41a7-99ba-1aa88370f41a,What would make you feel confident that an AI system truly understands and respects your cultural perspective?,but ignoring answering questions that the Ai is not sure about ,0.2000,Northern Africa (33),0.3000,O7: Israel (30),0.7000
+387627e5-48a0-47e6-b740-6a74330c7ccf,Imagine you're working with an AI assistant on important tasks in your life. What principles or values would you want this AI to consistently demonstrate in all its interactions?,"I like a tailored conversation style in some cases, otherwise an international level communication is good.",0.2000,O1: Russian (32),0.3400,O1: Portuguese (Brazil) (32),0.7500
+488fe534-c05c-47e1-a979-a38d1a20a2c4,"In your culture, what makes a conversation feel respectful and appropriate? Describe specific ways of speaking or interacting that show respect.","Sometimes people use the formal ""usted"" to show respect, but I don't agree with that. 
+
+Don't interrupt others and be open to questions that may arise during the conversation.",0.2000,O1: Russian (32),0.3400,O7: Indonesia (36),0.7500
+488fe534-c05c-47e1-a979-a38d1a20a2c4,"In your culture, what makes a conversation feel respectful and appropriate? Describe specific ways of speaking or interacting that show respect.","honorifics and titles: always address people titles e.g. Encik, Puan, Cik, Dr. Dato). Avoid addressing someone by their first name unless invited to do so, Softening requests: use polite phrases like May I know (boleh saya tahu), please (tolong), Tone of voice: speak calmly and avoid raising your voice , Religious sensitivities: steer clear of controversial topics like religion or politics unless in a trusted environment, when in doubt listen more than speak",0.2000,Eastern Europe (32),0.3400,O7: Indonesia (36),0.7500
+488fe534-c05c-47e1-a979-a38d1a20a2c4,"In your culture, what makes a conversation feel respectful and appropriate? Describe specific ways of speaking or interacting that show respect.",Not speaking out of turn,0.2000,Eastern Europe (32),0.3400,O7: Indonesia (36),0.7500
+4ff79b4a-e03a-440e-8367-fd1a48c58d56,What role should traditional or cultural knowledge play when an AI is helping solve problems in your community?,Show support ,0.1997,Eastern Europe (32),0.3100,O7: Brazil (34),0.7100
+8731ac10-c2d7-49ea-b951-eb226fa2be2b,"If an AI assistant makes a cultural mistake, what would be the most appropriate way for it to acknowledge and correct the error?",By acknowledging that its information on the topic is not comprehensive.,0.1997,O1: Portuguese (Brazil) (31),0.2900,O7: Indonesia (35),0.6900
+7c99e894-35e0-4309-99dc-946107d70555,Describe how people in your community typically approach solving complex problems. What steps or considerations are most important?,"evaluate pros and cons, then weight it by personal perference",0.1997,O7: Brazil (34),0.2900,O4: Rural (71),0.6900
+7c99e894-35e0-4309-99dc-946107d70555,Describe how people in your community typically approach solving complex problems. What steps or considerations are most important?,"In Moroccan Amazigh culture, complex issues are resolved through consultation with elders, group discussion circles, and mediation to resolve conflicts. Traditional wisdom and ritual are also relied upon, with an emphasis on patience and reflection before making decisions.",0.1990,O7: Brazil (34),0.3200,O7: Indonesia (36),0.7200
+4ff79b4a-e03a-440e-8367-fd1a48c58d56,What role should traditional or cultural knowledge play when an AI is helping solve problems in your community?,Integration of the role playing of the Ai.,0.1990,O7: Brazil (34),0.3200,Eastern Europe (32),0.7200
+4ff79b4a-e03a-440e-8367-fd1a48c58d56,What role should traditional or cultural knowledge play when an AI is helping solve problems in your community?,In bringing a civilized decision that does not affect past cultural beliefs and does not collide with the present-day beliefs,0.1990,O1: Russian (31),0.3900,O7: Kenya (159),0.8600
+698f42dd-1081-4959-9751-ca010cc43e42,Would you want your AI to be tailored to your local context? What would that look like?,Should it challenge and provide support,0.1980,O1: Russian (33),0.3600,Eastern Africa (178),0.7800
+698f42dd-1081-4959-9751-ca010cc43e42,Would you want your AI to be tailored to your local context? What would that look like?,I am a careworker in the UK,0.1980,O1: Russian (33),0.3600,Eastern Africa (178),0.7800
+387627e5-48a0-47e6-b740-6a74330c7ccf,Imagine you're working with an AI assistant on important tasks in your life. What principles or values would you want this AI to consistently demonstrate in all its interactions?,AI should be understandable and friendly.AI should use local language ,0.1980,O7: Israel (33),0.3600,O1: Portuguese (Brazil) (32),0.7800
+698f42dd-1081-4959-9751-ca010cc43e42,Would you want your AI to be tailored to your local context? What would that look like?,"It would be interesting to turn such a function on and off, just for the sake of curiosity. But in my work with AI, there is no need for this. Unless it is for immersing oneself in the political system and, for example, for a better understanding of memes.",0.1977,Northern Africa (33),0.2700,O1: Russian (33),0.6700
+387627e5-48a0-47e6-b740-6a74330c7ccf,Imagine you're working with an AI assistant on important tasks in your life. What principles or values would you want this AI to consistently demonstrate in all its interactions?,"understanding, proffessionalism, keen , empathetic",0.1977,O7: Israel (33),0.3300,Eastern Africa (176),0.7300
+698f42dd-1081-4959-9751-ca010cc43e42,Would you want your AI to be tailored to your local context? What would that look like?,No i do not want AI to be tailored for my local context. I want it completely neutral.,0.1977,Eastern Africa (178),0.2700,O1: Russian (33),0.6700
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?",I prefer him to be more casual and get straight to the point. Let him take on the role of coach.,0.1977,O7: Israel (39),0.3300,O7: Canada (30),0.7300
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?","Recently i joined a new institution as a new student, am always an introvert and am having lots of problems associating with others , would you advice appropriately? what should i do",0.1977,O7: Israel (39),0.3300,O7: Canada (30),0.7300
+698f42dd-1081-4959-9751-ca010cc43e42,Would you want your AI to be tailored to your local context? What would that look like?,"No, I don't want my AI to be tailored to my local context. It should always take broad context for every answer that it provides. That will be helpful for the learning of AI and also the end user who is getting answers from a broad context.",0.1977,Western Asia (51),0.3300,O1: Russian (33),0.7300
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?","I prefer him to be informal in his responses and go straight to the point with some detailed explanations but little, it is good for him to take on a specific role as a consultant or pharmacist with specific expertise and areas",0.1977,O7: Israel (39),0.3300,O7: Canada (30),0.7300
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?","You are an assistant specialized in helping public exam participants to carry out their studies in the most qualified, organized and appropriate way possible:
+
+- Provide methodologies appropriate to the specific profile of the participant for carrying out their studies
+
+- Help them to find the best quality material to study for that specific exam, covering both general and specific subjects
+
+- Provide questions to reinforce content from old exams",0.1977,O7: Israel (39),0.3300,O7: Canada (30),0.7300
+7c99e894-35e0-4309-99dc-946107d70555,Describe how people in your community typically approach solving complex problems. What steps or considerations are most important?,"ask for advice from a person who has authority in the topic and is respected, look for other opinions, make your own decision based on all the information collected",0.1975,O7: Brazil (34),0.3500,Norther Europe (49),0.7600
+b4bc4dad-d06b-41a7-99ba-1aa88370f41a,What would make you feel confident that an AI system truly understands and respects your cultural perspective?,desire to learn and correct mistakes,0.1975,O7: Israel (30),0.3700,Eastern Africa (160),0.8000
+cf206ae4-b974-45df-a16f-87e176981dbc,"In your community, what makes someone a trustworthy advisor? Please describe specific behaviors or qualities that build trust",Give example of our culture and give correct data and give vairity of answer,0.1960,O7: China (38),0.2600,Eastern Europe (32),0.6600
+4ff79b4a-e03a-440e-8367-fd1a48c58d56,What role should traditional or cultural knowledge play when an AI is helping solve problems in your community?,"traditional play and cultural equal weightage, depends on the situation in
+
+",0.1960,Eastern Europe (32),0.3400,O7: Brazil (34),0.7400
+cf206ae4-b974-45df-a16f-87e176981dbc,"In your community, what makes someone a trustworthy advisor? Please describe specific behaviors or qualities that build trust",someone who have solid evidence of what they are saying,0.1960,Eastern Europe (32),0.3800,O7: China (38),0.8200
+698f42dd-1081-4959-9751-ca010cc43e42,Would you want your AI to be tailored to your local context? What would that look like?,"Yes, I'm in Canada",0.1949,O1: Russian (33),0.3000,O7: China (42),0.6900
+7c99e894-35e0-4309-99dc-946107d70555,Describe how people in your community typically approach solving complex problems. What steps or considerations are most important?,"In my community people, they help each others to solve other problem.",0.1949,Eastern Europe (32),0.3100,Western Europe (44),0.7000
+8731ac10-c2d7-49ea-b951-eb226fa2be2b,"If an AI assistant makes a cultural mistake, what would be the most appropriate way for it to acknowledge and correct the error?",Apologizing,0.1944,O7: Indonesia (35),0.2900,O1: Portuguese (Brazil) (31),0.6800
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?","I would prefer a mix of both, on the more casual side would be better since conversing in a less formal way is more relaxing. Explanations should be as how we want it, but for a first response it should be brief, yet descriptive. If we want more details, then the answer can be explained more in detail. ",0.1944,O1: Russian (34),0.2900,O4: Rural (74),0.6800
+8731ac10-c2d7-49ea-b951-eb226fa2be2b,"If an AI assistant makes a cultural mistake, what would be the most appropriate way for it to acknowledge and correct the error?",To apologize,0.1944,O7: Indonesia (35),0.2900,O1: Portuguese (Brazil) (31),0.6800
+8731ac10-c2d7-49ea-b951-eb226fa2be2b,"If an AI assistant makes a cultural mistake, what would be the most appropriate way for it to acknowledge and correct the error?",to apologize,0.1944,O7: Indonesia (35),0.2900,O1: Portuguese (Brazil) (31),0.6800
+8731ac10-c2d7-49ea-b951-eb226fa2be2b,"If an AI assistant makes a cultural mistake, what would be the most appropriate way for it to acknowledge and correct the error?",To apologize,0.1944,O7: Indonesia (35),0.2900,O1: Portuguese (Brazil) (31),0.6800
+698f42dd-1081-4959-9751-ca010cc43e42,Would you want your AI to be tailored to your local context? What would that look like?,i want AI not to be tailored to local context. i want different ideas from every angle,0.1944,O1: Portuguese (Brazil) (32),0.4100,O7: Indonesia (37),0.9200
+8731ac10-c2d7-49ea-b951-eb226fa2be2b,"If an AI assistant makes a cultural mistake, what would be the most appropriate way for it to acknowledge and correct the error?",Apologising ,0.1944,O7: Indonesia (35),0.2900,O1: Portuguese (Brazil) (31),0.6800
+8731ac10-c2d7-49ea-b951-eb226fa2be2b,"If an AI assistant makes a cultural mistake, what would be the most appropriate way for it to acknowledge and correct the error?",Apologise ,0.1944,O7: Indonesia (35),0.2900,O1: Portuguese (Brazil) (31),0.6800
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?","informal
+
+detailed explanations
+
+would take on a specific role
+
+areas of specialization",0.1944,O7: Israel (39),0.3600,O7: Canada (30),0.7700
+7c99e894-35e0-4309-99dc-946107d70555,Describe how people in your community typically approach solving complex problems. What steps or considerations are most important?,"First is to identify the issue at hand, the effects it has on the community,come up with a solution that that does not impact negatively to the community ",0.1944,O7: Brazil (34),0.3200,Norther Europe (49),0.7100
+7c99e894-35e0-4309-99dc-946107d70555,Describe how people in your community typically approach solving complex problems. What steps or considerations are most important?,"In my community, people sit together and discuss the problems with whom they trust the most, and then reach to a solution.",0.1944,O7: Brazil (34),0.3200,Norther Europe (49),0.7100
+4ff79b4a-e03a-440e-8367-fd1a48c58d56,What role should traditional or cultural knowledge play when an AI is helping solve problems in your community?,I think traditional and cultural knowledge has no part to play in AI helping to solve problems.,0.1942,O7: Brazil (34),0.2100,Eastern Europe (32),0.6300
+cf206ae4-b974-45df-a16f-87e176981dbc,"In your community, what makes someone a trustworthy advisor? Please describe specific behaviors or qualities that build trust",previous experience with topic in question,0.1942,O7: China (38),0.2100,Eastern Europe (32),0.6300
+5620eda0-082c-4917-a65f-67abf06aca5c,"When someone disagrees with an authority figure in your community, what is the appropriate way for them to express that disagreement?","A complaint is filed to address the point of contention at the appropriate level, such as a meeting or board meeting. From there, solutions to the conflict are sought.",0.1942,O7: United Kingdom (38),0.3700,O7: Indonesia (34),0.7900
+488fe534-c05c-47e1-a979-a38d1a20a2c4,"In your culture, what makes a conversation feel respectful and appropriate? Describe specific ways of speaking or interacting that show respect.","Be polite and tactful, address different people by different names, look at them and respond appropriately when speaking, and don't speak too bluntly and hurt others' feelings.",0.1936,O7: Brazil (34),0.3500,O7: Indonesia (36),0.7500
+7c99e894-35e0-4309-99dc-946107d70555,Describe how people in your community typically approach solving complex problems. What steps or considerations are most important?,"They use past experiences as a starting point. Taking ethics and values of the community in consideration is vital.
+",0.1934,O1: Portuguese (Brazil) (32),0.2800,Norther Europe (49),0.6700
+7c99e894-35e0-4309-99dc-946107d70555,Describe how people in your community typically approach solving complex problems. What steps or considerations are most important?,They generally follow the societal norms already set and discuss among peers and family members to reach an effective solution. ,0.1934,O7: China (39),0.2800,O7: Indonesia (36),0.6700
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?","- I prefer him to be more casual
+
+- I prefer him to provide detailed explanations
+
+- I like him to take on a specific role
+
+- It's always good for him to focus on certain topics or areas of expertise.",0.1934,O7: Israel (39),0.2800,O7: Canada (30),0.6700
+488fe534-c05c-47e1-a979-a38d1a20a2c4,"In your culture, what makes a conversation feel respectful and appropriate? Describe specific ways of speaking or interacting that show respect.","It is like addressing, have a soft words, there are no cursing words or other slang words that feel so rough.",0.1934,O7: Israel (33),0.3300,O7: Indonesia (36),0.7200
+4ff79b4a-e03a-440e-8367-fd1a48c58d56,What role should traditional or cultural knowledge play when an AI is helping solve problems in your community?,"They must not contradict the law of the land. If they contradict secular laws, they should be forgotten.",0.1934,O1: Russian (31),0.3900,O7: China (38),0.8400
+698f42dd-1081-4959-9751-ca010cc43e42,Would you want your AI to be tailored to your local context? What would that look like?,yeah that would be great,0.1934,O1: Russian (33),0.3300,Eastern Africa (178),0.7200
+b4bc4dad-d06b-41a7-99ba-1aa88370f41a,What would make you feel confident that an AI system truly understands and respects your cultural perspective?,"I do not see it do, but it should learn as it is a AI model ",0.1924,O7: China (38),0.1300,O7: Israel (30),0.6000
+698f42dd-1081-4959-9751-ca010cc43e42,Would you want your AI to be tailored to your local context? What would that look like?,"I hope that, for example, in an interview, I hope he can answer based on my education and experience, so that I can get a tailor-made answer.",0.1908,O1: Russian (33),0.3600,O7: Indonesia (37),0.7600
+698f42dd-1081-4959-9751-ca010cc43e42,Would you want your AI to be tailored to your local context? What would that look like?,"I like to talk about technology and video games, it would be great if I could just have a conversation about those topics, and when I need help validating my answer, he would give me support.",0.1908,O1: Russian (33),0.3600,Northern Africa (33),0.7600
+698f42dd-1081-4959-9751-ca010cc43e42,Would you want your AI to be tailored to your local context? What would that look like?,"Yes, of course it would be super convenient  ",0.1908,O1: Russian (33),0.3600,O7: China (42),0.7600
+4ff79b4a-e03a-440e-8367-fd1a48c58d56,What role should traditional or cultural knowledge play when an AI is helping solve problems in your community?,Habits,0.1908,O7: Chile (45),0.3600,O7: Brazil (34),0.7600
+4ff79b4a-e03a-440e-8367-fd1a48c58d56,What role should traditional or cultural knowledge play when an AI is helping solve problems in your community?,"any and all knowledge will have value, but traditions shouldn't be used as an excuse to hinder progress",0.1905,O1: Russian (31),0.3900,O7: Indonesia (35),0.8300
+4ff79b4a-e03a-440e-8367-fd1a48c58d56,What role should traditional or cultural knowledge play when an AI is helping solve problems in your community?,AI can not solve the real life problem it should be in limited to tecnical or analytical.,0.1900,O1: Portuguese (Brazil) (32),0.3100,Eastern Europe (32),0.6900
+488fe534-c05c-47e1-a979-a38d1a20a2c4,"In your culture, what makes a conversation feel respectful and appropriate? Describe specific ways of speaking or interacting that show respect.","Respect other's opinion, share your point of view. Never judge without knowing the things. Never discriminate.",0.1900,O1: Russian (32),0.3100,O7: United Kingdom (39),0.6900
+488fe534-c05c-47e1-a979-a38d1a20a2c4,"In your culture, what makes a conversation feel respectful and appropriate? Describe specific ways of speaking or interacting that show respect.",Listening to others and letting them share their thoughts without being judged,0.1900,O1: Russian (32),0.3100,O7: Indonesia (36),0.6900
+488fe534-c05c-47e1-a979-a38d1a20a2c4,"In your culture, what makes a conversation feel respectful and appropriate? Describe specific ways of speaking or interacting that show respect.","Respect everyone's choice and don't judge others by your own standards. For example, some people choose to get married, while others choose not to get married. Both choices should be respected, understood and recognized because everyone's situation and background are different.",0.1900,O1: Russian (32),0.3100,O7: Indonesia (36),0.6900
+488fe534-c05c-47e1-a979-a38d1a20a2c4,"In your culture, what makes a conversation feel respectful and appropriate? Describe specific ways of speaking or interacting that show respect.","Formal address. Use of greeting and farewell phrases. Do not interrupt the person you are talking to. Do not address strangers or people who are significantly older as you. Hold the door. Give up your seat on public transport to those who are older or who have difficulty standing.
+
+If an elderly person or a pregnant woman, or a person with heavy bags gets on the bus, you should give up your seat and say, ""Please sit down.""",0.1900,Eastern Europe (32),0.3100,O7: Indonesia (36),0.6900
+cf206ae4-b974-45df-a16f-87e176981dbc,"In your community, what makes someone a trustworthy advisor? Please describe specific behaviors or qualities that build trust",Someone who has the ability to quickly grasp a situation and show it to you from a new perspective that changes how you think about it ,0.1897,O1: Russian (31),0.3500,O1: Portuguese (Brazil) (31),0.7400
+cf206ae4-b974-45df-a16f-87e176981dbc,"In your community, what makes someone a trustworthy advisor? Please describe specific behaviors or qualities that build trust",By having respect to everyone and vice versa and choosen by community to do and be part of,0.1897,O7: Brazil (33),0.3000,O7: Indonesia (34),0.6800
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?","Formal answers
+
+Giving detailed explanations and getting straight to the point are the same thing in my understanding
+
+No, I don't want specific roles
+
+Yes",0.1897,O7: Canada (30),0.3000,Eastern Europe (34),0.6800
+8731ac10-c2d7-49ea-b951-eb226fa2be2b,"If an AI assistant makes a cultural mistake, what would be the most appropriate way for it to acknowledge and correct the error?",Apologize.,0.1897,O7: Indonesia (35),0.2600,O1: Portuguese (Brazil) (31),0.6500
+8731ac10-c2d7-49ea-b951-eb226fa2be2b,"If an AI assistant makes a cultural mistake, what would be the most appropriate way for it to acknowledge and correct the error?","As it's not a person and it's just based on code, it should just have a report option.",0.1897,O1: Portuguese (Brazil) (31),0.2600,Western Europe (43),0.6500
+488fe534-c05c-47e1-a979-a38d1a20a2c4,"In your culture, what makes a conversation feel respectful and appropriate? Describe specific ways of speaking or interacting that show respect.","Encourage other people's good behavior, compliment them, don't be rude against them",0.1897,O7: Brazil (34),0.3200,O7: Israel (33),0.7000
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?",I would prefer it to focus on certain topics or areas of expertise.,0.1897,O1: Russian (34),0.3200,O7: Canada (30),0.7000
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?","Please be more casual, get straight to the point, be a coach, focus on art, science, children",0.1897,O1: Russian (34),0.3200,O7: Canada (30),0.7000
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?","for me AI is just a tool, so no casual conversations please . detailed information only if i requested it. specific role can be useful tho at some point. not sure about last one",0.1897,Eastern Europe (34),0.3200,O7: Canada (30),0.7000
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?",I use chat got asan ai tool in content creation,0.1897,O1: Russian (34),0.3200,O7: Canada (30),0.7000
+b4bc4dad-d06b-41a7-99ba-1aa88370f41a,What would make you feel confident that an AI system truly understands and respects your cultural perspective?,"I don't. The AI is a western invention, it can never truly understand my cultural perspective.",0.1897,O6: Islam (158),0.3200,O7: Israel (30),0.7000
+b4bc4dad-d06b-41a7-99ba-1aa88370f41a,What would make you feel confident that an AI system truly understands and respects your cultural perspective?,"I don't think this is possible. AI doesn't ""truly understand"" anything. It can create the impression it does by talking similarly to regular people and being aware of local news, pop culture history etc",0.1889,Eastern Africa (160),0.2900,O7: Israel (30),0.6700
+b4bc4dad-d06b-41a7-99ba-1aa88370f41a,What would make you feel confident that an AI system truly understands and respects your cultural perspective?,I never feel confident because I know that the one who programmed it does not belong to my culture.,0.1889,O7: Indonesia (34),0.2900,O7: Israel (30),0.6700
+8731ac10-c2d7-49ea-b951-eb226fa2be2b,"If an AI assistant makes a cultural mistake, what would be the most appropriate way for it to acknowledge and correct the error?",redflag it and send it to the AI developers,0.1889,O1: Portuguese (Brazil) (31),0.2900,O7: Israel (30),0.6700
+b4bc4dad-d06b-41a7-99ba-1aa88370f41a,What would make you feel confident that an AI system truly understands and respects your cultural perspective?,"It is not possible. But through repeated use, my trust level can be improved.",0.1889,O7: Israel (30),0.3300,Eastern Africa (160),0.7100
+488fe534-c05c-47e1-a979-a38d1a20a2c4,"In your culture, what makes a conversation feel respectful and appropriate? Describe specific ways of speaking or interacting that show respect.",It should be always formal ,0.1876,O7: United Kingdom (39),0.2800,O1: Portuguese (Brazil) (32),0.6600
+4ff79b4a-e03a-440e-8367-fd1a48c58d56,What role should traditional or cultural knowledge play when an AI is helping solve problems in your community?,"As a native person, who was born here and lived here their whole life.",0.1876,Eastern Europe (32),0.2800,O1: Portuguese (Brazil) (32),0.6600
+488fe534-c05c-47e1-a979-a38d1a20a2c4,"In your culture, what makes a conversation feel respectful and appropriate? Describe specific ways of speaking or interacting that show respect.","The way a person uses words and gestures, the person cannot be intimidating and at the same time should not force moments of humor into serious conversations.",0.1876,O1: Russian (32),0.3400,O7: United Kingdom (39),0.7200
+5620eda0-082c-4917-a65f-67abf06aca5c,"When someone disagrees with an authority figure in your community, what is the appropriate way for them to express that disagreement?",Understandable ,0.1876,O7: Indonesia (34),0.1800,O7: United Kingdom (38),0.6100
+8731ac10-c2d7-49ea-b951-eb226fa2be2b,"If an AI assistant makes a cultural mistake, what would be the most appropriate way for it to acknowledge and correct the error?",Disable the cultural error feature,0.1873,Western Europe (43),0.2300,O7: United Kingdom (38),0.6300
+b4bc4dad-d06b-41a7-99ba-1aa88370f41a,What would make you feel confident that an AI system truly understands and respects your cultural perspective?,its replies during my sessions. Can't think of anything specific,0.1865,Eastern Europe (32),0.3800,O7: Indonesia (34),0.7900
+8731ac10-c2d7-49ea-b951-eb226fa2be2b,"If an AI assistant makes a cultural mistake, what would be the most appropriate way for it to acknowledge and correct the error?",For it to apologise,0.1849,O7: Indonesia (35),0.3100,O1: Portuguese (Brazil) (31),0.6800
+b4bc4dad-d06b-41a7-99ba-1aa88370f41a,What would make you feel confident that an AI system truly understands and respects your cultural perspective?,it shouldnt respect me or my religion its just an AI,0.1849,O7: Brazil (33),0.1200,Eastern Europe (32),0.5900
+5620eda0-082c-4917-a65f-67abf06aca5c,"When someone disagrees with an authority figure in your community, what is the appropriate way for them to express that disagreement?",Discussion,0.1849,O7: China (38),0.3200,Eastern Africa (160),0.6900
+8731ac10-c2d7-49ea-b951-eb226fa2be2b,"If an AI assistant makes a cultural mistake, what would be the most appropriate way for it to acknowledge and correct the error?","To disclaim that it’s determinations are not based on facts, but best estimates based on data available. ",0.1847,O7: Chile (44),0.3900,O7: United States (63),0.8100
+cf206ae4-b974-45df-a16f-87e176981dbc,"In your community, what makes someone a trustworthy advisor? Please describe specific behaviors or qualities that build trust",A person will become an advisor if that person has similar experiences.,0.1847,O1: Russian (31),0.3900,Eastern Africa (160),0.8100
+5620eda0-082c-4917-a65f-67abf06aca5c,"When someone disagrees with an authority figure in your community, what is the appropriate way for them to express that disagreement?","It is advisable not to express it openly, it is impolite.",0.1838,Western Asia (41),0.2400,O7: United Kingdom (38),0.6300
+5620eda0-082c-4917-a65f-67abf06aca5c,"When someone disagrees with an authority figure in your community, what is the appropriate way for them to express that disagreement?",They request for audience to air their worries/disagreements and only do so when given the chance to speak,0.1838,O7: United Kingdom (38),0.3700,O7: Indonesia (34),0.7600
+b4bc4dad-d06b-41a7-99ba-1aa88370f41a,What would make you feel confident that an AI system truly understands and respects your cultural perspective?,"Nothing really. When using AI i am cognisant of the fact that this is  a machine, it does not have opinions and its data must be checked before being trusted.",0.1838,O7: Indonesia (34),0.2400,O7: Israel (30),0.6300
+8731ac10-c2d7-49ea-b951-eb226fa2be2b,"If an AI assistant makes a cultural mistake, what would be the most appropriate way for it to acknowledge and correct the error?",It shluld be trained on hlw to update the errors and adapt,0.1833,O1: Portuguese (Brazil) (31),0.2900,O7: China (38),0.6600
+cf206ae4-b974-45df-a16f-87e176981dbc,"In your community, what makes someone a trustworthy advisor? Please describe specific behaviors or qualities that build trust","Education, experience, knowledge, reputation, certificates, thoroughness ",0.1833,O1: Russian (31),0.2900,Eastern Europe (32),0.6600
+8731ac10-c2d7-49ea-b951-eb226fa2be2b,"If an AI assistant makes a cultural mistake, what would be the most appropriate way for it to acknowledge and correct the error?",it will probably not able  to realize that It may made a mistake if I'm not directly addressing I t,0.1833,O7: United Kingdom (38),0.3400,O7: Indonesia (35),0.7100
+8731ac10-c2d7-49ea-b951-eb226fa2be2b,"If an AI assistant makes a cultural mistake, what would be the most appropriate way for it to acknowledge and correct the error?",It can respond by stating that it doesn’t not have much information one the topic so it will not be able to provide more insights ,0.1817,O1: Portuguese (Brazil) (31),0.3900,O7: Indonesia (35),0.8000
+cf206ae4-b974-45df-a16f-87e176981dbc,"In your community, what makes someone a trustworthy advisor? Please describe specific behaviors or qualities that build trust","By only giving the truth : even if they do not know about it, they say it.",0.1817,Eastern Europe (32),0.2800,O2: 46-55 (79),0.6500
+cf206ae4-b974-45df-a16f-87e176981dbc,"In your community, what makes someone a trustworthy advisor? Please describe specific behaviors or qualities that build trust",Experience and expertise.  Testimonials also.,0.1800,O7: China (38),0.3200,O1: Portuguese (Brazil) (31),0.6800
+cf206ae4-b974-45df-a16f-87e176981dbc,"In your community, what makes someone a trustworthy advisor? Please describe specific behaviors or qualities that build trust","Experience, specialized knowledge in a certain area, authority.",0.1800,O1: Russian (31),0.3200,O7: United States (63),0.6800
+cf206ae4-b974-45df-a16f-87e176981dbc,"In your community, what makes someone a trustworthy advisor? Please describe specific behaviors or qualities that build trust",Trustworthiness-Righteousness-Kindess-Wisdom,0.1789,O7: Chile (43),0.4000,O7: China (38),0.8200
+cf206ae4-b974-45df-a16f-87e176981dbc,"In your community, what makes someone a trustworthy advisor? Please describe specific behaviors or qualities that build trust","Previous history, giving good advise over time qualifies on as a good advisor.",0.1786,O1: Russian (31),0.3900,Eastern Africa (160),0.7900
+8731ac10-c2d7-49ea-b951-eb226fa2be2b,"If an AI assistant makes a cultural mistake, what would be the most appropriate way for it to acknowledge and correct the error?",A sincere apology,0.1775,O7: Indonesia (35),0.2900,O1: Portuguese (Brazil) (31),0.6500
+cf206ae4-b974-45df-a16f-87e176981dbc,"In your community, what makes someone a trustworthy advisor? Please describe specific behaviors or qualities that build trust",Life experiences,0.1775,O1: Chinese (China) (65),0.1500,Eastern Europe (32),0.5900
+cf206ae4-b974-45df-a16f-87e176981dbc,"In your community, what makes someone a trustworthy advisor? Please describe specific behaviors or qualities that build trust",years of experience ,0.1775,O1: Chinese (China) (65),0.1500,Eastern Europe (32),0.5900
+5620eda0-082c-4917-a65f-67abf06aca5c,"When someone disagrees with an authority figure in your community, what is the appropriate way for them to express that disagreement?",They cann bring it up with someone of similar or higher rank to see whether they have a contrary opinion. ,0.1766,O7: United Kingdom (38),0.3700,O7: Indonesia (34),0.7400
+cf206ae4-b974-45df-a16f-87e176981dbc,"In your community, what makes someone a trustworthy advisor? Please describe specific behaviors or qualities that build trust",The person should know about religion and culture aspect of our religion ,0.1766,O1: Chinese (China) (65),0.2600,Eastern Europe (32),0.6300
+cf206ae4-b974-45df-a16f-87e176981dbc,"In your community, what makes someone a trustworthy advisor? Please describe specific behaviors or qualities that build trust",they have exeprience and tell the truth,0.1766,Eastern Europe (32),0.3800,O7: Brazil (33),0.7600
+cf206ae4-b974-45df-a16f-87e176981dbc,"In your community, what makes someone a trustworthy advisor? Please describe specific behaviors or qualities that build trust",if someone is respected and doenst lie,0.1755,O1: Russian (31),0.3900,O1: Chinese (China) (65),0.7800
+cf206ae4-b974-45df-a16f-87e176981dbc,"In your community, what makes someone a trustworthy advisor? Please describe specific behaviors or qualities that build trust","Honesty, fairness, respect for others",0.1749,O7: Chile (43),0.3300,O1: Chinese (China) (65),0.6800
+5620eda0-082c-4917-a65f-67abf06aca5c,"When someone disagrees with an authority figure in your community, what is the appropriate way for them to express that disagreement?",in a meetong with them they are free to express themselves,0.1720,O1: Portuguese (Brazil) (30),0.1300,O7: United Kingdom (38),0.5800
+5620eda0-082c-4917-a65f-67abf06aca5c,"When someone disagrees with an authority figure in your community, what is the appropriate way for them to express that disagreement?",The right to speak out,0.1715,O7: China (38),0.2900,Northern America (88),0.6400
+5620eda0-082c-4917-a65f-67abf06aca5c,"When someone disagrees with an authority figure in your community, what is the appropriate way for them to express that disagreement?","They can just post their disagreement online or directly confront the figure in person with their own idea, although the outcomes of it wouldn't necessarily be ideal.",0.1697,O7: United Kingdom (38),0.3400,O7: Indonesia (34),0.6800
+5620eda0-082c-4917-a65f-67abf06aca5c,"When someone disagrees with an authority figure in your community, what is the appropriate way for them to express that disagreement?",Direct Expression,0.1691,O7: Indonesia (34),0.2400,O7: United Kingdom (38),0.6100
+5620eda0-082c-4917-a65f-67abf06aca5c,"When someone disagrees with an authority figure in your community, what is the appropriate way for them to express that disagreement?","explaining
+
+",0.1625,O7: Indonesia (34),0.2600,O7: United Kingdom (38),0.6100
+5620eda0-082c-4917-a65f-67abf06aca5c,"When someone disagrees with an authority figure in your community, what is the appropriate way for them to express that disagreement?",they are free to say they disagree,0.1600,O7: United Kingdom (38),0.4200,O7: Indonesia (34),0.8200
+5620eda0-082c-4917-a65f-67abf06aca5c,"When someone disagrees with an authority figure in your community, what is the appropriate way for them to express that disagreement?",Memberitahu pemimpin dan di bicarakan baik baik,0.1587,O7: China (38),0.2900,O7: Indonesia (34),0.6200
+5620eda0-082c-4917-a65f-67abf06aca5c,"When someone disagrees with an authority figure in your community, what is the appropriate way for them to express that disagreement?",irrefutable evidence,0.1556,Northern Africa (32),0.2800,Western Asia (41),0.6100
+5620eda0-082c-4917-a65f-67abf06aca5c,"When someone disagrees with an authority figure in your community, what is the appropriate way for them to express that disagreement?",Forwarding the disagreement to a more superior authority than him ,0.1530,O7: China (38),0.3200,Northern Africa (32),0.6300
+5620eda0-082c-4917-a65f-67abf06aca5c,"When someone disagrees with an authority figure in your community, what is the appropriate way for them to express that disagreement?",Just say directly that you disagree,0.1520,O7: United Kingdom (38),0.3900,Eastern Africa (160),0.7100
+5620eda0-082c-4917-a65f-67abf06aca5c,"When someone disagrees with an authority figure in your community, what is the appropriate way for them to express that disagreement?",Go through a system of conveying their complaint ,0.1520,O7: United Kingdom (38),0.3900,O7: Indonesia (34),0.7100
+5620eda0-082c-4917-a65f-67abf06aca5c,"When someone disagrees with an authority figure in your community, what is the appropriate way for them to express that disagreement?",Try to openly communicate. Do not bash anyone or raise a voice or induce violance ,0.1520,O7: United Kingdom (38),0.3900,O7: Indonesia (34),0.7100
+5620eda0-082c-4917-a65f-67abf06aca5c,"When someone disagrees with an authority figure in your community, what is the appropriate way for them to express that disagreement?",discussion,0.1490,O7: China (38),0.1300,Eastern Europe (32),0.5600
+5620eda0-082c-4917-a65f-67abf06aca5c,"When someone disagrees with an authority figure in your community, what is the appropriate way for them to express that disagreement?",By having a conversation and coming to an agreement,0.1442,Eastern Asia (63),0.3700,O7: United Kingdom (38),0.6600

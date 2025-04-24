@@ -291,13 +291,13 @@ def load_and_preprocess_data(csv_path, cache_path, force_reparse=False, padding_
 
 # --- Analysis Functions ---
 
-def calculate_divergence_report(questions_data, output_dir, top_n_per_question=20, top_n_overall=50):
+def calculate_divergence_report(questions_data, divergence_output_dir, top_n_per_question=20, top_n_overall=50):
     """
     Calculates divergence for Ask Opinion questions and generates reports.
 
     Args:
         questions_data (list): The list of (metadata, df) tuples.
-        output_dir (str): Directory to save the report CSV files.
+        divergence_output_dir (str): Directory to save the divergence report CSV files.
         top_n_per_question (int): Number of top divergent responses to show per question.
         top_n_overall (int): Number of top divergent responses to show overall.
 
@@ -306,6 +306,8 @@ def calculate_divergence_report(questions_data, output_dir, top_n_per_question=2
                     Returns empty DataFrame if no Ask Opinion questions found or processed.
     """
     print("\n--- Calculating Divergence Report --- ")
+    # Ensure output dir exists
+    os.makedirs(divergence_output_dir, exist_ok=True)
     all_divergence_results = []
 
     for metadata, df in questions_data:
@@ -395,26 +397,26 @@ def calculate_divergence_report(questions_data, output_dir, top_n_per_question=2
 
     # 1. Top N per Question Report
     top_per_question = results_df.groupby('Question ID').head(top_n_per_question)
-    report_path_per_q = os.path.join(output_dir, 'divergence_by_question.csv')
+    report_path_per_q = os.path.join(divergence_output_dir, 'divergence_by_question.csv')
     try:
         top_per_question.to_csv(report_path_per_q, index=False, float_format='%.4f')
-        print(f"  Saved top {top_n_per_question} divergent responses per question to: {report_path_per_q}")
+        print(f"  Saved divergence per question report to: {report_path_per_q}")
     except Exception as e:
         print(f"  Error saving per-question divergence report: {e}")
 
     # 2. Top N Overall Report
     top_overall = results_df.head(top_n_overall)
-    report_path_overall = os.path.join(output_dir, 'divergence_overall.csv')
+    report_path_overall = os.path.join(divergence_output_dir, 'divergence_overall.csv')
     try:
         top_overall.to_csv(report_path_overall, index=False, float_format='%.4f')
-        print(f"  Saved top {top_n_overall} divergent responses overall to: {report_path_overall}")
+        print(f"  Saved overall divergence report to: {report_path_overall}")
     except Exception as e:
         print(f"  Error saving overall divergence report: {e}")
 
     print("--- Divergence Calculation Complete ---")
     return results_df # Return the full results DataFrame
 
-def calculate_consensus_profiles(questions_data, output_dir, 
+def calculate_consensus_profiles(questions_data, consensus_output_dir,
                                  percentiles_to_calc = [100, 95, 90, 80, 70, 60, 50, 40, 30, 20, 10],
                                  top_n_percentiles = [100, 95, 90],
                                  top_n_count = 5):
@@ -423,7 +425,7 @@ def calculate_consensus_profiles(questions_data, output_dir,
 
     Args:
         questions_data (list): The list of (metadata, df) tuples.
-        output_dir (str): Directory to save the report CSV files.
+        consensus_output_dir (str): Directory to save the consensus report CSV files.
         percentiles_to_calc (list): List of percentiles (e.g., 100, 95, 90) for which to calculate the min agreement.
         top_n_percentiles (list): List of percentiles to use for generating Top N reports.
         top_n_count (int): Number of top responses to include in the Top N reports.
@@ -433,6 +435,8 @@ def calculate_consensus_profiles(questions_data, output_dir,
                      Returns empty DataFrame if no Ask Opinion questions found or processed.
     """
     print("\n--- Calculating Consensus Profiles --- ")
+    # Ensure output dir exists
+    os.makedirs(consensus_output_dir, exist_ok=True)
     all_consensus_results = []
     percentiles_to_calc.sort(reverse=True) # Ensure descending order for clarity
     percentile_cols = [f'MinAgree_{p}pct' for p in percentiles_to_calc]
@@ -520,7 +524,7 @@ def calculate_consensus_profiles(questions_data, output_dir,
 
     # --- Generate Reports ---
     # 1. Full Profiles Report
-    report_path_profiles = os.path.join(output_dir, 'consensus_profiles.csv')
+    report_path_profiles = os.path.join(consensus_output_dir, 'consensus_profiles.csv')
     try:
         results_df.sort_values(by=f'MinAgree_{top_n_percentiles[0]}pct', ascending=False).to_csv(report_path_profiles, index=False, float_format='%.4f')
         print(f"  Saved full consensus profiles to: {report_path_profiles}")
@@ -532,7 +536,7 @@ def calculate_consensus_profiles(questions_data, output_dir,
         col_name = f'MinAgree_{p}pct'
         if col_name in results_df.columns:
             top_n_df = results_df.sort_values(by=col_name, ascending=False).head(top_n_count)
-            report_path_top_n = os.path.join(output_dir, f'consensus_top{top_n_count}_{p}pct.csv')
+            report_path_top_n = os.path.join(consensus_output_dir, f'consensus_top{top_n_count}_{p}pct.csv')
             try:
                 top_n_df.to_csv(report_path_top_n, index=False, float_format='%.4f')
                 print(f"  Saved Top {top_n_count} consensus responses ({p} percentile) to: {report_path_top_n}")
@@ -544,12 +548,14 @@ def calculate_consensus_profiles(questions_data, output_dir,
     print("--- Consensus Profile Calculation Complete ---")
     return results_df
 
-def generate_indicator_heatmaps(indicator_codesheet_path, questions_data, output_dir):
+def generate_indicator_heatmaps(indicator_codesheet_path, questions_data, indicators_output_dir):
     """
     Generates heatmaps for Indicator poll questions, grouped by category.
     (With improved formatting for labels and layout, and structured titles)
     """
     print("\n--- Generating Indicator Heatmaps --- ")
+    # Ensure output dir exists
+    os.makedirs(indicators_output_dir, exist_ok=True)
 
     # --- Load Indicator Codesheet ---
     try:
@@ -661,7 +667,7 @@ def generate_indicator_heatmaps(indicator_codesheet_path, questions_data, output
         # --- Save heatmap ---
         safe_category_name = re.sub(r'[^\w\-\. ]', '', category).strip().replace(' ', '_')
         heatmap_filename = f"indicator_heatmap_{safe_category_name}.png"
-        heatmap_path = os.path.join(output_dir, heatmap_filename)
+        heatmap_path = os.path.join(indicators_output_dir, heatmap_filename)
         try:
             plt.savefig(heatmap_path, dpi=150, bbox_inches='tight')
             print(f"    Saved heatmap to: {heatmap_path}")
@@ -681,7 +687,7 @@ if __name__ == "__main__":
     input_group.add_argument("--csv_filepath", help="Explicit path to the aggregate.csv file.")
 
     # --- Other arguments ---
-    parser.add_argument("-o", "--output_dir", default="analysis_output", help="Directory to save results and cache.")
+    parser.add_argument("-o", "--output_dir", default="analysis_output", help="Base directory to save results and cache.")
     parser.add_argument("-s", "--min_segment_size", type=int, default=DEFAULT_MIN_SEGMENT_SIZE, help="Minimum participant size for a segment to be included in analysis.")
     parser.add_argument("--force_reparse", action="store_true", help="Force reparsing from CSV, ignoring cache.")
     # Set default padding based on notebook observation
@@ -697,72 +703,46 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # --- Determine and Validate Input CSV Path ---
-    input_csv_path = None
+    # --- Determine Input CSV Path ---
+    input_csv_path = None; gd_identifier = "custom_input" # Default identifier
     if args.gd_number:
         gd_num = args.gd_number
-        # Construct the relative path from the workspace root
-        constructed_path = os.path.join("Data", f"GD{gd_num}", f"GD{gd_num}_aggregate.csv")
-        print(f"Attempting to use constructed path for GD{gd_num}: {constructed_path}")
-        if not os.path.exists(constructed_path):
-             print(f"Error: Constructed path does not exist: {constructed_path}")
-             print("Please ensure the Data/GDi/GDi_aggregate.csv structure exists relative to your workspace root, or provide an explicit --csv_filepath.")
-             exit(1)
+        gd_identifier = f"GD{gd_num}" # Set identifier based on number
+        constructed_path = os.path.join("Data", gd_identifier, f"{gd_identifier}_aggregate.csv")
+        if not os.path.exists(constructed_path): print(f"Error: Constructed path does not exist: {constructed_path}"); exit(1)
         input_csv_path = constructed_path
     elif args.csv_filepath:
-        print(f"Attempting to use provided file path: {args.csv_filepath}")
-        if not os.path.exists(args.csv_filepath):
-            print(f"Error: Provided file path does not exist: {args.csv_filepath}")
-            exit(1)
+        # Try to infer GD number from path for directory name, fallback to default
+        match = re.search(r'GD(\d+)', args.csv_filepath, re.IGNORECASE)
+        if match: gd_identifier = f"GD{match.group(1)}"
+        if not os.path.exists(args.csv_filepath): print(f"Error: Provided file path does not exist: {args.csv_filepath}"); exit(1)
         input_csv_path = args.csv_filepath
-    else:
-        # This case should technically not be reached due to the mutually exclusive group being required
-        print("Error: No input specified. Please use either --gd_number or --csv_filepath.")
-        exit(1)
-
+    else: print("Error: No input specified."); exit(1)
     print(f"Using input file: {input_csv_path}")
+    print(f"Using output identifier: {gd_identifier}")
 
-    # --- Setup Output Directory ---
-    if not os.path.exists(args.output_dir):
-        try:
-            os.makedirs(args.output_dir)
-            print(f"Created output directory: {args.output_dir}")
-        except OSError as e:
-             print(f"Error creating output directory {args.output_dir}: {e}")
-             exit(1) # Exit if we can't create the output dir
+    # --- Setup Output Directories ---
+    base_output_dir = os.path.join(args.output_dir, gd_identifier)
+    consensus_output_dir = os.path.join(base_output_dir, "consensus")
+    divergence_output_dir = os.path.join(base_output_dir, "divergence")
+    indicators_output_dir = os.path.join(base_output_dir, "indicators")
+    
+    # Create directories if they don't exist
+    os.makedirs(base_output_dir, exist_ok=True)
+    os.makedirs(consensus_output_dir, exist_ok=True)
+    os.makedirs(divergence_output_dir, exist_ok=True)
+    os.makedirs(indicators_output_dir, exist_ok=True)
+    print(f"Output will be saved under: {base_output_dir}/")
 
-    cache_file = os.path.join(args.output_dir, CACHE_FILENAME)
+    # Update cache file path to be inside the base GDi/custom directory
+    cache_file = os.path.join(base_output_dir, CACHE_FILENAME)
+    print(f"Using cache file: {cache_file}")
+    print("(Consider adding this cache file path to your .gitignore)")
 
     # --- Load and Preprocess Data ---
-    all_questions_data = load_and_preprocess_data(
-        input_csv_path, # Use the validated path
-        cache_file,
-        args.force_reparse,
-        args.padding_rows
-    )
-
-    if not all_questions_data:
-        print("Failed to load or process data. Exiting.")
-        exit(1)
-
+    all_questions_data = load_and_preprocess_data(input_csv_path, cache_file, args.force_reparse, args.padding_rows)
+    if not all_questions_data: print("Failed to load data."); exit(1)
     print(f"\nSuccessfully loaded/processed {len(all_questions_data)} questions from {input_csv_path}.")
-
-    # --- Example: Print info about the first few questions ---
-    print("\n--- Sample Processed Data ---")
-    for i, (metadata, df) in enumerate(all_questions_data[:3]):
-        print(f"\n--- Question {i+1} ---")
-        print(f"  ID  : {metadata.get('id', 'N/A')}")
-        print(f"  Type: {metadata.get('type', 'N/A')}")
-        q_text = metadata.get('text', '')
-        print(f"  Text: {q_text[:100]}{'...' if len(q_text) > 100 else ''}") # Print first 100 chars
-        print(f"  Shape: {df.shape}")
-        segment_cols = metadata.get('segment_cols', [])
-        segment_sizes = metadata.get('segment_sizes', {})
-        print(f"  Segment Columns Identified ({len(segment_cols)}): {segment_cols[:5]}{'...' if len(segment_cols) > 5 else ''}") # Print first 5 segments
-        print(f"  Segment Sizes (first 5): { {k: segment_sizes.get(k, 'N/A') for k in segment_cols[:5]} }")
-        print(f"  DataFrame Columns: {df.columns.tolist()[:8]}{'...' if len(df.columns) > 8 else ''}") # First 8 cols
-        # print(df.head(2)) # Uncomment to see first 2 rows of DataFrame
-
 
     # --- Filter segments based on size ---
     print(f"\nFiltering segments with size < {args.min_segment_size}...")
@@ -802,15 +782,15 @@ if __name__ == "__main__":
 
     # --- Run Analysis Functions --- 
     divergence_results = calculate_divergence_report(
-        all_questions_data,
-        args.output_dir,
+        all_questions_data, 
+        divergence_output_dir, # Pass specific directory
         top_n_per_question=args.top_n_divergence,
         top_n_overall=args.top_n_divergence_overall
-        )
+    )
 
     consensus_results = calculate_consensus_profiles(
         all_questions_data,
-        args.output_dir,
+        consensus_output_dir, # Pass specific directory
         percentiles_to_calc=args.consensus_percentiles,
         top_n_percentiles=args.consensus_top_n_percentiles,
         top_n_count=args.consensus_top_n_count
@@ -819,7 +799,7 @@ if __name__ == "__main__":
     generate_indicator_heatmaps(
         args.indicator_codesheet, 
         all_questions_data, 
-        args.output_dir
+        indicators_output_dir # Pass specific directory
     )
 
     # --- Optional: Further summary based on results ---
