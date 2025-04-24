@@ -7,6 +7,8 @@ import argparse
 import math
 import re # For parsing segment columns
 import warnings
+import matplotlib.pyplot as plt
+import seaborn as sns # Optional: for nicer plots
 
 # --- Configuration ---
 # Default values, can be overridden by command-line args
@@ -40,6 +42,16 @@ def parse_percentage(value):
                 return np.nan # Error during conversion
     # Default to NaN if input is not recognized or fails conversion
     return np.nan
+
+def longest_common_suffix(strings):
+    """Calculates the longest common suffix of a list of strings."""
+    if not strings:
+        return ""
+    reversed_strings = [s[::-1] for s in strings]
+    # Find common prefix of reversed strings
+    lcp_reversed = os.path.commonprefix(reversed_strings)
+    # Reverse back to get common suffix
+    return lcp_reversed[::-1]
 
 def get_segment_columns(df_columns):
     """
@@ -401,18 +413,287 @@ def calculate_divergence_report(questions_data, output_dir, top_n_per_question=2
     print("--- Divergence Calculation Complete ---")
     return results_df # Return the full results DataFrame
 
-# Placeholder for consensus function
-def calculate_consensus_profiles(questions_data, output_dir):
-    print("\n--- Consensus Analysis (Not Implemented Yet) ---")
-    # ... implementation needed ...
-    return None
+def calculate_consensus_profiles(questions_data, output_dir, 
+                                 percentiles_to_calc = [100, 95, 90, 80, 70, 60, 50, 40, 30, 20, 10],
+                                 top_n_percentiles = [100, 95, 90],
+                                 top_n_count = 5):
+    """
+    Calculates consensus profiles (percentile minimums) for Ask Opinion questions.
 
-# Placeholder for heatmap function
+    Args:
+        questions_data (list): The list of (metadata, df) tuples.
+        output_dir (str): Directory to save the report CSV files.
+        percentiles_to_calc (list): List of percentiles (e.g., 100, 95, 90) for which to calculate the min agreement.
+        top_n_percentiles (list): List of percentiles to use for generating Top N reports.
+        top_n_count (int): Number of top responses to include in the Top N reports.
+
+    Returns:
+        pd.DataFrame: DataFrame containing consensus profiles for all responses.
+                     Returns empty DataFrame if no Ask Opinion questions found or processed.
+    """
+    print("\n--- Calculating Consensus Profiles --- ")
+    all_consensus_results = []
+    percentiles_to_calc.sort(reverse=True) # Ensure descending order for clarity
+    percentile_cols = [f'MinAgree_{p}pct' for p in percentiles_to_calc]
+
+    for metadata, df in questions_data:
+        q_id = metadata.get('id')
+        q_text = metadata.get('text')
+        q_type = metadata.get('type')
+
+        if q_type != 'Ask Opinion':
+            continue
+
+        analysis_segments = metadata.get('analysis_segment_cols', [])
+
+        # Need segments to calculate consensus
+        if not analysis_segments:
+            print(f"  Skipping QID {q_id} (Ask Opinion) - No valid segments for consensus calculation.")
+            continue
+
+        response_col = 'English Response'
+        if response_col not in df.columns:
+             response_col_fallback = 'English Responses'
+             if response_col_fallback in df.columns:
+                 response_col = response_col_fallback
+             else:
+                 print(f"  Skipping QID {q_id} - Could not find response column ('{response_col}' or '{response_col_fallback}').")
+                 continue
+
+        print(f"  Processing QID {q_id} ('{q_text[:50]}...') with {len(analysis_segments)} segments.")
+
+        # Select only the valid segment columns for calculation
+        segment_data = df[analysis_segments].copy()
+        # Ensure data is numeric, converting errors to NaN
+        for col in analysis_segments:
+            segment_data[col] = pd.to_numeric(segment_data[col], errors='coerce')
+
+        for index, row in segment_data.iterrows():
+            # Get agreement rates for this response, drop NaNs
+            valid_rates = row.dropna()
+
+            if valid_rates.empty:
+                continue # Skip if no valid rates for this response
+
+            # Sort rates descending to easily find percentile minimums
+            sorted_rates = valid_rates.sort_values(ascending=False)
+            num_valid_segments = len(sorted_rates)
+
+            response_profile = {
+                'Question ID': q_id,
+                'Question Text': q_text,
+                'Response Text': df.loc[index, response_col],
+                'Num Valid Segments': num_valid_segments
+            }
+
+            # Calculate minimum agreement for each requested percentile
+            for p in percentiles_to_calc:
+                col_name = f'MinAgree_{p}pct'
+                if p == 0: # Avoid division by zero if 0 is requested
+                    response_profile[col_name] = np.nan
+                    continue
+                
+                # Calculate the index corresponding to the percentile minimum
+                # We want the agreement rate of the segment at the cutoff defined by (100-p)%
+                # Example: For 90%, we want the minimum of the top 90%. If sorted DESC, 
+                # this is the value at index floor(N * 0.9) - 1 if N*0.9 is whole, or floor(N*0.9)
+                # More simply: calculate how many segments to *keep* (N * p/100)
+                # The minimum value among these kept segments is at index: ceil(N * p/100) - 1
+                
+                # Ensure k is at least 1 and does not exceed N
+                k = max(1, min(num_valid_segments, math.ceil(num_valid_segments * p / 100.0)))
+                idx_for_min = k - 1 # 0-based index
+                
+                # The value at this index in the DESC sorted list is the minimum agreement 
+                # achieved by at least p% of the segments.
+                response_profile[col_name] = sorted_rates.iloc[idx_for_min]
+
+            all_consensus_results.append(response_profile)
+
+    if not all_consensus_results:
+        print("No consensus profiles generated (no valid Ask Opinion responses found?).")
+        return pd.DataFrame()
+
+    # Create DataFrame
+    results_df = pd.DataFrame(all_consensus_results)
+
+    # --- Generate Reports ---
+    # 1. Full Profiles Report
+    report_path_profiles = os.path.join(output_dir, 'consensus_profiles.csv')
+    try:
+        results_df.sort_values(by=f'MinAgree_{top_n_percentiles[0]}pct', ascending=False).to_csv(report_path_profiles, index=False, float_format='%.4f')
+        print(f"  Saved full consensus profiles to: {report_path_profiles}")
+    except Exception as e:
+        print(f"  Error saving full consensus profiles report: {e}")
+
+    # 2. Top N Reports for specified percentiles
+    for p in top_n_percentiles:
+        col_name = f'MinAgree_{p}pct'
+        if col_name in results_df.columns:
+            top_n_df = results_df.sort_values(by=col_name, ascending=False).head(top_n_count)
+            report_path_top_n = os.path.join(output_dir, f'consensus_top{top_n_count}_{p}pct.csv')
+            try:
+                top_n_df.to_csv(report_path_top_n, index=False, float_format='%.4f')
+                print(f"  Saved Top {top_n_count} consensus responses ({p} percentile) to: {report_path_top_n}")
+            except Exception as e:
+                print(f"  Error saving Top {top_n_count} ({p} percentile) report: {e}")
+        else:
+            print(f"  Warning: Cannot generate Top {top_n_count} report for {p} percentile - column '{col_name}' not found.")
+
+    print("--- Consensus Profile Calculation Complete ---")
+    return results_df
+
 def generate_indicator_heatmaps(indicator_codesheet_path, questions_data, output_dir):
-    print("\n--- Indicator Heatmap Generation (Not Implemented Yet) ---")
-    # ... implementation needed ...
-    return None
+    """
+    Generates heatmaps for Indicator poll questions, grouped by category.
 
+    Args:
+        indicator_codesheet_path (str): Path to the INDICATOR_CODESHEET.csv file.
+        questions_data (list): The list of (metadata, df) tuples from aggregate data.
+        output_dir (str): Directory to save the heatmap PNG files.
+    """
+    print("\n--- Generating Indicator Heatmaps --- ")
+
+    # --- Load Indicator Codesheet ---
+    try:
+        indicator_df = pd.read_csv(indicator_codesheet_path)
+        indicator_polls = indicator_df[indicator_df['question_type'] == 'Poll Single Select'].copy()
+        indicator_polls.dropna(subset=['question_text'], inplace=True)
+        qtext_to_category = indicator_polls.set_index('question_text')['question_category'].to_dict()
+        qtext_to_code = indicator_polls.set_index('question_text')['question_code'].to_dict()
+        print(f"  Loaded {len(indicator_polls)} indicator poll questions from: {indicator_codesheet_path}")
+    except FileNotFoundError:
+        print(f"  Error: Indicator codesheet not found at {indicator_codesheet_path}"); return
+    except Exception as e:
+        print(f"  Error loading indicator codesheet: {e}"); return
+
+    # --- Map Aggregate Data to Indicators ---
+    indicator_question_data = {}
+    for metadata, df in questions_data:
+        q_text = metadata.get('text')
+        q_type = metadata.get('type')
+        if q_type == 'Poll Single Select' and q_text in qtext_to_category:
+            category = qtext_to_category[q_text]
+            if category not in indicator_question_data:
+                indicator_question_data[category] = []
+            # Store metadata, df, and full question text for label generation
+            indicator_question_data[category].append((metadata, df, q_text))
+
+    if not indicator_question_data:
+        print("  Warning: No matching indicator poll questions found in the aggregate data.")
+        return
+
+    # --- Generate Heatmap per Category ---
+    for category, questions_in_category in indicator_question_data.items():
+        print(f"  Generating heatmap for category: {category} ({len(questions_in_category)} questions)")
+        category_data_for_pivot = []
+        # Store tuples of (full_text, derived_label) to maintain order and map labels
+        ordered_labels_info = [] 
+        full_texts_in_category = [q_text for meta, df, q_text in questions_in_category]
+
+        # --- Calculate LCP/LCSuf and derive labels ---
+        text_to_label = {}
+        plot_title = f"Indicator: {category}" # Default title
+        if len(full_texts_in_category) > 1:
+            lcp = os.path.commonprefix(full_texts_in_category)
+            lcsuf = longest_common_suffix(full_texts_in_category)
+            
+            # Basic check to see if LCP/LCSuf are meaningful
+            min_len = min(len(s) for s in full_texts_in_category)
+            # Only use LCP/LCSuf if they don't overlap and leave some middle part
+            if len(lcp) + len(lcsuf) < min_len:
+                 for text in full_texts_in_category:
+                     label = text[len(lcp):len(text)-len(lcsuf)].strip()
+                     # Use short code as fallback if label is empty/too short
+                     text_to_label[text] = label if len(label) > 1 else qtext_to_code.get(text, text[:30])
+                 
+                 # Refine title if LCP/LCSuf seem helpful
+                 if len(lcp) > 5 and len(lcsuf) > 5: plot_title = f"{category}\n{lcp} ___ {lcsuf}"
+                 elif len(lcp) > 5: plot_title = f"{category}\n{lcp}..."
+                 elif len(lcsuf) > 5: plot_title = f"{category}\n... {lcsuf}"
+            else:
+                 # LCP/LCSuf overlap or cover everything, use codes as labels
+                 for text in full_texts_in_category:
+                     text_to_label[text] = qtext_to_code.get(text, text[:30])
+        elif len(full_texts_in_category) == 1:
+             # Single question, use code as label
+             text = full_texts_in_category[0]
+             text_to_label[text] = qtext_to_code.get(text, text[:30])
+
+        # --- Prepare data for pivoting ---
+        for metadata, df, q_text in questions_in_category:
+            q_id = metadata.get('id')
+            all_n_col = next((col for col in df.columns if col.startswith("All(") and col.endswith(")")), None)
+            
+            if 'Responses' not in df.columns or not all_n_col:
+                print(f"    Warning: Skipping QID {q_id} - Missing 'Responses' or 'All(N)' column.")
+                continue
+
+            # Ensure percentages are numeric
+            df[all_n_col] = pd.to_numeric(df[all_n_col], errors='coerce')
+            temp_df = df[['Responses', all_n_col]].copy()
+            temp_df.rename(columns={all_n_col: 'Percentage'}, inplace=True)
+            temp_df['QuestionText'] = q_text # Use the full text for pivot index
+            category_data_for_pivot.append(temp_df)
+            
+            # Store label info in order, ensuring uniqueness based on text
+            current_label = text_to_label.get(q_text) 
+            if q_text not in [t for t, l in ordered_labels_info]:
+                 ordered_labels_info.append((q_text, current_label))
+                 
+        if not category_data_for_pivot:
+            print(f"    Warning: No valid data extracted for category '{category}'. Skipping heatmap.")
+            continue
+
+        combined_df = pd.concat(category_data_for_pivot, ignore_index=True)
+        
+        # --- Pivot and Reindex ---
+        try:
+            heatmap_pivot = combined_df.pivot_table(
+                index='QuestionText', # Pivot using full text
+                columns='Responses', 
+                values='Percentage',
+                aggfunc='first' 
+            )
+            # Reindex rows using the original texts to maintain order
+            ordered_texts = [text for text, label in ordered_labels_info]
+            heatmap_pivot = heatmap_pivot.reindex(ordered_texts)
+            # Sort columns (response options) alphabetically
+            heatmap_pivot = heatmap_pivot.sort_index(axis=1)
+        except Exception as e:
+            print(f"    Error pivoting data for category '{category}': {e}")
+            continue
+
+        if heatmap_pivot.empty:
+             print(f"    Warning: Pivoted data is empty for category '{category}'. Skipping heatmap.")
+             continue
+             
+        # --- Plotting ---
+        plt.figure(figsize=(max(10, heatmap_pivot.shape[1] * 1.2), max(6, heatmap_pivot.shape[0] * 0.8)))
+        ax = sns.heatmap(heatmap_pivot, annot=True, fmt=".0%", cmap="Blues", linewidths=.5, cbar=False)
+        
+        # Set Y-tick labels to the derived varying parts
+        ordered_varying_labels = [label for text, label in ordered_labels_info]
+        ax.set_yticklabels(ordered_varying_labels, rotation=0)
+        
+        plt.xticks(rotation=15, ha='right')
+        plt.title(plot_title, fontsize=14) # Use generated title
+        plt.xlabel("Response Options", fontsize=10)
+        plt.ylabel("Question Detail", fontsize=10) # Use generic Y-axis label
+        plt.tight_layout()
+
+        # --- Save heatmap ---
+        safe_category_name = re.sub(r'[^\w\-\. ]', '', category).strip().replace(' ', '_')
+        heatmap_filename = f"indicator_heatmap_{safe_category_name}.png"
+        heatmap_path = os.path.join(output_dir, heatmap_filename)
+        try:
+            plt.savefig(heatmap_path, dpi=150)
+            print(f"    Saved heatmap to: {heatmap_path}")
+        except Exception as e:
+            print(f"    Error saving heatmap for category '{category}': {e}")
+        plt.close()
+
+    print("--- Indicator Heatmap Generation Complete ---")
 
 # --- Main Execution ---
 if __name__ == "__main__":
@@ -431,6 +712,12 @@ if __name__ == "__main__":
     parser.add_argument("--padding_rows", type=int, default=9, help="Number of header/junk rows to skip at the start of the CSV.")
     parser.add_argument("--top_n_divergence", type=int, default=20, help="Number of top divergent responses to report per question.")
     parser.add_argument("--top_n_divergence_overall", type=int, default=50, help="Number of top divergent responses to report overall.")
+    # Consensus Args
+    parser.add_argument("--consensus_percentiles", type=int, nargs='+', default=[100, 95, 90, 80, 70, 60, 50, 40, 30, 20, 10], help="Percentiles for consensus profile calculation (e.g., 100 95 90)")
+    parser.add_argument("--consensus_top_n_percentiles", type=int, nargs='+', default=[100, 95, 90], help="Percentiles to generate Top N reports for (e.g., 100 95)")
+    parser.add_argument("--consensus_top_n_count", type=int, default=5, help="Number of responses for Top N consensus reports.")
+    # Add arg for indicator codesheet 
+    parser.add_argument("--indicator_codesheet", default="Data/Documentation/INDICATOR_CODESHEET.csv", help="Path to the Indicator Codesheet CSV.")
 
     args = parser.parse_args()
 
@@ -545,10 +832,19 @@ if __name__ == "__main__":
         top_n_overall=args.top_n_divergence_overall
         )
 
-    # Call other analysis functions (when implemented)
-    consensus_results = calculate_consensus_profiles(all_questions_data, args.output_dir)
-    # generate_indicator_heatmaps(args.indicator_codesheet, all_questions_data, args.output_dir)
-
+    consensus_results = calculate_consensus_profiles(
+        all_questions_data,
+        args.output_dir,
+        percentiles_to_calc=args.consensus_percentiles,
+        top_n_percentiles=args.consensus_top_n_percentiles,
+        top_n_count=args.consensus_top_n_count
+    )
+    
+    generate_indicator_heatmaps(
+        args.indicator_codesheet, 
+        all_questions_data, 
+        args.output_dir
+    )
 
     # --- Optional: Further summary based on results ---
     if divergence_results is not None and not divergence_results.empty:
@@ -562,5 +858,15 @@ if __name__ == "__main__":
     else:
         print("\nNo divergence results to summarize.")
 
+    # Consensus summary (add example)
+    if consensus_results is not None and not consensus_results.empty and 'MinAgree_90pct' in consensus_results.columns:
+         highest_consensus_90pct = consensus_results.loc[consensus_results['MinAgree_90pct'].idxmax()]
+         print("\nHighest Consensus Response (90th Percentile Minimum):")
+         print(f"  Score    : {highest_consensus_90pct['MinAgree_90pct']:.4f}")
+         print(f"  Question : {highest_consensus_90pct['Question Text'][:100]}...")
+         print(f"  Response : {highest_consensus_90pct['Response Text'][:100]}...")
+         print(f"  (Based on {highest_consensus_90pct['Num Valid Segments']} segments)")
+    else:
+         print("\nNo consensus results to summarize (or 90pct column missing).")
 
     print("\nScript finished.") 
