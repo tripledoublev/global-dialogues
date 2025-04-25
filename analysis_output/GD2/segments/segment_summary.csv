@@ -1,0 +1,255 @@
+Segment Name,Participant Count,Onboarding Question
+Arabic,20,O1
+Chinese (China),74,O1
+English,860,O1
+French,11,O1
+Hindi,6,O1
+Portuguese (Brazil),33,O1
+Russian,36,O1
+Spanish,80,O1
+&lt;18,0,O2
+18-25,330,O2
+26-35,481,O2
+36-45,187,O2
+46-55,93,O2
+56-65,22,O2
+65+,7,O2
+Female,565,O3
+Male,540,O3
+Non-binary,9,O3
+Other / prefer not to say,6,O3
+Rural,79,O4
+Suburban,291,O4
+Urban,750,O4
+Equally concerned and excited,613,O5
+More concerned than excited,131,O5
+More excited than concerned,376,O5
+Buddhism,28,O6
+Christianity,400,O6
+Hinduism,146,O6
+I do not identify with any religious group or faith,302,O6
+Islam,182,O6
+Judaism,31,O6
+Other religious group,25,O6
+Sikhism,6,O6
+Afghanistan,0,O7
+Albania,0,O7
+Algeria,8,O7
+Andorra,0,O7
+Angola,1,O7
+Antigua & Deps,0,O7
+Argentina,1,O7
+Armenia,0,O7
+Australia,14,O7
+Austria,1,O7
+Azerbaijan,0,O7
+Bahamas,0,O7
+Bahrain,0,O7
+Bangladesh,16,O7
+Barbados,0,O7
+Belarus,0,O7
+Belgium,3,O7
+Belize,0,O7
+Benin,0,O7
+Bhutan,0,O7
+Bolivia,0,O7
+Bosnia Herzegovina,0,O7
+Botswana,0,O7
+Brazil,35,O7
+Brunei,0,O7
+Bulgaria,0,O7
+Burkina,0,O7
+Burundi,0,O7
+Cambodia,0,O7
+Cameroon,0,O7
+Canada,31,O7
+Cape Verde,0,O7
+Central African Rep,0,O7
+Chad,0,O7
+Chile,48,O7
+China,47,O7
+Colombia,0,O7
+Comoros,0,O7
+Congo,0,O7
+Congo {Democratic Rep},0,O7
+Costa Rica,0,O7
+Croatia,2,O7
+Cuba,0,O7
+Cyprus,0,O7
+Czech Republic,0,O7
+Denmark,4,O7
+Djibouti,0,O7
+Dominica,0,O7
+Dominican Republic,1,O7
+East Timor,0,O7
+Ecuador,0,O7
+Egypt,11,O7
+El Salvador,0,O7
+Equatorial Guinea,0,O7
+Eritrea,1,O7
+Estonia,0,O7
+Ethiopia,0,O7
+Fiji,1,O7
+Finland,2,O7
+France,13,O7
+Gabon,0,O7
+Gambia,0,O7
+Georgia,0,O7
+Germany,18,O7
+Ghana,0,O7
+Greece,1,O7
+Grenada,0,O7
+Guatemala,0,O7
+Guinea,0,O7
+Guinea-Bissau,0,O7
+Guyana,0,O7
+Haiti,0,O7
+Honduras,0,O7
+Hungary,1,O7
+Iceland,0,O7
+India,209,O7
+Indonesia,40,O7
+Iran,0,O7
+Iraq,0,O7
+Ireland {Republic},3,O7
+Israel,43,O7
+Italy,13,O7
+Ivory Coast,0,O7
+Jamaica,0,O7
+Japan,14,O7
+Jordan,0,O7
+Kazakhstan,19,O7
+Kenya,177,O7
+Kiribati,0,O7
+Korea North,0,O7
+Korea South,17,O7
+Kosovo,0,O7
+Kuwait,0,O7
+Kyrgyzstan,0,O7
+Laos,0,O7
+Latvia,0,O7
+Lebanon,0,O7
+Lesotho,0,O7
+Liberia,0,O7
+Libya,0,O7
+Liechtenstein,0,O7
+Lithuania,0,O7
+Luxembourg,0,O7
+Macedonia,0,O7
+Madagascar,0,O7
+Malawi,8,O7
+Malaysia,7,O7
+Maldives,1,O7
+Mali,0,O7
+Malta,0,O7
+Marshall Islands,0,O7
+Mauritania,0,O7
+Mauritius,0,O7
+Mexico,23,O7
+Micronesia,0,O7
+Moldova,0,O7
+Monaco,0,O7
+Mongolia,0,O7
+Montenegro,0,O7
+Morocco,13,O7
+Mozambique,0,O7
+"Myanmar, {Burma}",0,O7
+Namibia,0,O7
+Nauru,0,O7
+Nepal,0,O7
+Netherlands,6,O7
+New Zealand,2,O7
+Nicaragua,0,O7
+Niger,0,O7
+Nigeria,0,O7
+Norway,1,O7
+Oman,0,O7
+Pakistan,23,O7
+Palau,0,O7
+Palestine,1,O7
+Panama,0,O7
+Papua New Guinea,0,O7
+Paraguay,0,O7
+Philippines,19,O7
+Poland,8,O7
+Portugal,2,O7
+Qatar,0,O7
+Romania,1,O7
+Russian Federation,10,O7
+Rwanda,0,O7
+Saint Vincent & the Grenadines,0,O7
+Samoa,0,O7
+San Marino,0,O7
+Sao Tome & Principe,0,O7
+Saudi Arabia,3,O7
+Senegal,0,O7
+Serbia,0,O7
+Seychelles,0,O7
+Sierra Leone,0,O7
+Singapore,7,O7
+Slovakia,11,O7
+Slovenia,0,O7
+Solomon Islands,0,O7
+Somalia,0,O7
+South Africa,13,O7
+South Sudan,0,O7
+Spain,8,O7
+Sri Lanka,1,O7
+St Kitts & Nevis,0,O7
+St Lucia,0,O7
+Sudan,1,O7
+Suriname,0,O7
+Swaziland,0,O7
+Sweden,3,O7
+Switzerland,3,O7
+Syria,0,O7
+Taiwan,0,O7
+Tajikistan,0,O7
+Tanzania,0,O7
+Thailand,0,O7
+Togo,0,O7
+Tonga,0,O7
+Trinidad & Tobago,0,O7
+Tunisia,1,O7
+Turkey,10,O7
+Turkmenistan,0,O7
+Tuvalu,0,O7
+Uganda,0,O7
+Ukraine,5,O7
+United Arab Emirates,4,O7
+United Kingdom,47,O7
+United States,72,O7
+Uruguay,0,O7
+Uzbekistan,1,O7
+Vanuatu,0,O7
+Vatican City,0,O7
+Venezuela,1,O7
+Vietnam,8,O7
+Yemen,0,O7
+Zambia,0,O7
+Zimbabwe,1,O7
+44+,122,
+55+,29,
+Africa,235,
+Asia,489,
+Caribbean,1,
+Central America,23,
+Central Asia,20,
+Eastern Africa,187,
+Eastern Asia,78,
+Eastern Europe,36,
+Europe,166,
+Middle Africa,1,
+North America,127,
+Norther Europe,60,
+Northern Africa,34,
+Northern America,103,
+Oceania,17,
+South America,85,
+South Eastern Asia,81,
+Souther Asia,250,
+Southern Africa,13,
+Southern Europe,26,
+Western Africa,0,
+Western Asia,61,
+Western Europe,44,

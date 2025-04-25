@@ -56,40 +56,52 @@ def longest_common_suffix(strings):
 
 def get_segment_columns(df_columns):
     """
-    Identifies segment columns (typically ending in '(Number)') and extracts the number N.
+    Identifies segment columns (typically ending in '(Number)'), extracts the
+    segment name, optional 'O' code (e.g., O1), and the participant count (N).
 
     Args:
         df_columns (list): List of column names from a DataFrame.
 
     Returns:
-        tuple: (list_of_segment_column_names, dict_of_segment_name_to_size)
+        tuple: (list_of_segment_column_names, dict_of_segment_details)
+               The dict maps column names to {'name': str, 'o_code': str|None, 'size': int|np.nan}.
     """
     segment_cols = []
-    segment_sizes = {}
-    # Regex updated to find columns ending in (Number), allowing for whitespace variations.
-    # It captures the digits within the parentheses.
-    pattern = re.compile(r'.*?\s*\(\s*(\d+)\s*\)\s*$') # Updated pattern
+    segment_details = {}
+    # Regex to capture:
+    # Group 1 (Optional): 'O' code like 'O1:', 'O2:', etc. including the colon and potential spaces.
+    # Group 2: The segment name (non-greedy match).
+    # Group 3: The count within parentheses.
+    # Allows for variations in spacing.
+    pattern = re.compile(r'^(O\d+:\s*)?(.*?)\s*\(\s*(\d+)\s*\)\s*$')
 
     for col in df_columns:
         match = pattern.match(col)
         if match:
             segment_cols.append(col)
+            o_code_match = match.group(1) # Might be None if no 'O' prefix
+            name = match.group(2).strip() # The captured segment name
+            size_str = match.group(3) # The captured digits for size
+
+            # Extract just the 'O' code number if present
+            o_code = None
+            if o_code_match:
+                 o_code_num_match = re.search(r'O(\d+)', o_code_match)
+                 if o_code_num_match:
+                     o_code = f"O{o_code_num_match.group(1)}" # Store as O1, O2 etc.
+
             try:
-                # The number is captured by group 1 of the updated pattern
-                segment_sizes[col] = int(match.group(1))
+                size = int(size_str)
             except ValueError:
-                # This should be less likely now pattern requires digits, but handle just in case
-                segment_sizes[col] = np.nan
-                print(f"Warning: Could not parse extracted size digits from segment column: {col}")
-            except IndexError:
-                 # Should not happen if pattern matched, means regex logic error
-                 segment_sizes[col] = np.nan
-                 print(f"Warning: Regex matched but failed to extract size group from segment column: {col}")
+                size = np.nan
+                print(f"Warning: Could not parse extracted size digits '{size_str}' from segment column: {col}")
+
+            segment_details[col] = {'name': name, 'o_code': o_code, 'size': size}
 
     # Sort to bring 'All(...)' column(s) to the front if they exist
+    # Note: segment_details dict remains unsorted, sorting only affects segment_cols list
     all_cols = [col for col in segment_cols if col.startswith('All(') or col.startswith('All (')]
     other_cols = [col for col in segment_cols if not (col.startswith('All(') or col.startswith('All ('))]
-    # Ensure sorting is stable if needed, though order of non-'All' segments may not matter
     sorted_segment_cols = sorted(all_cols) + sorted(other_cols)
 
     if not sorted_segment_cols and len(df_columns) > 5: # Adjusted threshold slightly
@@ -97,10 +109,11 @@ def get_segment_columns(df_columns):
          standard_cols = {'Question ID', 'Question Type', 'Question', 'Responses', 'English Response', 'Original Response'}
          potential_segments = [c for c in df_columns if c not in standard_cols and '(' in c]
          if potential_segments:
-              print(f"Warning: Regex pattern did not find segment columns ending like '(Number)' in headers: {df_columns[:10]}... Check CSV format or regex pattern.")
+              print(f"Warning: Regex pattern did not find segment columns matching format 'Name (Number)' or 'O#: Name (Number)' in headers: {df_columns[:10]}... Check CSV format or regex pattern.")
          # Else: Likely a question type without segments (e.g. Ask Experience), so no warning needed.
 
-    return sorted_segment_cols, segment_sizes
+    # Return both the sorted list of column names and the detailed dictionary
+    return sorted_segment_cols, segment_details
 
 
 # --- Data Loading and Preprocessing ---
@@ -144,6 +157,7 @@ def load_and_preprocess_data(csv_path, cache_path, force_reparse=False, padding_
 
     print(f"Parsing data from CSV: {csv_path}")
     processed_data = []
+    first_question_segment_details = None # <<<<<<< NEW: Initialize variable
     current_question_data = []
 
     try:
@@ -199,7 +213,7 @@ def load_and_preprocess_data(csv_path, cache_path, force_reparse=False, padding_
                         df = pd.DataFrame(data_rows, columns=header)
 
                         # Identify segment columns and sizes
-                        segment_cols, segment_sizes = get_segment_columns(df.columns)
+                        segment_cols, segment_details = get_segment_columns(df.columns)
 
                         # Apply percentage conversion only to identified segment columns
                         for col in segment_cols:
@@ -212,8 +226,13 @@ def load_and_preprocess_data(csv_path, cache_path, force_reparse=False, padding_
                                 print(f"Warning: Identified segment column '{col}' not found in DataFrame for QID {q_id}. Columns: {df.columns.tolist()}")
 
 
-                        metadata = {'id': q_id, 'type': q_type, 'text': q_text, 'segment_cols': segment_cols, 'segment_sizes': segment_sizes}
+                        metadata = {'id': q_id, 'type': q_type, 'text': q_text, 'segment_cols': segment_cols, 'segment_details': segment_details}
                         processed_data.append((metadata, df))
+
+                        # <<<<<<< NEW: Capture segment details from the first question
+                        if first_question_segment_details is None:
+                            first_question_segment_details = segment_details
+                            print(f"  Captured segment details from first question (QID: {q_id})")
 
                     except IndexError as e:
                         print(f"Error processing block ending near row {row_num}. Likely malformed data structure. Header: {current_question_data[0] if current_question_data else 'N/A'}. Error: {e}")
@@ -244,7 +263,7 @@ def load_and_preprocess_data(csv_path, cache_path, force_reparse=False, padding_
                                          for row in current_question_data[1:]]
                             df = pd.DataFrame(data_rows, columns=header)
 
-                            segment_cols, segment_sizes = get_segment_columns(df.columns)
+                            segment_cols, segment_details = get_segment_columns(df.columns)
                             for col in segment_cols:
                                 if col in df.columns:
                                      with warnings.catch_warnings():
@@ -253,8 +272,13 @@ def load_and_preprocess_data(csv_path, cache_path, force_reparse=False, padding_
                                 else:
                                     print(f"Warning: Identified segment column '{col}' not found in DataFrame for final QID {q_id}. Columns: {df.columns.tolist()}")
 
-                            metadata = {'id': q_id, 'type': q_type, 'text': q_text, 'segment_cols': segment_cols, 'segment_sizes': segment_sizes}
+                            metadata = {'id': q_id, 'type': q_type, 'text': q_text, 'segment_cols': segment_cols, 'segment_details': segment_details}
                             processed_data.append((metadata, df))
+
+                            # <<<<<<< NEW: Capture segment details if this is the first (and only) question
+                            if first_question_segment_details is None:
+                                first_question_segment_details = segment_details
+                                print(f"  Captured segment details from first/only question (QID: {q_id})")
 
                 except IndexError as e:
                     print(f"Error processing final block. Likely malformed data structure. Header: {current_question_data[0] if current_question_data else 'N/A'}. Error: {e}")
@@ -286,8 +310,8 @@ def load_and_preprocess_data(csv_path, cache_path, force_reparse=False, padding_
     else:
          print("No data processed, cache not saved.")
 
-
-    return processed_data
+    # <<<<< MODIFIED: Return both processed data and first question segment details
+    return processed_data, first_question_segment_details
 
 # --- Analysis Functions ---
 
@@ -677,6 +701,53 @@ def generate_indicator_heatmaps(indicator_codesheet_path, questions_data, indica
 
     print("--- Indicator Heatmap Generation Complete ---")
 
+# --- NEW Segment Report Function ---
+
+def generate_segment_report(segment_details_first_q, segments_output_dir):
+    """
+    Generates a CSV report summarizing segments based on the first question's data.
+
+    Args:
+        segment_details_first_q (dict | None): Dictionary mapping segment column names
+            to their details ({'name', 'o_code', 'size'}) from the first question.
+        segments_output_dir (str): Directory to save the segment summary CSV.
+    """
+    print("\n--- Generating Segment Summary Report --- ")
+    if not segment_details_first_q:
+        print("  Skipping segment report: No segment details found from the first question.")
+        return
+
+    report_data = []
+    for col_name, details in segment_details_first_q.items():
+        # Skip the 'All' segment if present
+        if col_name.lower().startswith('all('):
+            continue
+
+        report_data.append({
+            'Segment Name': details.get('name'),
+            'Participant Count': details.get('size'),
+            'Onboarding Question': details.get('o_code', 'Derived') # Default to 'Derived' if no o_code
+        })
+
+    if not report_data:
+        print("  Skipping segment report: No non-'All' segments found to report.")
+        return
+
+    # Create DataFrame
+    report_df = pd.DataFrame(report_data)
+    # Optional: Sort by Onboarding Question then Name for consistency
+    report_df = report_df.sort_values(by=['Onboarding Question', 'Segment Name'])
+
+    # Save CSV
+    report_path = os.path.join(segments_output_dir, 'segment_summary.csv')
+    try:
+        report_df.to_csv(report_path, index=False)
+        print(f"  Saved segment summary report to: {report_path}")
+    except Exception as e:
+        print(f"  Error saving segment summary report: {e}")
+
+    print("--- Segment Summary Report Generation Complete ---")
+
 # --- Main Execution ---
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Analyze Global Dialogues aggregate data.")
@@ -726,12 +797,14 @@ if __name__ == "__main__":
     consensus_output_dir = os.path.join(base_output_dir, "consensus")
     divergence_output_dir = os.path.join(base_output_dir, "divergence")
     indicators_output_dir = os.path.join(base_output_dir, "indicators")
+    segments_output_dir = os.path.join(base_output_dir, "segments")
     
     # Create directories if they don't exist
     os.makedirs(base_output_dir, exist_ok=True)
     os.makedirs(consensus_output_dir, exist_ok=True)
     os.makedirs(divergence_output_dir, exist_ok=True)
     os.makedirs(indicators_output_dir, exist_ok=True)
+    os.makedirs(segments_output_dir, exist_ok=True)
     print(f"Output will be saved under: {base_output_dir}/")
 
     # Update cache file path to be inside the base GDi/custom directory
@@ -740,31 +813,34 @@ if __name__ == "__main__":
     print("(Consider adding this cache file path to your .gitignore)")
 
     # --- Load and Preprocess Data ---
-    all_questions_data = load_and_preprocess_data(input_csv_path, cache_file, args.force_reparse, args.padding_rows)
+    all_questions_data, first_question_segment_details = load_and_preprocess_data(input_csv_path, cache_file, args.force_reparse, args.padding_rows)
     if not all_questions_data: print("Failed to load data."); exit(1)
     print(f"\nSuccessfully loaded/processed {len(all_questions_data)} questions from {input_csv_path}.")
 
-    # --- Filter segments based on size ---
-    print(f"\nFiltering segments with size < {args.min_segment_size}...")
+    # --- Generate Segment Report (using first question data) ---
+    generate_segment_report(first_question_segment_details, segments_output_dir)
+
+    # --- Filter segments based on size for subsequent analyses ---
+    print(f"\nFiltering segments with size < {args.min_segment_size} for divergence/consensus/indicators...")
     original_total_segments = 0
     filtered_total_segments = 0
     processed_questions_data_filtered = [] # Store results after filtering
 
     for metadata, df in all_questions_data:
         original_segments = metadata.get('segment_cols', [])
-        segment_sizes = metadata.get('segment_sizes', {})
+        segment_details = metadata.get('segment_details', {})
         original_total_segments += len(original_segments)
 
         # Filter segment columns based on size
         # Use np.nan_to_num to treat NaN sizes as 0 for comparison
         valid_segments = [
             col for col in original_segments
-            if col in segment_sizes and np.nan_to_num(segment_sizes[col]) >= args.min_segment_size
+            if col in segment_details and np.nan_to_num(segment_details[col]['size']) >= args.min_segment_size
         ]
         filtered_total_segments += len(valid_segments)
 
         # Create a new metadata dict with filtered segments list
-        # Keep original segment_sizes dict untouched for reference if needed
+        # Keep original segment_details dict untouched for reference if needed
         filtered_metadata = metadata.copy()
         filtered_metadata['analysis_segment_cols'] = valid_segments # Use a distinct key
 
@@ -776,20 +852,20 @@ if __name__ == "__main__":
             print(f"  QID {metadata.get('id', 'N/A')}: Removed {removed_count} segments. Kept {len(valid_segments)} / {len(original_segments)}.")
 
     # Replace the main list with the one containing filtered segment lists for analysis
-    all_questions_data = processed_questions_data_filtered
-    print(f"Segment filtering complete. Total segments kept for analysis: {filtered_total_segments} / {original_total_segments}.")
+    analysis_questions_data = processed_questions_data_filtered # Use a new variable name for clarity
+    print(f"Segment filtering complete. Total segments kept for divergence/consensus/indicators analysis: {filtered_total_segments} / {original_total_segments}.")
 
 
-    # --- Run Analysis Functions --- 
+    # --- Run Analysis Functions (using filtered data) ---
     divergence_results = calculate_divergence_report(
-        all_questions_data, 
+        analysis_questions_data,  # Use filtered data
         divergence_output_dir, # Pass specific directory
         top_n_per_question=args.top_n_divergence,
         top_n_overall=args.top_n_divergence_overall
     )
 
     consensus_results = calculate_consensus_profiles(
-        all_questions_data,
+        analysis_questions_data, # Use filtered data
         consensus_output_dir, # Pass specific directory
         percentiles_to_calc=args.consensus_percentiles,
         top_n_percentiles=args.consensus_top_n_percentiles,
@@ -798,7 +874,7 @@ if __name__ == "__main__":
     
     generate_indicator_heatmaps(
         args.indicator_codesheet, 
-        all_questions_data, 
+        analysis_questions_data, # Use filtered data
         indicators_output_dir # Pass specific directory
     )
 
