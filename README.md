@@ -28,6 +28,7 @@ Each cadence folder contains the following core data files (raw outputs from Rem
 *   **`participants.csv`**: Survey data organized by Participant, showing individual responses to each question. Includes overall agreement rates for *Ask Opinion* responses submitted by the participant.
 *   **`preference.csv`**: Pairwise preference judgments between *Ask Opinion* responses.
 *   **`verbatim_map.csv`**: Mapping of *Ask Opinion* response text (`Thought Text`) to the participant who authored it and the question it belongs to.
+*   **`summary.csv`**: LLM-generated summaries for the overall dialogue and individual questions.
 
 ## Analysis Tools
 

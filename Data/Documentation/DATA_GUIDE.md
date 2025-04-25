@@ -121,5 +121,21 @@ This file maps *Ask Opinion* question responses (thoughts) to their authors and 
 | `Thought ID`     | Unique ID for the response (thought).                           |
 | `Thought Text`   | Verbatim text of the participant's response to the question.    |
 
+### **`summary.csv`**
+
+This file provides LLM-generated summaries for the dialogue as a whole and for each individual question included in the dataset.
+
+| Column                | Description                                                                                      |
+| :-------------------- | :----------------------------------------------------------------------------------------------- |
+| `Conversation ID`     | Unique ID assigned to the dialogue conversation by the platform.                                 |
+| `Conversation Title`  | Title of the conversation, often matching the overall `Title`.                                   |
+| `Questions Selected`  | The number of questions from the dialogue included in this summary file.                         |
+| `Summary Format`      | The format used for the overall dialogue summary (e.g., "Paragraph Summary").                    |
+| `Conversation Summary`| An LLM-generated summary paragraph describing the key findings and themes of the entire dialogue. |
+| `Question ID`         | Unique ID for the specific question being summarized.                                            |
+| `Question Type`       | The type of question (e.g., `Poll`, `Ask Opinion`).                                               |
+| `Question Text`       | The full text of the question presented to participants.                                         |
+| `Question Summary`    | An LLM-generated summary paragraph describing the responses and findings for that specific question. |
+
 
 
