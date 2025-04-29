@@ -2,3 +2,4 @@
 Data/.DS_Store
 *.pkl
 /Data/*/tag_codes_raw
+*.pyc
