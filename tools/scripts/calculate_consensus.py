@@ -4,7 +4,14 @@ import logging
 import os
 import pandas as pd
 import numpy as np
-from lib.analysis_utils import load_standardized_data, parse_percentage
+from lib.analysis_utils import load_standardized_data, parse_percentage, get_segment_columns
+
+# --- Suppress PerformanceWarning --- 
+import warnings
+from pandas.errors import PerformanceWarning
+# Suppress the specific PerformanceWarning related to fragmentation
+warnings.filterwarnings('ignore', category=PerformanceWarning)
+# --------------------------------
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -78,7 +85,12 @@ def calculate_consensus_profiles(questions_data, consensus_output_dir,
 
         # Calculate average agreement rate across all segments for each response
         # skipna=True is default, handles rows with *some* valid data
-        segment_data['Avg Agreement'] = segment_data.mean(axis=1)
+        # Calculate as a Series first
+        avg_agreement_series = segment_data.mean(axis=1)
+        segment_data['Avg Agreement'] = avg_agreement_series
+        
+        # Create a copy to potentially reduce fragmentation
+        segment_data = segment_data.copy()
 
         # Filter out rows where Avg Agreement could not be calculated (all segments were NaN)
         valid_avg_agreement = segment_data['Avg Agreement'].dropna()
@@ -177,8 +189,12 @@ def calculate_major_segment_consensus(questions_data, major_segment_column_names
              if response_col_fallback in df.columns:
                  response_col = response_col_fallback
              else:
-                 print(f"  Skipping QID {q_id} - Could not find response column ('{response_col}' or '{response_col_fallback}'). Columns: {df.columns}")
-                 continue
+                 # Check if responses are in the standard 'Responses' column
+                 if 'Responses' in df.columns:
+                     response_col = 'Responses'
+                 else:
+                     print(f"  Skipping QID {q_id} - Could not find response column ('{response_col}', '{response_col_fallback}', or 'Responses'). Columns: {df.columns}")
+                     continue
 
         print(f"  Processing QID {q_id} ('{q_text[:50]}...')")
         question_results = []
@@ -238,8 +254,8 @@ def main():
                        help='Number of top responses to show for each percentile.')
     parser.add_argument('--min_segment_size', type=int, default=15,
                        help='Minimum participant size for a segment to be included in analysis.')
-    parser.add_argument('--major_segments', type=str, nargs='+', default=['All(N)', 'O1: French (N)', 'O2: 18-24 (N)', 'O3: Female (N)'],
-                       help='List of major segment column names to analyze.')
+    parser.add_argument('--major_segments', type=str, nargs='+', default=None,
+                       help='(Optional) Explicit list of major segment column names to analyze. Overrides dynamic detection.')
 
     args = parser.parse_args()
 
@@ -251,18 +267,68 @@ def main():
     # Load and preprocess data
     data = load_standardized_data(args.standardized_csv)
     if data is not None:
+        # --- Determine Segment Columns and Details from Loaded Data --- 
+        all_columns = data.columns.tolist()
+        all_segment_cols, segment_details = get_segment_columns(all_columns)
+        
+        # --- Dynamically Determine Major Segments (if not provided via args) ---
+        major_segment_column_names_to_use = []
+        if args.major_segments:
+            logging.info(f"Using user-provided major segments: {args.major_segments}")
+            # Basic validation: Check if provided segments exist in the data
+            major_segment_column_names_to_use = [col for col in args.major_segments if col in all_columns]
+            missing_major = [col for col in args.major_segments if col not in all_columns]
+            if missing_major:
+                logging.warning(f"User-provided major segments not found in data columns: {missing_major}")
+            if not major_segment_column_names_to_use:
+                 logging.error("None of the user-provided major segments were found in the data. Aborting major segment calculation.")
+        elif segment_details:
+            logging.info("Dynamically determining major segments based on criteria...")
+            # Find the 'All' segment to get total N for dynamic threshold (optional but good)
+            all_segment_info = next((details for col, details in segment_details.items() if col.lower().startswith('all(')), None)
+            total_N = 0
+            min_threshold = args.min_segment_size # Use arg as the base min size
+
+            if all_segment_info and 'size' in all_segment_info and pd.notna(all_segment_info['size']):
+                total_N = all_segment_info['size']
+                # Calculate dynamic threshold: max of arg or 1% of total N
+                dynamic_threshold = max(1, round(total_N / 100.0)) # Ensure at least 1
+                min_threshold = max(args.min_segment_size, dynamic_threshold)
+                logging.info(f"  Using Total N = {total_N}. Calculated min size threshold for major segments: {min_threshold} (max({args.min_segment_size}, {dynamic_threshold}))")
+            else:
+                logging.warning(f"  Could not determine Total N from 'All' segment. Using min_segment_size ({args.min_segment_size}) for major segment filtering.")
+            
+            for col_name, details in segment_details.items():
+                # Exclude 'All' segment itself
+                if col_name.lower().startswith('all('):
+                    continue
+                o_code = details.get('o_code')
+                size = details.get('size')
+                # Criteria: Not O1 (Language), Not O7 (Country), Size >= threshold
+                if o_code not in ['O1', 'O7'] and pd.notna(size) and size >= min_threshold:
+                    major_segment_column_names_to_use.append(col_name)
+            logging.info(f"  Identified {len(major_segment_column_names_to_use)} major segments meeting criteria: {major_segment_column_names_to_use}")
+            if not major_segment_column_names_to_use:
+                 logging.warning("  No segments met the criteria to be considered 'major' for the major segment consensus report.")
+        else:
+             logging.warning("Could not determine major segments: No segment details found in data.")
+
         # Process data into the expected format (list of (metadata, df) tuples)
+        # Pass the *full* list of segment columns found in the data to metadata
         questions_data = []
         for q_id, group in data.groupby('Question ID'):
+            # Get segment columns specifically present in *this group's* columns
+            group_cols = group.columns.tolist()
+            group_segment_cols, _ = get_segment_columns(group_cols) # Ignore details here
             metadata = {
                 'id': q_id,
                 'type': group['Question Type'].iloc[0],
                 'text': group['Question'].iloc[0],
-                'analysis_segment_cols': [col for col in group.columns if col.startswith('All(') or col.startswith('O') and '(' in col]
+                'analysis_segment_cols': group_segment_cols # Use segments actually in this group for general analysis
             }
             questions_data.append((metadata, group))
         
-        # Calculate consensus profiles
+        # Calculate consensus profiles (uses 'analysis_segment_cols' from metadata)
         consensus_results = calculate_consensus_profiles(
             questions_data,
             args.output_dir,
@@ -271,15 +337,19 @@ def main():
             top_n_count=args.top_n_count
         )
         
-        # Calculate major segment consensus
-        major_segment_results = calculate_major_segment_consensus(
-            questions_data,
-            args.major_segments,
-            args.output_dir
-        )
+        # Calculate major segment consensus (uses the dynamically determined or user-provided list)
+        if major_segment_column_names_to_use: # Only run if we have major segments
+            major_segment_results = calculate_major_segment_consensus(
+                questions_data,
+                major_segment_column_names_to_use, # Pass the determined list
+                args.output_dir
+            )
+        else:
+            logging.info("Skipping Major Segment Consensus calculation as no major segments were identified or provided.")
+            major_segment_results = pd.DataFrame() # Ensure it exists as an empty DF
         
+        # --- Summary --- (No change needed here)
         if not consensus_results.empty:
-            # Print summary of highest consensus response
             highest_consensus = consensus_results.loc[consensus_results['Avg Agreement'].idxmax()]
             print("\n--- Overall Summary ---")
             print(f"Highest Consensus Response (Avg Agreement: {highest_consensus['Avg Agreement']:.4f}):")
