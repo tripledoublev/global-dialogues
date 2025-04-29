@@ -23,6 +23,25 @@ This directory contains scripts for processing raw Remesh.ai data for Global Dia
 
 *Note: Rerunning the script with new/updated files in the raw directory will update the corresponding individual files and rebuild the combined files in the output directory.*
 
+## `preprocess_aggregate.py`
+
+**Purpose:** Processes the raw `_aggregate.csv` file (which contains metadata rows and repeated/varying header rows for different question types) into a standardized format suitable for analysis.
+
+**Workflow:**
+
+1.  **Input:** Takes either a Global Dialogue number (`--gd_number`) to find the standard input file (`Data/GD<N>/GD<N>_aggregate.csv`) or an explicit `--input_file` path.
+2.  **Run Script:**
+    ```bash
+    # Simplest example using GD number:
+    python tools/scripts/preprocess_aggregate.py --gd_number 3
+    ```
+3.  **Output:** By default (when using `--gd_number`), generates two files in the corresponding `Data/GD<N>/` directory:
+    *   `GD<N>_aggregate_standardized.csv`: A CSV with a single header row, consistent columns (including merged `Response` and `OriginalResponse` columns), and data mapped correctly from all question blocks. Metadata and repeated headers are removed.
+    *   `GD<N>_segment_counts_by_question.csv`: A CSV detailing the participant count (`N`) for each segment *for each specific question*.
+4.  **Custom Paths:** You can specify explicit output paths using `--output_file` and `--segment_counts_output`.
+
+*Note: This script is crucial for preparing the aggregate data before running subsequent analysis scripts like `calculate_divergence.py` or `calculate_consensus.py`.*
+
 ## `analyze_dialogues.py`
 
 **Purpose:** Analyzes a processed `aggregate.csv` file for a specific Global Dialogue cadence to generate divergence reports, consensus profiles, and indicator question heatmaps.
