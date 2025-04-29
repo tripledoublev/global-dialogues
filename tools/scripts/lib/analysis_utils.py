@@ -114,12 +114,26 @@ def get_segment_columns(header_row):
     pattern = re.compile(r'^(O\d+:\s*)?(.*?)\s*(\(\s*(?:\d+|N)\s*\))?\s*$')
     size_pattern = re.compile(r'\((\d+)\)') # To extract number from size part
 
+    # Define columns that are definitely NOT segments, even if they appear after start_index
+    KNOWN_NON_SEGMENT_COLS = {
+        "Sentiment", "Star", "Categories", 
+        "English Responses", "Original Responses", "Responses" # Add core names used by specific question types
+    } 
+
     unique_core_names = set() # Keep track of core names found in this header
 
     for i, col_name in enumerate(header_row[start_index:], start=start_index):
+        # Stop if we hit a known column that signals the end of segments for Ask questions
         if col_name in ask_end_markers:
+            logging.debug(f"Stopping segment search at known end marker: '{col_name}'")
             break
+        
+        # Explicitly skip known non-segment columns that might appear mid-header
+        if col_name in KNOWN_NON_SEGMENT_COLS:
+            logging.debug(f"Skipping known non-segment column found after start_index: '{col_name}'")
+            continue
 
+        # Now, try to match the segment pattern
         match = pattern.match(col_name.strip()) # Strip whitespace from col name
         if match:
             o_code_prefix = match.group(1) if match.group(1) else "" # Includes 'O#: '
@@ -165,6 +179,7 @@ def get_segment_columns(header_row):
                 'size': size
             }
         else:
+            # If it doesn't match segment pattern (and wasn't skipped/end marker), assume segments ended.
             logging.debug(f"Stopping segment search at column '{col_name}' (index {i}) as it doesn't match segment pattern.")
             break
 
