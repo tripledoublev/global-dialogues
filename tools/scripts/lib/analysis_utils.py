@@ -55,71 +55,128 @@ def parse_percentage(value):
     except (ValueError, TypeError):
          return pd.NA
 
-def get_segment_columns(df_columns):
+def get_segment_columns(header_row):
     """
     Identifies segment columns (typically ending in '(Number)'), extracts the
     segment name, optional 'O' code (e.g., O1), and the participant count (N).
-    Adapted from analyze_dialogues.py.
+    Also returns the starting index of the segments in the header.
 
     Args:
-        df_columns (list): List of column names from a DataFrame.
+        header_row (list): List of column names from the header.
 
     Returns:
-        tuple: (list_of_segment_column_names, dict_of_segment_details)
-               The dict maps column names to {'name': str, 'o_code': str|None, 'size': int|np.nan}.
+        tuple: (list_of_core_segment_names, dict_of_segment_details, start_index)
+               - list_of_core_segment_names: Contains names like 'All', 'O1: English', 'Africa'.
+               - dict_of_segment_details: Maps *original full column name* (e.g., 'All (967)') 
+                 to {'core_name': str, 'name': str, 'o_code': str|None, 'size': int|np.nan}.
+               - start_index: The 0-based index where segments begin, or None if not found.
     """
-    segment_cols = []
-    segment_details = {}
-    # Regex to capture:
-    # Group 1 (Optional): 'O' code like 'O1:', 'O2:', etc. including the colon and potential spaces.
-    # Group 2: The segment name (non-greedy match).
-    # Group 3: The count within parentheses.
-    # Allows for variations in spacing.
-    pattern = re.compile(r'^(O\d+:\s*)?(.*?)\s*\(\s*(\d+|N)\s*\)\s*$') # Allow (N) as well
+    core_segment_names = []
+    segment_details = {} # Maps original full name -> details
+    start_index = None
 
-    for col in df_columns:
-        match = pattern.match(col)
+    # Define potential markers *before* segments for different types
+    # Order matters - check for more specific ones first
+    poll_marker = "Responses"
+    ask_opinion_markers = ["Sentiment"] # Segments usually start right after Sentiment
+    ask_experience_marker = "Categories" # Segments usually start right after Categories
+    
+    # Check for Ask Opinion first (most distinct end columns before segments)
+    if "Sentiment" in header_row and "Star" in header_row:
+        try:
+            start_index = header_row.index("Sentiment") + 1
+        except ValueError:
+            start_index = None 
+    # Check for Ask Experience
+    elif ask_experience_marker in header_row:
+        try:
+            start_index = header_row.index(ask_experience_marker) + 1
+        except ValueError:
+            start_index = None
+    # Check for Poll
+    elif poll_marker in header_row:
+        try:
+            start_index = header_row.index(poll_marker) + 1
+        except ValueError:
+            start_index = None
+            
+    if start_index is None:
+         logging.warning(f"Could not determine segment start index based on typical markers in header: {header_row[:10]}...")
+         return [], {}, None # Cannot proceed without a start index
+         
+    # Define known columns that might appear *after* segments in Ask types
+    ask_end_markers = ["Submitted By", "Language", "Sample ID", "Participant ID"]
+
+    # Regex to validate segment format and capture core name
+    # Group 1 (Optional): O-code prefix (e.g., 'O1: ') 
+    # Group 2: The actual segment name (e.g., 'English', 'Africa', 'All')
+    # Group 3 (Optional): The size part including parens (e.g., ' (967)') - we'll extract number later
+    pattern = re.compile(r'^(O\d+:\s*)?(.*?)\s*(\(\s*(?:\d+|N)\s*\))?\s*$')
+    size_pattern = re.compile(r'\((\d+)\)') # To extract number from size part
+
+    unique_core_names = set() # Keep track of core names found in this header
+
+    for i, col_name in enumerate(header_row[start_index:], start=start_index):
+        if col_name in ask_end_markers:
+            break
+
+        match = pattern.match(col_name.strip()) # Strip whitespace from col name
         if match:
-            segment_cols.append(col)
-            o_code_match = match.group(1) # Might be None if no 'O' prefix
-            name = match.group(2).strip() # The captured segment name
-            size_str = match.group(3) # The captured digits for size or 'N'
+            o_code_prefix = match.group(1) if match.group(1) else "" # Includes 'O#: '
+            name_part = match.group(2).strip()
+            size_part = match.group(3) if match.group(3) else "" # Includes '(#)'
 
-            # Extract just the 'O' code number if present
+            # Construct the core name (O-code + Name Part)
+            core_name = (o_code_prefix + name_part).strip()
+            if not core_name: # Skip if somehow the core name is empty
+                 logging.warning(f"Empty core segment name derived from column: '{col_name}'")
+                 continue
+
+            # Add to list only if it's the first time seeing this core name in *this header*
+            if core_name not in unique_core_names:
+                core_segment_names.append(core_name)
+                unique_core_names.add(core_name)
+
+            # --- Extract Details (Size, O-code number) --- 
             o_code = None
-            if o_code_match:
-                 o_code_num_match = re.search(r'O(\d+)', o_code_match)
-                 if o_code_num_match:
-                     o_code = f"O{o_code_num_match.group(1)}" # Store as O1, O2 etc.
+            if o_code_prefix:
+                o_code_num_match = re.search(r'O(\d+)', o_code_prefix)
+                if o_code_num_match:
+                    o_code = f"O{o_code_num_match.group(1)}"
+            
+            size = np.nan
+            if size_part:
+                size_match = size_pattern.search(size_part)
+                if size_match:
+                    size_str = size_match.group(1)
+                    if size_str.isdigit():
+                        try:
+                            size = int(size_str)
+                        except ValueError:
+                            logging.warning(f"Could not parse size digits '{size_str}' from segment column: {col_name}")
+                elif '(N)' not in size_part: # Allow (N) explicitly
+                    logging.warning(f"Unexpected size format '{size_part}' in segment column: {col_name}")
 
-            size = np.nan # Default to NaN
-            if size_str.isdigit():
-                try:
-                    size = int(size_str)
-                except ValueError:
-                    logging.warning(f"Could not parse extracted size digits '{size_str}' from segment column: {col}")
-            elif size_str == 'N':
-                # Keep size as NaN if it's just (N), indicates a placeholder
-                pass
-            else:
-                 logging.warning(f"Unexpected size format '{size_str}' in segment column: {col}")
+            # Store details mapped by the *original full column name*
+            segment_details[col_name] = {
+                'core_name': core_name,
+                'name': name_part, # Just the name part (e.g., English, Africa)
+                'o_code': o_code, 
+                'size': size
+            }
+        else:
+            logging.debug(f"Stopping segment search at column '{col_name}' (index {i}) as it doesn't match segment pattern.")
+            break
 
+    # Sort core names: 'All' first, then others alphabetically
+    all_core = [name for name in core_segment_names if name.lower() == 'all']
+    other_core = [name for name in core_segment_names if name.lower() != 'all']
+    sorted_core_segment_names = sorted(all_core) + sorted(other_core)
 
-            segment_details[col] = {'name': name, 'o_code': o_code, 'size': size}
+    if not sorted_core_segment_names:
+        logging.warning(f"No columns matched segment pattern after start index {start_index} in header: {header_row[start_index:start_index+5]}...")
 
-    # Sort columns: 'All(...)' first, then others alphabetically
-    all_cols = [col for col in segment_cols if col.lower().startswith('all(')]
-    other_cols = [col for col in segment_cols if not col.lower().startswith('all(')]
-    sorted_segment_cols = sorted(all_cols) + sorted(other_cols)
-
-    if not sorted_segment_cols and len(df_columns) > 5:
-         # Check standard non-segment columns first before warning
-         standard_cols = {'Question ID', 'Question Type', 'Question', 'Responses', 'English Response', 'Original Response'}
-         potential_segments = [c for c in df_columns if c not in standard_cols and '(' in c]
-         if potential_segments:
-              logging.warning(f"Regex pattern did not find segment columns matching format 'Name (Number)' or 'O#: Name (Number)' in headers: {df_columns[:10]}... Check CSV format or regex pattern.")
-
-    # Return both the sorted list of column names and the detailed dictionary
-    return sorted_segment_cols, segment_details
+    # Return list of unique core names, and the details dict mapped by original full name
+    return sorted_core_segment_names, segment_details, start_index
 
 # Removed placeholder print 

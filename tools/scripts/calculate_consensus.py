@@ -155,23 +155,29 @@ def calculate_consensus_profiles(questions_data, consensus_output_dir,
     print("--- Consensus Calculation Complete ---")
     return results_df # Return the full results DataFrame
 
-def calculate_major_segment_consensus(questions_data, major_segment_column_names, output_dir):
+def calculate_major_segment_consensus(questions_data, major_segment_column_names, output_dir, top_n=10):
     """
-    Calculates consensus profiles for major segments (e.g., language, age, gender).
+    Calculates the minimum agreement rate across major segments for each Ask Opinion 
+    response (excluding NaN and 0% rates) and reports the top N responses 
+    per question based on this minimum agreement rate.
 
     Args:
         questions_data (list): The list of (metadata, df) tuples.
         major_segment_column_names (list): List of major segment column names to analyze.
         output_dir (str): Directory to save the major segment consensus report CSV files.
+        top_n (int): Number of top responses per question to report.
 
     Returns:
-        pd.DataFrame: DataFrame containing all major segment consensus results.
-                    Returns empty DataFrame if no Ask Opinion questions found or processed.
+        pd.DataFrame: DataFrame containing the top N responses per question, 
+                    sorted by the calculated minimum agreement rate.
+                    Returns empty DataFrame if no valid minimums are found.
     """
-    print("\n--- Calculating Major Segment Consensus --- ")
+    print(f"\n--- Calculating Highest Minimum Agreement (Top {top_n}) Across Major Segments --- ")
     # Ensure output dir exists
     os.makedirs(output_dir, exist_ok=True)
-    all_major_segment_results = []
+    all_min_rates_per_response = []
+
+    print(f"  Using {len(major_segment_column_names)} major segments for calculation: {major_segment_column_names}")
 
     for metadata, df in questions_data:
         q_id = metadata.get('id')
@@ -181,66 +187,99 @@ def calculate_major_segment_consensus(questions_data, major_segment_column_names
         if q_type != 'Ask Opinion':
             continue
 
-        # Check if expected columns exist
-        response_col = 'English Response' # As per DATA_GUIDE.md
+        # Check if expected response column exists 
+        response_col = 'English Response' 
         if response_col not in df.columns:
-             # Fallback check (based on notebook, might differ in actual data)
              response_col_fallback = 'English Responses'
              if response_col_fallback in df.columns:
                  response_col = response_col_fallback
              else:
-                 # Check if responses are in the standard 'Responses' column
                  if 'Responses' in df.columns:
                      response_col = 'Responses'
                  else:
                      print(f"  Skipping QID {q_id} - Could not find response column ('{response_col}', '{response_col_fallback}', or 'Responses'). Columns: {df.columns}")
                      continue
 
+        # Identify which major segments are actually present in this question's DataFrame
+        available_major_segments_in_df = [col for col in major_segment_column_names if col in df.columns]
+        if not available_major_segments_in_df:
+             print(f"  Skipping QID {q_id} - None of the specified major segments found in columns.")
+             continue
+             
         print(f"  Processing QID {q_id} ('{q_text[:50]}...')")
-        question_results = []
-
-        # Select only the major segment columns for calculation
-        segment_data = df[major_segment_column_names].copy()
-
-        # Ensure data is numeric, converting errors to NaN
-        for col in major_segment_column_names:
-            segment_data[col] = pd.to_numeric(segment_data[col], errors='coerce')
-
-        for index, row in segment_data.iterrows():
+        
+        # Loop through responses (rows)
+        for index, row in df.iterrows():
             response_text = df.loc[index, response_col]
+            parsed_rates = {}
             
-            # Calculate average agreement rate for each major segment
-            for segment_col in major_segment_column_names:
-                agreement_rate = row[segment_col]
-                if not pd.isna(agreement_rate):
-                    question_results.append({
-                        'Question ID': q_id,
-                        'Question Text': q_text,
-                        'Response Text': response_text,
-                        'Segment': segment_col,
-                        'Agreement Rate': agreement_rate
-                    })
+            # 1. Get & Parse Rates for major segments for this response
+            for seg_col in available_major_segments_in_df:
+                if seg_col in row.index: 
+                    parsed_value = parse_percentage(row[seg_col])
+                    # Store all parsed values (including 0.0, but not NaN)
+                    if pd.notna(parsed_value):
+                         parsed_rates[seg_col] = parsed_value
+                         
+            # 2. Filter Rates for minimum calculation (Exclude zeros)
+            rates_for_min_calc = pd.Series(list(parsed_rates.values()))
+            rates_for_min_calc = rates_for_min_calc[rates_for_min_calc > 0.0] 
+            
+            # 3. Calculate Minimum if valid rates (>0) remain
+            if not rates_for_min_calc.empty:
+                min_rate = rates_for_min_calc.min()
+                
+                # 4. Store result for this response, including individual rates
+                result_data = {
+                    'Question ID': q_id,
+                    'Question Text': q_text,
+                    'Response Text': response_text,
+                    'Min Agreement Rate': min_rate 
+                }
+                # Add individual parsed rates (including 0.0 if present) to the dict
+                # Values that were originally NaN won't be in parsed_rates
+                result_data.update(parsed_rates) 
+                
+                all_min_rates_per_response.append(result_data)
 
-        all_major_segment_results.extend(question_results)
+    if not all_min_rates_per_response:
+        print("\nNo responses found with a minimum agreement rate > 0% across specified major segments.")
+        return pd.DataFrame()
 
-    if not all_major_segment_results:
-        print("No major segment consensus found across any Ask Opinion questions.")
-        return pd.DataFrame() # Return empty DataFrame
+    # Create DataFrame from all calculated minimums
+    results_df = pd.DataFrame(all_min_rates_per_response)
+    
+    # Sort by QID, then by Min Agreement Rate (descending)
+    results_df = results_df.sort_values(by=['Question ID', 'Min Agreement Rate'], ascending=[True, False])
 
-    # Create DataFrame from all results
-    results_df = pd.DataFrame(all_major_segment_results)
-    results_df = results_df.sort_values(by=['Question ID', 'Segment', 'Agreement Rate'], ascending=[True, True, False])
+    # Get Top N per Question
+    top_n_df = results_df.groupby('Question ID').head(top_n).reset_index(drop=True)
+
+    # Ensure all major segment columns are present in the final Top N df
+    # These are the columns we *attempted* to calculate for across all questions
+    core_cols = ['Question ID', 'Question Text', 'Response Text', 'Min Agreement Rate']
+    all_expected_cols = core_cols + major_segment_column_names 
+    # Add any columns that might be missing (e.g., if a major segment had no valid data at all)
+    top_n_df = top_n_df.reindex(columns=all_expected_cols, fill_value=pd.NA)
+
+    # Reorder columns for better readability
+    # Get the actual major segment columns present after reindexing
+    segment_rate_cols_in_df = [col for col in top_n_df.columns if col in major_segment_column_names]
+    # Sort them alphabetically for consistent order
+    segment_rate_cols_in_df.sort()
+    final_column_order = core_cols + segment_rate_cols_in_df
+    top_n_df = top_n_df[final_column_order]
 
     # Save report
-    report_path = os.path.join(output_dir, 'major_segment_consensus.csv')
+    report_path = os.path.join(output_dir, f'major_segment_min_agreement_top{top_n}.csv') 
     try:
-        results_df.to_csv(report_path, index=False, float_format='%.4f')
-        print(f"  Saved major segment consensus report to: {report_path}")
+        top_n_df.to_csv(report_path, index=False, float_format='%.4f')
+        print(f"  Saved Top {top_n} responses per question by minimum major segment agreement to: {report_path}")
     except Exception as e:
-        print(f"  Error saving major segment consensus report: {e}")
+        print(f"  Error saving minimum agreement report: {e}")
 
-    print("--- Major Segment Consensus Calculation Complete ---")
-    return results_df # Return the full results DataFrame
+    print("--- Highest Minimum Agreement Calculation Complete ---")
+    return top_n_df # Return the top N results
 
 def main():
     parser = argparse.ArgumentParser(description='Calculate consensus analysis from standardized data.')
@@ -256,6 +295,8 @@ def main():
                        help='Minimum participant size for a segment to be included in analysis.')
     parser.add_argument('--major_segments', type=str, nargs='+', default=None,
                        help='(Optional) Explicit list of major segment column names to analyze. Overrides dynamic detection.')
+    parser.add_argument('--top_n_major_consensus', type=int, default=10,
+                       help='Number of top responses per question to report based on minimum major segment agreement.')
 
     args = parser.parse_args()
 
@@ -342,13 +383,14 @@ def main():
             major_segment_results = calculate_major_segment_consensus(
                 questions_data,
                 major_segment_column_names_to_use, # Pass the determined list
-                args.output_dir
+                args.output_dir,
+                top_n=args.top_n_major_consensus # Pass the top_n argument
             )
         else:
             logging.info("Skipping Major Segment Consensus calculation as no major segments were identified or provided.")
             major_segment_results = pd.DataFrame() # Ensure it exists as an empty DF
         
-        # --- Summary --- (No change needed here)
+        # --- Summary ---
         if not consensus_results.empty:
             highest_consensus = consensus_results.loc[consensus_results['Avg Agreement'].idxmax()]
             print("\n--- Overall Summary ---")
@@ -357,6 +399,14 @@ def main():
             print(f"  Response : {highest_consensus['Response Text'][:100]}...")
             print(f"  Percentile: {highest_consensus['Percentile']}th")
         
+        if not major_segment_results.empty:
+             # Example: print highest overall minimum found
+             highest_min_overall = major_segment_results.loc[major_segment_results['Min Agreement Rate'].idxmax()]
+             print("\n--- Major Segment Highest Minimum Summary ---")
+             print(f"Highest Minimum Agreement Rate Overall: {highest_min_overall['Min Agreement Rate']:.4f}")
+             print(f"  Question : {highest_min_overall['Question Text'][:100]}...")
+             print(f"  Response : {highest_min_overall['Response Text'][:100]}...")
+             
         logging.info("Consensus analysis complete.")
     else:
         logging.error("Failed to load data, aborting consensus analysis.")
