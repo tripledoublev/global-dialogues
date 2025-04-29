@@ -13,7 +13,7 @@ import textwrap # Import textwrap
 
 # --- Configuration ---
 # Default values, can be overridden by command-line args
-DEFAULT_MIN_SEGMENT_SIZE = 30
+DEFAULT_MIN_SEGMENT_SIZE = 15
 CACHE_FILENAME = "processed_data.pkl"
 # Set pandas display options for potentially wide DataFrames
 pd.set_option('display.max_rows', 100)
@@ -147,11 +147,21 @@ def load_and_preprocess_data(csv_path, cache_path, force_reparse=False, padding_
                    (isinstance(processed_data[0], tuple) and len(processed_data[0]) == 2 and \
                     isinstance(processed_data[0][0], dict) and isinstance(processed_data[0][1], pd.DataFrame)):
                     print("Loaded from cache successfully.")
-                    return processed_data
+                    # <<< CORRECTED: Extract segment details from cached data before returning
+                    first_q_segment_details_cache = None
+                    if processed_data:
+                        first_q_metadata = processed_data[0][0]
+                        if isinstance(first_q_metadata, dict):
+                             first_q_segment_details_cache = first_q_metadata.get('segment_details')
+                             if first_q_segment_details_cache:
+                                  print("  Extracted segment details from cached first question.")
+                             else:
+                                  print("  Warning: Could not extract segment details from cached first question metadata.")
+                        else:
+                             print("  Warning: First item in cached data does not have expected metadata dictionary structure.")
+                    return processed_data, first_q_segment_details_cache # Return BOTH values
                 else:
                     print("Cache data format invalid, reparsing...")
-            else:
-                 print("Cache data format invalid (not a list), reparsing...")
         except Exception as e:
             print(f"Error loading from cache: {e}. Reparsing...")
 
@@ -701,7 +711,149 @@ def generate_indicator_heatmaps(indicator_codesheet_path, questions_data, indica
 
     print("--- Indicator Heatmap Generation Complete ---")
 
-# --- NEW Segment Report Function ---
+# --- NEW Major Segment Consensus Function ---
+
+def calculate_major_segment_consensus(questions_data, major_segment_column_names, output_dir):
+    """
+    Calculates consensus for Ask Opinion questions specifically across pre-defined "major" segments.
+    Filters responses to only include those with >50% minimum agreement across all available major segments.
+    Reports the top 5 such responses per question.
+
+    Args:
+        questions_data (list): The list of (metadata, df) tuples.
+        major_segment_column_names (list): List of column names identified as "major" segments.
+        output_dir (str): Directory to save the consensus report CSV file (within the existing consensus folder).
+
+    Returns:
+        pd.DataFrame: DataFrame containing the top 5 consensus responses per question across major segments.
+                     Returns empty DataFrame if no qualifying responses found.
+    """
+    print("\n--- Calculating Major Segment Consensus Report --- ")
+    if not major_segment_column_names:
+        print("  Skipping: No major segment columns provided.")
+        return pd.DataFrame()
+
+    print(f"  Using {len(major_segment_column_names)} major segments for calculation: {major_segment_column_names}")
+    all_major_consensus_results = []
+
+    for metadata, df in questions_data:
+        q_id = metadata.get('id')
+        q_text = metadata.get('text')
+        q_type = metadata.get('type')
+
+        if q_type != 'Ask Opinion':
+            continue
+
+        # Identify which major segments are actually present in this question's DataFrame
+        available_major_segments = [col for col in major_segment_column_names if col in df.columns]
+
+        if not available_major_segments:
+            # print(f"  Skipping QID {q_id} - None of the specified major segments are present in its columns.")
+            continue # Skip if none of the major segments are columns in this DF
+
+        response_col = 'English Response'
+        if response_col not in df.columns:
+             response_col_fallback = 'English Responses'
+             if response_col_fallback in df.columns:
+                 response_col = response_col_fallback
+             else:
+                 print(f"  Skipping QID {q_id} - Could not find response column ('{response_col}' or '{response_col_fallback}').")
+                 continue
+
+        # Convert relevant columns to numeric once for the question
+        for col in available_major_segments:
+             # Ensure column is numeric, coercing errors. Use temporary copy to avoid SettingWithCopyWarning
+             temp_col_data = pd.to_numeric(df[col], errors='coerce')
+             # Check if the column *after* coercion is different from original (if types changed)
+             # This is tricky, safer to just assign back if needed, or rely on later .loc access
+             # Let's assume the original df needs modification or work on copies for calculations.
+             # Best approach: extract needed data per row.
+
+        # print(f"  Processing QID {q_id} ('{q_text[:50]}...') with {len(available_major_segments)} available major segments.")
+
+        for index, row in df.iterrows():
+            # --- CORRECTED LOGIC START ---
+            # Step 1: Parse rates for AVAILABLE major segments using the correct function
+            parsed_available_rates = {}
+            for seg_col in available_major_segments:
+                if seg_col in row.index: # Check if segment exists for this question's row
+                    # Use parse_percentage to get float or NaN
+                    parsed_available_rates[seg_col] = parse_percentage(row[seg_col])
+                # No else needed, we only care about available segments for the minimum calculation
+
+            # Step 2: Calculate the minimum agreement rate from the correctly parsed rates
+            # Convert dict values to a pandas Series to easily drop NaN and find min
+            major_rates_series = pd.Series(list(parsed_available_rates.values())).dropna()
+
+            if major_rates_series.empty: # Need at least one valid major segment rate
+                continue
+
+            min_major_agree = major_rates_series.min() # Calculate min from CORRECTLY parsed rates
+            # --- CORRECTED LOGIC END ---
+
+            # Filter for responses where minimum agreement across *available* major segments is > 50%
+            if min_major_agree > 0.50:
+                response_text = row[response_col]
+                result_dict = {
+                    'Question ID': q_id,
+                    'Question Text': q_text,
+                    'Response Text': response_text,
+                    'Min Agreement Across Major Segments': min_major_agree # Use the CORRECT minimum
+                }
+
+                # Populate the dictionary with ALL globally defined major segments
+                # --- CORRECTED LOGIC START ---
+                # Re-parse from the original row for each global major segment
+                for seg_col in major_segment_column_names: # Loop through ALL globally defined major segments
+                    if seg_col in row.index: # Check if the column exists in the original row
+                        # Parse the value directly from the row
+                        parsed_value = parse_percentage(row[seg_col])
+                        result_dict[seg_col] = parsed_value # Store the parsed value (float or NaN)
+                    else:
+                        # If the column doesn't exist in the row, store NaN
+                        result_dict[seg_col] = np.nan
+                # --- CORRECTED LOGIC END ---
+
+                all_major_consensus_results.append(result_dict)
+
+    if not all_major_consensus_results:
+        print("  No responses found with >50% minimum agreement across available major segments.")
+        return pd.DataFrame()
+
+    # Create DataFrame from results
+    results_df = pd.DataFrame(all_major_consensus_results)
+
+    # Identify the dynamic major segment columns for sorting/display
+    # These are columns added beyond the fixed ones
+    fixed_cols = ['Question ID', 'Question Text', 'Response Text', 'Min Agreement Across Major Segments']
+    major_segment_rate_cols = [col for col in results_df.columns if col not in fixed_cols]
+
+    # Sort by Question ID, then by the minimum agreement score (desc)
+    results_df = results_df.sort_values(
+        by=['Question ID', 'Min Agreement Across Major Segments'],
+        ascending=[True, False]
+    )
+
+    # Get the top 5 for each question
+    top_5_df = results_df.groupby('Question ID').head(5).reset_index(drop=True)
+
+    # Reorder columns for clarity: fixed columns first, then specific segment rates
+    final_columns = fixed_cols + sorted(major_segment_rate_cols) # Sort segment columns alphabetically
+    top_5_df = top_5_df[final_columns]
+
+
+    # Save the report
+    report_path = os.path.join(output_dir, 'major_segment_consensus.csv')
+    try:
+        top_5_df.to_csv(report_path, index=False, float_format='%.4f')
+        print(f"  Saved major segment consensus report ({len(top_5_df)} rows) to: {report_path}")
+    except Exception as e:
+        print(f"  Error saving major segment consensus report: {e}")
+
+    print("--- Major Segment Consensus Calculation Complete ---")
+    return top_5_df
+
+# --- Segment Summary Report Function ---
 
 def generate_segment_report(segment_details_first_q, segments_output_dir):
     """
@@ -817,11 +969,52 @@ if __name__ == "__main__":
     if not all_questions_data: print("Failed to load data."); exit(1)
     print(f"\nSuccessfully loaded/processed {len(all_questions_data)} questions from {input_csv_path}.")
 
+    # --- Determine Major Segments for specific consensus analysis ---
+    major_segment_column_names = []
+    if first_question_segment_details:
+        # Try to find the 'All' segment to get total N
+        all_segment_info = next((details for col, details in first_question_segment_details.items() if col.lower().startswith('all(')), None)
+        total_N = 0
+        min_threshold = args.min_segment_size # Default to general min size if 'All' not found
+
+        if all_segment_info and 'size' in all_segment_info and pd.notna(all_segment_info['size']):
+            total_N = all_segment_info['size']
+            # Use the dynamic threshold: max of 15 or 1% of total N
+            # Use max with the *provided* min_segment_size arg as a lower bound, instead of fixed 15.
+            dynamic_threshold = max(1, round(total_N / 100.0)) # Ensure at least 1% is required
+            min_threshold = max(args.min_segment_size, dynamic_threshold)
+            print(f"\nDetermining Major Segments using Total N = {total_N}. Calculated min size threshold: {min_threshold} (max({args.min_segment_size}, {dynamic_threshold}))")
+        else:
+            print(f"\nWarning: Could not determine Total N from 'All' segment in first question. Using default min_segment_size ({args.min_segment_size}) for major segment filtering.")
+            min_threshold = args.min_segment_size
+
+        for col_name, details in first_question_segment_details.items():
+            # Exclude 'All' segment itself
+            if col_name.lower().startswith('all('):
+                continue
+
+            o_code = details.get('o_code')
+            size = details.get('size')
+
+            # Check conditions: Not O1 (Language), Not O7 (Country), Size >= threshold
+            if o_code not in ['O1', 'O7'] and pd.notna(size) and size >= min_threshold:
+                major_segment_column_names.append(col_name)
+
+        print(f"  Identified {len(major_segment_column_names)} major segments meeting criteria: {major_segment_column_names}")
+        if not major_segment_column_names:
+             print("  Warning: No segments met the criteria to be considered 'major' for the major segment consensus report.")
+
+    else:
+        print("\nWarning: Could not determine major segments because segment details from the first question were not available.")
+
+
     # --- Generate Segment Report (using first question data) ---
     generate_segment_report(first_question_segment_details, segments_output_dir)
 
-    # --- Filter segments based on size for subsequent analyses ---
-    print(f"\nFiltering segments with size < {args.min_segment_size} for divergence/consensus/indicators...")
+    # --- Filter segments based on size for *general* subsequent analyses ---
+    # Note: Major segment filtering above is *only* for the specific major_segment_consensus report.
+    # The general divergence/consensus/indicators use the args.min_segment_size directly.
+    print(f"\nFiltering segments with size < {args.min_segment_size} for general divergence/consensus/indicators analysis...")
     original_total_segments = 0
     filtered_total_segments = 0
     processed_questions_data_filtered = [] # Store results after filtering
@@ -877,6 +1070,19 @@ if __name__ == "__main__":
         analysis_questions_data, # Use filtered data
         indicators_output_dir # Pass specific directory
     )
+
+    # --- NEW: Run Major Segment Consensus Analysis ---
+    # Use the 'analysis_questions_data' which has already been filtered by min_segment_size,
+    # but the function itself will apply the logic based on the major_segment_column_names list.
+    if major_segment_column_names:
+        major_consensus_results = calculate_major_segment_consensus(
+            analysis_questions_data, # Data already filtered by general min size
+            major_segment_column_names, # List of major segments identified earlier
+            consensus_output_dir # Save within the consensus folder
+        )
+    else:
+        print("\nSkipping Major Segment Consensus calculation as no major segments were identified.")
+
 
     # --- Optional: Further summary based on results ---
     if divergence_results is not None and not divergence_results.empty:
