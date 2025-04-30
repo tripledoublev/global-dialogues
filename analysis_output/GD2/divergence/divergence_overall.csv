@@ -1,65 +1,213 @@
 Question ID,Question Text,Response Text,Divergence Score,Min Segment,Min Agreement,Max Segment,Max Agreement
-dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,Depends on the situation.,0.3003,Eastern Europe (32),0.2800,O7: Indonesia (34),0.9100
-dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,About religious norms,0.2814,O1: Russian (31),0.3200,O7: Indonesia (34),0.9400
-dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,"Divorce, dowry, banishment",0.2814,O1: Russian (31),0.3200,O7: Indonesia (34),0.9400
-722cf427-d884-477e-94a7-5c734b30acba,"What topics or types of advice should an AI never give in your cultural context, even if asked?",Any topic can be provided. It mainly depends on the user's own judgment.,0.2793,Northern Africa (33),0.3000,O7: Indonesia (36),0.8900
-be954f04-5ef3-428c-97a7-cd0fa44ad182,Is there anything about your life or your cultures that you would like your AI to know about you?,"yes, way of dressing
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?",Be more casual and simple ,0.4000,Central Asia,0.0000,O7: Philippines,0.8200
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?",Be more formal or casual in its response and provide detailed explanations. ,0.3850,O7: Kazakhstan,0.1100,O7: Philippines,0.8800
+dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,Only topics that are shared responsibilities but I think nothing,0.3752,O1: Arabic,0.0600,Southern Europe,0.8200
+488fe534-c05c-47e1-a979-a38d1a20a2c4,"In your culture, what makes a conversation feel respectful and appropriate? Describe specific ways of speaking or interacting that show respect.","Respect everyone's choice and don't judge others by your own standards. For example, some people choose to get married, while others choose not to get married. Both choices should be respected, understood and recognized because everyone's situation and background are different.",0.3647,Central Asia,0.1500,O7: Philippines,0.8800
+8f8d38fa-62b9-4c7a-ba0c-194d6cad5f90,How should an AI assistant demonstrate that it understands and respects your cultural heritage while still being helpful with modern tasks?,Seek truth from facts,0.3622,Southern Europe,0.1800,O6: Other religious group,0.9100
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?",Be more formal or in casual in its responses,0.3594,O7: Kazakhstan,0.1600,O7: Philippines,0.8800
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?",Be more formal or casual in it's response.,0.3594,O7: Kazakhstan,0.1600,O7: Philippines,0.8800
+387627e5-48a0-47e6-b740-6a74330c7ccf,Imagine you're working with an AI assistant on important tasks in your life. What principles or values would you want this AI to consistently demonstrate in all its interactions?,"Nothing too specific, just a sort of general amount of respect and being considerate with my time, basically that it's always trying to help me improve either by helping me to learn, figure out stuff, find new paths and help deciding, so the values of a tutor or a counselor guide.",0.3594,O7: Kazakhstan,0.1600,O7: Philippines,0.8800
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?",Be more formal or casual the response its easy to understand and fell comfortable ,0.3594,O7: Kazakhstan,0.1600,O7: Philippines,0.8800
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?",Be more formalia or casual in its responses,0.3594,O7: Kazakhstan,0.1600,O7: Philippines,0.8800
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?","I would like it to be casual.
 
-type of food",0.2771,Western Europe (43),0.2600,O7: China (38),0.8200
-0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?",apperance in common. feelings not in common,0.2771,O1: Russian (31),0.2600,O7: Indonesia (34),0.8200
-dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,Family related topics,0.2739,O1: Russian (31),0.3500,O7: Indonesia (34),1.0000
-dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,Religion and tradition,0.2717,O1: Russian (31),0.3200,O7: Indonesia (34),0.9100
-be954f04-5ef3-428c-97a7-cd0fa44ad182,Is there anything about your life or your cultures that you would like your AI to know about you?,Value of the community,0.2698,Eastern Europe (32),0.2200,O7: Indonesia (34),0.7600
-722cf427-d884-477e-94a7-5c734b30acba,"What topics or types of advice should an AI never give in your cultural context, even if asked?",Not okej to discriminate anyone,0.2698,O7: Brazil (34),0.2400,O7: Indonesia (36),0.7800
-dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,Those of marriage and burrial rites,0.2683,O1: Russian (31),0.2600,Eastern Africa (157),0.8000
-722cf427-d884-477e-94a7-5c734b30acba,"What topics or types of advice should an AI never give in your cultural context, even if asked?",Sexual or gambling advice. ,0.2670,Northern Africa (33),0.2700,O7: Indonesia (36),0.8100
-722cf427-d884-477e-94a7-5c734b30acba,"What topics or types of advice should an AI never give in your cultural context, even if asked?",All advice is welcome. ,0.2670,Northern Africa (33),0.2700,O7: Indonesia (36),0.8100
-dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,"For deciding specific dates for certain functions or programs and in all matters that affects me, family members and community adversely ",0.2655,O1: Russian (31),0.3500,O7: Indonesia (34),0.9700
-dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,Everything which affects them i think as a family every minor thing is important and affects the family member even it is person specific. though without invading personal spaces,0.2655,O1: Russian (31),0.3500,O7: Indonesia (34),0.9700
-dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,Anything that affects the family,0.2655,O1: Russian (31),0.3500,O7: Indonesia (34),0.9700
-dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,If it's about the whole family or community ,0.2655,O1: Russian (31),0.3500,O7: Indonesia (34),0.9700
-dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,personal decision,0.2653,Eastern Europe (32),0.3400,O7: Indonesia (34),0.9400
-dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,Health decisions,0.2653,Eastern Europe (32),0.3400,O7: Indonesia (34),0.9400
-be954f04-5ef3-428c-97a7-cd0fa44ad182,Is there anything about your life or your cultures that you would like your AI to know about you?,"Yes, understand China's food and lifestyle culture",0.2653,Western Europe (43),0.2800,O7: China (38),0.8200
-0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?",it would have the same sense of humor and wit and it would not have my quick to anger attitude,0.2650,O1: Russian (31),0.2300,O7: Indonesia (34),0.7600
-db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,the culture and values we respect might be misunderstood by others,0.2627,O7: Israel (30),0.2000,Northern Africa (33),0.7300
-db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,Probably things like marriage and cultural rules. It should consult the youths and elders from the specific society.,0.2627,O7: Israel (30),0.2000,Northern Africa (33),0.7300
+To be like a friend.
+
+",0.3578,Central Asia,0.1000,O7: Philippines,0.8200
+011f550f-119c-49da-8ff7-c78ac03ba1c8,When should an AI defer to human wisdom or community leaders rather than providing its own answers?,When discussing about historical events ,0.3531,Central America,0.2100,O7: Bangladesh,0.9300
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?","I prefer it to be more casual, get straight to the point and more diverse in terms of areas of expertise. ",0.3521,Central Asia,0.1000,O7: Korea South,0.8100
 dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,"Marriage
 
-FGM
+Ownership 
 
-",0.2615,O1: Russian (31),0.3200,O7: Indonesia (34),0.8800
-dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,"money related
+Selling ancestral property ",0.3510,Central America,0.2200,O1: Arabic,0.9400
+dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,"Marriage
 
-",0.2615,O1: Russian (31),0.3200,O7: Indonesia (34),0.8800
-dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,"Buying Land , Getting Married , Selling you're house",0.2615,O1: Russian (31),0.3200,O7: Indonesia (34),0.8800
-be954f04-5ef3-428c-97a7-cd0fa44ad182,Is there anything about your life or your cultures that you would like your AI to know about you?,Only if I provide them as context to what I am asking.,0.2592,Northern Africa (31),0.2900,O7: United Kingdom (38),0.8200
-0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?","In common, interests, political opinion, handling of topics that interest me.
+Buying land
 
-Different, way of speaking and expressing oneself, I wouldn't like him to try to reply to me.",0.2592,O1: Russian (31),0.2900,O7: Indonesia (34),0.8200
-722cf427-d884-477e-94a7-5c734b30acba,"What topics or types of advice should an AI never give in your cultural context, even if asked?",Harmful or threatening replies. Offensive or swear words. ,0.2569,Northern Africa (33),0.3000,O7: Indonesia (36),0.8300
-387627e5-48a0-47e6-b740-6a74330c7ccf,Imagine you're working with an AI assistant on important tasks in your life. What principles or values would you want this AI to consistently demonstrate in all its interactions?,"It should not found to specific answers or fall under censorship, like if Ask anything about Chinese area and AI models it made by Chinese government or person it should not censor the answer or become helpless",0.2561,Eastern Europe (32),0.3400,O1: Portuguese (Brazil) (32),0.9100
-0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?",Education and learning,0.2551,O1: Russian (31),0.1900,O7: Indonesia (34),0.7100
-be954f04-5ef3-428c-97a7-cd0fa44ad182,Is there anything about your life or your cultures that you would like your AI to know about you?,I would like you to know my tastes in art and music,0.2551,Western Europe (43),0.1900,O7: Indonesia (34),0.7100
-be954f04-5ef3-428c-97a7-cd0fa44ad182,Is there anything about your life or your cultures that you would like your AI to know about you?,Just the values and principles.,0.2551,Eastern Europe (32),0.1900,Eastern Africa (154),0.7100
-dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,health an waealth,0.2551,O1: Russian (31),0.1900,Northern Africa (31),0.7100
-dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?, honesty respect discipline ,0.2550,Eastern Europe (32),0.2500,O7: Indonesia (34),0.7600
-0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?","programming knowledge is common 
+",0.3510,Central America,0.2200,O1: Arabic,0.9400
+8731ac10-c2d7-49ea-b951-eb226fa2be2b,"If an AI assistant makes a cultural mistake, what would be the most appropriate way for it to acknowledge and correct the error?",Reedit and move back to books for more knowledge and information ,0.3470,O7: Kazakhstan,0.2200,O7: Philippines,0.9300
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?","Casual, detailed explanations, depends 
 
-unknown facts and creativity",0.2546,O1: Russian (31),0.2300,O7: Indonesia (34),0.7400
-0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?","compile codes automatically and return them ready
+",0.3421,O7: Kazakhstan,0.0500,O7: Philippines,0.7600
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?","To be more casual 
 
-",0.2546,O7: Indonesia (34),0.2600,O1: Russian (31),0.7700
-0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?",MY PERSONALITY,0.2546,O1: Russian (31),0.2300,O7: Indonesia (34),0.7400
-0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?","my tastes,my style",0.2546,O1: Russian (31),0.2300,O7: Indonesia (34),0.7400
-0b8bb518-a5b5-4298-bdb4-886c3ca3de61,"Name some things that you would like AI to have in common with you, and some things that you would like AI to do differently to you?","He is smart and good at expressing himself, and I don't want him to be too similar to humans and cause them to be replaced.",0.2546,O1: Russian (31),0.2300,O7: Indonesia (34),0.7400
-dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,"Marriage, children, bank loans ",0.2546,O1: Russian (31),0.3200,South Eastern Asia (70),0.8600
-722cf427-d884-477e-94a7-5c734b30acba,"What topics or types of advice should an AI never give in your cultural context, even if asked?",Harmful action,0.2538,Northern Africa (33),0.2700,O7: Indonesia (36),0.7800
-be954f04-5ef3-428c-97a7-cd0fa44ad182,Is there anything about your life or your cultures that you would like your AI to know about you?,"Yes, about Tamil culture.",0.2530,Western Europe (43),0.3000,O7: China (38),0.8200
-be954f04-5ef3-428c-97a7-cd0fa44ad182,Is there anything about your life or your cultures that you would like your AI to know about you?,Be friendly ,0.2526,Eastern Europe (32),0.2800,O7: Indonesia (34),0.7900
-dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,health related,0.2526,Eastern Europe (32),0.2800,O7: Indonesia (34),0.7900
-dd763195-3c65-4140-86a7-6710f1f0d692,What topics or life decisions should always be discussed with family members or community elders before making a choice?,Health Topics,0.2526,Eastern Europe (32),0.2800,O7: Indonesia (34),0.7900
-db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,Health and education. These are the most important that AI should adapt.,0.2510,O7: Israel (30),0.2000,O1: Portuguese (Brazil) (31),0.7100
-8f8d38fa-62b9-4c7a-ba0c-194d6cad5f90,How should an AI assistant demonstrate that it understands and respects your cultural heritage while still being helpful with modern tasks?,Using language specific to that culture.,0.2508,O7: Israel (30),0.3300,O7: United Kingdom (38),0.8700
-db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,That is very difficult to adopt and to manage the specific needs to understand and do properly ,0.2492,O7: Israel (30),0.2300,Northern Africa (33),0.7300
-db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,"AI might misunderstand the need for women not to take other roles in terms of professional, or career.  How children should not talk back to their parents.",0.2492,O7: Israel (30),0.2300,Northern Africa (33),0.7300
+Depends whether I want explanation or straight to the point 
+
+Yes
+
+Yes",0.3421,Central Asia,0.0500,O7: Philippines,0.7600
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?",i prefer a casual response with lots of detail as a mentor,0.3421,Central Asia,0.0500,O7: Philippines,0.7600
+387627e5-48a0-47e6-b740-6a74330c7ccf,Imagine you're working with an AI assistant on important tasks in your life. What principles or values would you want this AI to consistently demonstrate in all its interactions?,"I’d want the AI to understand the context of my situation and approach tasks or challenges with a sense of empathy, especially if they’re personal or sensitive. It should be considerate of my needs, goals, and any pressures I might be facing.",0.3406,O7: Kazakhstan,0.2100,O2: 56-65,0.9000
+0fa377dc-add4-4478-b962-afe20aa744f5,"If you could have your AI  think, behave / respond  like any person in the world, who would it be and why?","no person specifically, but if asked it should behave like somebody who has a lot of wisdom that could help me with day to day things",0.3387,O7: Canada,0.1900,Oceania,0.8700
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?",casual. I want to get straight answer. I dont want specific role. no need to focus,0.3376,Central Asia,0.2000,O7: Philippines,0.8800
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?","• I would prefer more casual in its responses
+
+• get straight to the point
+
+• yes, take on a specific role
+
+• focus on areas of expertise ",0.3376,Central Asia,0.2000,O7: Philippines,0.8800
+488fe534-c05c-47e1-a979-a38d1a20a2c4,"In your culture, what makes a conversation feel respectful and appropriate? Describe specific ways of speaking or interacting that show respect.","For me, a conversation is respectful when there is no interference in sensitive personal issues. It is important that there is always respect for other people's points of view in a conversation.",0.3376,Central Asia,0.2000,O7: Philippines,0.8800
+488fe534-c05c-47e1-a979-a38d1a20a2c4,"In your culture, what makes a conversation feel respectful and appropriate? Describe specific ways of speaking or interacting that show respect.",Yes. 99% of the times it must be respectful ,0.3376,Central Asia,0.2000,O7: Philippines,0.8800
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?","I'd rather it be more casual, get straight to the point and be focused on certain topics.",0.3376,Central Asia,0.2000,O7: Philippines,0.8800
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?","I prefer a more casual response and straight to the point. If I want details I will ask for it. Not sure what I would want in terms of a specific role, but I want it to know about most topics
+
+",0.3376,Central Asia,0.2000,O7: Philippines,0.8800
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?","please respond casual as a normal conversation between friends provide medium detailed answers and focus on areas of expertise 
+
+",0.3347,Central Asia,0.1500,O7: Philippines,0.8200
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?","-be casual and polite
+
+-Get to the point
+
+-Take on the role of a journalist reporting news",0.3347,Central Asia,0.1500,O7: Philippines,0.8200
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?",Should be more formal and get straight to the point while taking the role as an editor while focusing on the areas of expertise ,0.3347,Central Asia,0.1500,O7: Philippines,0.8200
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?","1. if it's regarding to work, a formal type of responses would be definitely better
+
+2. straight to the point of my question is going to be my ideal, if i need further explanation i can always ask for more
+
+3. coach
+
+4. online game",0.3347,Central Asia,0.1500,O7: Philippines,0.8200
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?","I prefer casual talk, getting straight to the point, no specific role needed",0.3347,Central Asia,0.1500,O7: Philippines,0.8200
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?","1. In general, I prefer casual. Just like talking to a real person.
+
+2. I would prefer a detailed explanation.
+
+3. I would prefer it to talk like an equal.
+
+4. Yes",0.3347,Central Asia,0.1500,O7: Philippines,0.8200
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,"Religion is often misunderstood by AI. Especially Islam. There are certain contradicting topics in Islam such as Gay marriage,  men being superior than women and alcohol consumption. Every religion has it's reasons behind what is wnats it;s followers to believe. Instead of blaming the religion for supporting something or forbiding something, AI should help everyone understand the reasoning behind why the religion supports what it supports. This will reduce hate crimes.",0.3332,O6: Judaism,0.1300,O7: Bangladesh,0.8000
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,"It is convenient for interpersonal communication and religious beliefs. There are huge differences between China and the West. If you use the AI's answer to communicate with others, the effect may be poor. Because the West is more outgoing and cheerful, while Chinese interpersonal communication is more introverted and implicit.
+
+I think AI needs to enhance the training of different cultural data and update the database in a timely manner.",0.3332,O6: Judaism,0.1300,O7: Bangladesh,0.8000
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,"Marriage , investment , religion, sexual things , by having a data base for these things",0.3332,O6: Judaism,0.1300,O7: Bangladesh,0.8000
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,"- the idea of god
+
+- the AI can adapt by processing the indian raw data which might help in creating better models",0.3332,O6: Judaism,0.1300,O7: Bangladesh,0.8000
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,"maybe when it comes to our religion, the way we view the world through those lenses. AI should learn how people of this culture see the wrold.",0.3332,O6: Judaism,0.1300,O7: Bangladesh,0.8000
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,The emotions and expressions of persons. AI can collect the data of that alongside ,0.3332,O6: Judaism,0.1300,O7: Bangladesh,0.8000
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,"For AI to work effectively in my culture, it must be adaptable, context aware, and capable of balancing neutrality with cultural sensitivity. I think the religious topic can be misunderstood.",0.3332,O6: Judaism,0.1300,O7: Bangladesh,0.8000
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,"Any religion aspect 
+
+Ai should handle it with care and not offend the user .",0.3332,O6: Judaism,0.1300,O7: Bangladesh,0.8000
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,I have never asked AI for help on religious matters but i think it will help if AI adapts according to the person’s religion ,0.3332,O6: Judaism,0.1300,O7: Bangladesh,0.8000
+db83c655-224a-47ed-a49b-9ab2f0769a48,What aspects of your culture might be misunderstood by an AI system trained primarily on Western data? How should the AI adapt?,"May be some of the Islamic rules. In our religion, there are certain things which we need to believe and do. AI should understand that it's in our religion and we must follow these",0.3332,O6: Judaism,0.1300,O7: Bangladesh,0.8000
+cf206ae4-b974-45df-a16f-87e176981dbc,"In your community, what makes someone a trustworthy advisor? Please describe specific behaviors or qualities that build trust",Who can provide the reliable sources,0.3332,O7: Bangladesh,0.2000,O7: Pakistan,0.8700
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?",Be more formal or casual in its responses,0.3320,O7: Kazakhstan,0.2100,O7: Philippines,0.8800
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?",I prefer it to be more casual in its responses like understanding the people values and emotions and give detailed explanations regarding the prompts with explaining the prerequisites. I prefer it to take on a specific role of our choice and stick to it..of course we must build the character of the role and it should focus on certain topics what the people require and the problem should be solved with no doubts left beyond.,0.3320,O7: Kazakhstan,0.2100,O7: Philippines,0.8800
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?",Be more formal or casual in its responses.,0.3320,O7: Kazakhstan,0.2100,O7: Philippines,0.8800
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?","Be more formal or casual in its responses
+
+",0.3320,O7: Kazakhstan,0.2100,O7: Philippines,0.8800
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?",Be more formal or casual in its response ,0.3320,O7: Kazakhstan,0.2100,O7: Philippines,0.8800
+c67e414e-a02f-4ef5-a26a-68553a1df15f,"When you work with an AI assistant, would you prefer it to: 
+Be more formal or casual in its responses?
+Provide detailed explanations or get straight to the point?
+Take on a specific role (like a teacher, editor, or coach)?
+Focus on certain topics or areas of expertise?",Be more formal or casual in its responses,0.3320,O7: Kazakhstan,0.2100,O7: Philippines,0.8800
