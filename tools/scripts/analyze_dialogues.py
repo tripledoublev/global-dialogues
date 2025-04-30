@@ -918,7 +918,7 @@ def run_script(script_name, gd_number, extra_args=None):
     if extra_args:
         cmd.extend(extra_args)
        
-    logging.info(f"--- Running {script_name} for GD{gd_number} ---")
+    logging.info(f"--- Running {script_name} for GD{gd_number} --- ") # Adjusted log message
     logging.info(f"Executing: {' '.join(cmd)}")
    
     try:
@@ -950,9 +950,10 @@ def main():
         epilog="""
 This script acts as a master controller, executing the following steps in order:
   1. preprocess_aggregate.py: Standardizes the raw aggregate data.
-  2. calculate_consensus.py: Calculates consensus profiles and major segment consensus.
-  3. calculate_divergence.py: Calculates divergence scores.
-  4. calculate_indicators.py: Generates indicator heatmaps.
+  2. calculate_tags.py: Analyzes tag data for frequency, agreement, and sentiment.
+  3. calculate_consensus.py: Calculates consensus profiles and major segment consensus.
+  4. calculate_divergence.py: Calculates divergence scores.
+  5. calculate_indicators.py: Generates indicator heatmaps.
 
 Each step uses the specified --gd_number to find input files and determine default output locations within Data/GD<N>/ and analysis_output/GD<N>/ respectively.
 """)
@@ -970,6 +971,7 @@ Each step uses the specified --gd_number to find input files and determine defau
     # Optional: Add specific args per script if needed, e.g., [('script.py', ['--extra_arg', 'value'])]
     scripts_to_run = [
         ("preprocess_aggregate.py", None),
+        ("calculate_tags.py", None),         # <<< ADDED TAGS SCRIPT
         ("calculate_consensus.py", None),
         ("calculate_divergence.py", None),
         ("calculate_indicators.py", None)
