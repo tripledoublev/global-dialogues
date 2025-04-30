@@ -6,6 +6,13 @@ This repository contains data and analysis tools from the "Global Dialogues" sur
 ## About the Project
 Global Dialogues are recurring surveys where participants answer demographic questions, attitude polls, and open-ended opinion questions. Participants also vote (Agree/Disagree) on a sample of other participants' responses and complete pairwise comparisons of responses.
 
+## Installation
+
+Install required packages:
+```bash
+pip install -r requirements.txt
+```
+
 ## Data Structure
 
 The project involves recurring survey cadences:
