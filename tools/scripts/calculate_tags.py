@@ -4,9 +4,6 @@ import os
 import argparse
 import logging
 import re
-import itertools
-import matplotlib.pyplot as plt
-import seaborn as sns
 from pathlib import Path
 
 # Configure logging
@@ -73,16 +70,74 @@ def safe_read_csv(path, **kwargs):
             try:
                 kwargs['encoding'] = detected_encoding
                 # --- Read with detected header and VALIDATE columns ---
-                df_temp = pd.read_csv(path, header=header_row, **kwargs)
+
+                # Add on_bad_lines specifically for discussion guide if needed
+                read_kwargs = kwargs.copy()
+                if 'guide' in filename:
+                     read_kwargs['on_bad_lines'] = 'warn'
+                     logging.info("Applying 'on_bad_lines=warn' for discussion guide file.")
+
+                df_temp = pd.read_csv(path, header=header_row, **read_kwargs)
+
                 # Validate: Check if essential markers are actual columns
-                if all(marker in df_temp.columns for marker in markers):
-                    logging.info(f"Header validated. Columns look reasonable: {df_temp.columns[:5].tolist()}...")
+                is_participants_file = 'participants' in filename
+                is_guide_file = 'guide' in filename
+                validation_passed = False
+
+                if is_participants_file:
+                    participant_id_col_name = 'Participant Id' # The target name
+                    expected_index = 2
+                    if len(df_temp.columns) > expected_index:
+                        logging.info(f"Participants file detected. Checking column at index {expected_index}.")
+                        # Assume column at index 2 is Participant Id, rename it
+                        original_name = df_temp.columns[expected_index]
+                        if original_name != participant_id_col_name:
+                             df_temp.rename(columns={original_name: participant_id_col_name}, inplace=True)
+                             logging.info(f"Renamed participants column '{original_name}' (index {expected_index}) to '{participant_id_col_name}'.")
+                        else:
+                             logging.info(f"Column at index {expected_index} already named '{participant_id_col_name}'.")
+                        validation_passed = True # Override validation based on position
+                    else:
+                        logging.error(f"Participants file loaded but has < {expected_index + 1} columns. Cannot find Participant Id.")
+                elif is_guide_file:
+                    item_type_col = 'Item type (dropdown)'
+                    content_col = 'Content'
+                    expected_item_type_idx = 3
+                    expected_content_idx = 4
+                    if len(df_temp.columns) > expected_content_idx: # Check if enough columns exist
+                        logging.info(f"Discussion guide file detected. Checking columns at indices {expected_item_type_idx} and {expected_content_idx}.")
+                        # Get the original names at the expected indices
+                        orig_item_type_name = df_temp.columns[expected_item_type_idx]
+                        orig_content_name = df_temp.columns[expected_content_idx]
+                        # Build the rename map using the original names as keys
+                        rename_map = {}
+                        if orig_item_type_name != item_type_col:
+                            rename_map[orig_item_type_name] = item_type_col
+                        if orig_content_name != content_col:
+                            rename_map[orig_content_name] = content_col
+                        if rename_map:
+                            df_temp.rename(columns=rename_map, inplace=True)
+                            logging.info(f"Renamed discussion guide columns: {rename_map}")
+                        else:
+                             logging.info(f"Discussion guide columns already correctly named.")
+                        validation_passed = True
+                    else:
+                        logging.error(f"Discussion guide file loaded but has <= {expected_content_idx} columns. Cannot find essential columns.")
+                else:
+                    # Standard validation for other files
+                    if all(marker in df_temp.columns for marker in markers):
+                        logging.info(f"Header validated for non-participants file. Columns look reasonable: {df_temp.columns[:5].tolist()}...")
+                        validation_passed = True
+                    else:
+                         logging.error(f"Header validation failed for non-participants file! Detected header on line {header_row+1} but loaded columns ({df_temp.columns.tolist()}) don't contain all markers {markers}. Check file structure or markers.")
+
+                # Return df if validation passed
+                if validation_passed:
                     return df_temp
                 else:
-                    logging.error(f"Header validation failed! Detected header on line {header_row+1} but loaded columns ({df_temp.columns.tolist()}) don't contain all markers {markers}. Check file structure or markers.")
-                    # Optional: Could try header_row-1 here, but it gets complex.
-                    # For now, raise the original error as detection failed.
-                    raise e
+                     # Raise the original error if validation failed
+                     raise e
+
             except Exception as read_error:
                  logging.error(f"Error reading {path} even after detecting header at line {header_row+1}: {read_error}")
                  raise read_error
@@ -186,15 +241,26 @@ def load_and_prep_data(gd_number, data_dir):
         logging.info(f"Loading {paths['participants']}...")
         participants_df = safe_read_csv(paths['participants'], encoding='utf-8-sig', low_memory=False)
         logging.info(f"  Loaded {len(participants_df)} rows.")
-        # --- DEBUG: Print loaded columns ---
-        logging.info(f"  Columns loaded from participants file: {participants_df.columns.tolist()}")
-        # --- END DEBUG ---
         participants_df.columns = participants_df.columns.str.replace('^\ufeff', '', regex=True).str.strip()
+
+        # --- Add check/rename for Participant Id due to leading empty columns ---
+        participant_id_col = 'Participant Id'
+        if participant_id_col not in participants_df.columns:
+            logging.warning(f"'{participant_id_col}' not found in columns: {participants_df.columns.tolist()[:5]}... Attempting to use column at index 2.")
+            if len(participants_df.columns) > 2:
+                original_name = participants_df.columns[2]
+                participants_df.rename(columns={original_name: participant_id_col}, inplace=True)
+                logging.info(f"Renamed column '{original_name}' to '{participant_id_col}'.")
+            else:
+                logging.error("Participants file has fewer than 3 columns, cannot find Participant Id.")
+                return None
+
         # Ensure Participant Id is string for merging
-        if 'Participant Id' not in participants_df.columns:
-             logging.error("'Participant Id' column not found in participants file.")
+        if participant_id_col not in participants_df.columns:
+             # This check should ideally not fail now, but keep as safeguard
+             logging.error(f"'{participant_id_col}' column still not found after attempting rename.")
              return None
-        participants_df['Participant Id'] = participants_df['Participant Id'].astype(str)
+        participants_df[participant_id_col] = participants_df[participant_id_col].astype(str)
 
         # Identify Segment Columns - Use Discussion Guide
         logging.info(f"Loading {paths['discussion_guide']} to identify segment questions...")
@@ -228,12 +294,23 @@ def load_and_prep_data(gd_number, data_dir):
         logging.info(f"  Loaded {len(agg_df)} rows.")
         # Keep only relevant columns: QID, PID (author), Question Text, Agreement (All)
         # Find the 'All' agreement column (might have varying N)
-        all_col_pattern = re.compile(r'^All\s*\((\d+)\)\s*$')
+        # Adjusted pattern to primarily find 'All', but allow 'All (N)' as fallback
+        all_col_pattern_strict = re.compile(r'^All$') # Exact match for 'All'
+        all_col_pattern_fallback = re.compile(r'^All\s*\((\d+|N)\)\s*$') # Original pattern for 'All (N)'
         all_agreement_col = None
+        # Prioritize finding exact 'All'
         for col in agg_df.columns:
-            if all_col_pattern.match(col):
+            if all_col_pattern_strict.match(col):
                 all_agreement_col = col
                 break
+        # If exact 'All' not found, try the fallback pattern
+        if not all_agreement_col:
+            for col in agg_df.columns:
+                if all_col_pattern_fallback.match(col):
+                     all_agreement_col = col
+                     logging.info(f"Found agreement column using fallback pattern: {all_agreement_col}")
+                     break
+
         if not all_agreement_col:
             logging.error("Could not find 'All (N)' agreement column in aggregate_standardized.csv")
             return None
@@ -410,95 +487,6 @@ def calculate_unified_report(df, segment_columns, output_path):
         logging.error(f"Error merging/saving the final report: {e}", exc_info=True)
 
 
-def generate_cooccurrence_heatmap(df, output_path):
-    """Calculates tag co-occurrence and saves a heatmap."""
-    logging.info("Calculating tag co-occurrence matrix...")
-    if df is None or df.empty or 'Tag' not in df.columns or 'Participant Id' not in df.columns or 'Question ID' not in df.columns:
-        logging.warning("Input DataFrame is missing required columns for co-occurrence analysis. Skipping.")
-        return
-
-    # Group tags by response (QID + PID)
-    # Using observed=True for potential performance gain with categoricals
-    response_tags = df.groupby(['Question ID', 'Participant Id'], observed=True)['Tag'].apply(list)
-
-    # Generate pairs of tags for each response (ignore order, count A-B same as B-A)
-    tag_pairs = []
-    for tags in response_tags:
-        # Create combinations of 2 tags for responses with multiple tags
-        if len(tags) >= 2:
-            # Sort tags within the list to ensure ('A','B') is treated the same as ('B','A')
-            sorted_tags = sorted(list(set(tags))) # Use set to handle potential duplicates within a response just in case
-            tag_pairs.extend(itertools.combinations(sorted_tags, 2))
-
-    if not tag_pairs:
-        logging.warning("No co-occurring tag pairs found. Skipping heatmap generation.")
-        return
-
-    # Count frequency of each pair
-    pair_counts = pd.Series(tag_pairs).value_counts()
-    logging.info(f"Found {len(pair_counts)} unique co-occurring tag pairs.")
-
-    # Convert pair counts to DataFrame for pivoting
-    cooccurrence_df = pair_counts.reset_index()
-    cooccurrence_df.columns = ['Tag Pair', 'Frequency']
-    cooccurrence_df[['Tag A', 'Tag B']] = pd.DataFrame(cooccurrence_df['Tag Pair'].tolist(), index=cooccurrence_df.index)
-
-    # Create the matrix (pivot table)
-    # Include both A->B and B->A for a symmetric matrix
-    matrix_a_b = cooccurrence_df.pivot_table(index='Tag A', columns='Tag B', values='Frequency', fill_value=0)
-    matrix_b_a = cooccurrence_df.pivot_table(index='Tag B', columns='Tag A', values='Frequency', fill_value=0)
-
-    # Combine and ensure symmetry, filling NaNs
-    cooccurrence_matrix = matrix_a_b.add(matrix_b_a, fill_value=0)
-
-    # Ensure all tags are in both index and columns
-    all_tags_in_pairs = sorted(list(set(cooccurrence_df['Tag A']) | set(cooccurrence_df['Tag B'])))
-    cooccurrence_matrix = cooccurrence_matrix.reindex(index=all_tags_in_pairs, columns=all_tags_in_pairs, fill_value=0)
-
-    # Fill diagonal with NaN or 0 (conventionally diagonal is ignored in co-occurrence)
-    np.fill_diagonal(cooccurrence_matrix.values, 0) # Or np.nan if preferred
-
-    # Optional: Filter matrix for stronger relationships if it's too large
-    # e.g., keep only pairs with frequency > threshold
-    # Or only plot Top N tags by total co-occurrence frequency
-
-    if cooccurrence_matrix.empty:
-        logging.warning("Co-occurrence matrix is empty after processing. Skipping heatmap.")
-        return
-
-    # --- Generate Heatmap ---
-    logging.info("Generating co-occurrence heatmap...")
-    num_tags = len(cooccurrence_matrix)
-    # Dynamic sizing - adjust multipliers as needed
-    fig_size_factor = 0.5
-    min_fig_size = 8
-    fig_width = max(min_fig_size, num_tags * fig_size_factor)
-    fig_height = max(min_fig_size, num_tags * fig_size_factor)
-    # Adjust font size based on number of tags
-    annot_size = max(5, 10 - num_tags * 0.1)
-    tick_font_size = max(6, 11 - num_tags * 0.1)
-
-
-    plt.figure(figsize=(fig_width, fig_height))
-    sns.heatmap(cooccurrence_matrix, cmap="viridis", annot=False, fmt="d") # Annotations might be too dense
-    plt.title(f'Tag Co-occurrence Matrix (GD{args.gd_number})', fontsize=14)
-    plt.xlabel("Tag", fontsize=tick_font_size)
-    plt.ylabel("Tag", fontsize=tick_font_size)
-    plt.xticks(rotation=90, fontsize=tick_font_size)
-    plt.yticks(rotation=0, fontsize=tick_font_size)
-    plt.tight_layout()
-
-    # Save the heatmap
-    logging.info(f"Saving co-occurrence heatmap to: {output_path}")
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    try:
-        plt.savefig(output_path, dpi=150, bbox_inches='tight')
-        logging.info("Heatmap saved successfully.")
-    except Exception as e:
-        logging.error(f"Error saving heatmap: {e}")
-    plt.close() # Close the plot to free memory
-
-
 def main(args):
     """Main execution flow."""
     data_dir = Path("./Data") # Assumes script is run from workspace root
@@ -520,10 +508,6 @@ def main(args):
     # 2. Calculate Unified Report
     report_path = output_dir / "tag_analysis_report.csv"
     calculate_unified_report(prepared_data, segment_columns, report_path)
-
-    # 3. Generate Co-occurrence Heatmap
-    heatmap_path = output_dir / "tag_cooccurrence_heatmap.png"
-    generate_cooccurrence_heatmap(prepared_data, heatmap_path)
 
     logging.info(f"Tag analysis for GD{args.gd_number} completed.")
 
