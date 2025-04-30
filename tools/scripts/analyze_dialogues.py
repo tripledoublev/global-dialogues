@@ -10,6 +10,12 @@ import warnings
 import matplotlib.pyplot as plt
 import seaborn as sns # Optional: for nicer plots
 import textwrap # Import textwrap
+import subprocess
+import logging
+import sys
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # --- Configuration ---
 # Default values, can be overridden by command-line args
@@ -900,211 +906,88 @@ def generate_segment_report(segment_details_first_q, segments_output_dir):
 
     print("--- Segment Summary Report Generation Complete ---")
 
-# --- Main Execution ---
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Analyze Global Dialogues aggregate data.")
+def run_script(script_name, gd_number, extra_args=None):
+    """Runs a given analysis script using subprocess, passing the GD number."""
+    python_executable = sys.executable # Use the same python executable that runs this script
+    script_path = os.path.join("tools", "scripts", script_name)
+    if not os.path.exists(script_path):
+        logging.error(f"Script not found: {script_path}")
+        return False
+
+    cmd = [python_executable, script_path, "--gd_number", str(gd_number)]
+    if extra_args:
+        cmd.extend(extra_args)
+       
+    logging.info(f"--- Running {script_name} for GD{gd_number} ---")
+    logging.info(f"Executing: {' '.join(cmd)}")
+   
+    try:
+        # Use check=True to raise CalledProcessError if the script fails (returns non-zero exit code)
+        # Capture output to potentially log it or check for errors
+        result = subprocess.run(cmd, check=True, capture_output=True, text=True, encoding='utf-8')
+        logging.info(f"{script_name} output:\n{result.stdout}")
+        if result.stderr:
+             logging.warning(f"{script_name} stderr:\n{result.stderr}")
+        logging.info(f"--- {script_name} completed successfully ---")
+        return True
+    except FileNotFoundError:
+        logging.error(f"Error: Python executable not found at {python_executable}")
+        return False
+    except subprocess.CalledProcessError as e:
+        logging.error(f"--- {script_name} failed (exit code {e.returncode}) ---")
+        logging.error(f"Command: {' '.join(e.cmd)}")
+        logging.error(f"Stderr:\n{e.stderr}")
+        logging.error(f"Stdout:\n{e.stdout}")
+        return False
+    except Exception as e:
+        logging.error(f"An unexpected error occurred while running {script_name}: {e}")
+        return False
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Run the full Global Dialogues analysis pipeline for a specific cadence.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+This script acts as a master controller, executing the following steps in order:
+  1. preprocess_aggregate.py: Standardizes the raw aggregate data.
+  2. calculate_consensus.py: Calculates consensus profiles and major segment consensus.
+  3. calculate_divergence.py: Calculates divergence scores.
+  4. calculate_indicators.py: Generates indicator heatmaps.
+
+Each step uses the specified --gd_number to find input files and determine default output locations within Data/GD<N>/ and analysis_output/GD<N>/ respectively.
+""")
+    parser.add_argument("gd_number", type=int, help="Global Dialogue cadence number (e.g., 1, 2, 3).")
+    # Add optional arguments if we want to pass overrides down, e.g., output dir, min_segment_size
+    # For now, keep it simple and rely on defaults or running scripts individually for customization.
+    # parser.add_argument("-o", "--output_dir_base", help="Override the base output directory (default: analysis_output)")
     
-    # --- Input file arguments (mutually exclusive) ---
-    input_group = parser.add_mutually_exclusive_group(required=True)
-    input_group.add_argument("--gd_number", type=int, help="Global Dialogue cadence number (e.g., 1, 2, 3). Constructs path like Data/GDi/GDi_aggregate.csv")
-    input_group.add_argument("--csv_filepath", help="Explicit path to the aggregate.csv file.")
-
-    # --- Other arguments ---
-    parser.add_argument("-o", "--output_dir", default="analysis_output", help="Base directory to save results and cache.")
-    parser.add_argument("-s", "--min_segment_size", type=int, default=DEFAULT_MIN_SEGMENT_SIZE, help="Minimum participant size for a segment to be included in analysis.")
-    parser.add_argument("--force_reparse", action="store_true", help="Force reparsing from CSV, ignoring cache.")
-    # Set default padding based on notebook observation
-    parser.add_argument("--padding_rows", type=int, default=9, help="Number of header/junk rows to skip at the start of the CSV.")
-    parser.add_argument("--top_n_divergence", type=int, default=20, help="Number of top divergent responses to report per question.")
-    parser.add_argument("--top_n_divergence_overall", type=int, default=50, help="Number of top divergent responses to report overall.")
-    # Consensus Args
-    parser.add_argument("--consensus_percentiles", type=int, nargs='+', default=[100, 95, 90, 80, 70, 60, 50, 40, 30, 20, 10], help="Percentiles for consensus profile calculation (e.g., 100 95 90)")
-    parser.add_argument("--consensus_top_n_percentiles", type=int, nargs='+', default=[100, 95, 90], help="Percentiles to generate Top N reports for (e.g., 100 95)")
-    parser.add_argument("--consensus_top_n_count", type=int, default=5, help="Number of responses for Top N consensus reports.")
-    # Add arg for indicator codesheet 
-    parser.add_argument("--indicator_codesheet", default="Data/Documentation/INDICATOR_CODESHEET.csv", help="Path to the Indicator Codesheet CSV.")
-
     args = parser.parse_args()
+    gd_num = args.gd_number
 
-    # --- Determine Input CSV Path ---
-    input_csv_path = None; gd_identifier = "custom_input" # Default identifier
-    if args.gd_number:
-        gd_num = args.gd_number
-        gd_identifier = f"GD{gd_num}" # Set identifier based on number
-        constructed_path = os.path.join("Data", gd_identifier, f"{gd_identifier}_aggregate.csv")
-        if not os.path.exists(constructed_path): print(f"Error: Constructed path does not exist: {constructed_path}"); exit(1)
-        input_csv_path = constructed_path
-    elif args.csv_filepath:
-        # Try to infer GD number from path for directory name, fallback to default
-        match = re.search(r'GD(\d+)', args.csv_filepath, re.IGNORECASE)
-        if match: gd_identifier = f"GD{match.group(1)}"
-        if not os.path.exists(args.csv_filepath): print(f"Error: Provided file path does not exist: {args.csv_filepath}"); exit(1)
-        input_csv_path = args.csv_filepath
-    else: print("Error: No input specified."); exit(1)
-    print(f"Using input file: {input_csv_path}")
-    print(f"Using output identifier: {gd_identifier}")
+    logging.info(f"Starting analysis pipeline for GD{gd_num}")
 
-    # --- Setup Output Directories ---
-    base_output_dir = os.path.join(args.output_dir, gd_identifier)
-    consensus_output_dir = os.path.join(base_output_dir, "consensus")
-    divergence_output_dir = os.path.join(base_output_dir, "divergence")
-    indicators_output_dir = os.path.join(base_output_dir, "indicators")
-    segments_output_dir = os.path.join(base_output_dir, "segments")
-    
-    # Create directories if they don't exist
-    os.makedirs(base_output_dir, exist_ok=True)
-    os.makedirs(consensus_output_dir, exist_ok=True)
-    os.makedirs(divergence_output_dir, exist_ok=True)
-    os.makedirs(indicators_output_dir, exist_ok=True)
-    os.makedirs(segments_output_dir, exist_ok=True)
-    print(f"Output will be saved under: {base_output_dir}/")
+    # List of scripts to run in order
+    # Optional: Add specific args per script if needed, e.g., [('script.py', ['--extra_arg', 'value'])]
+    scripts_to_run = [
+        ("preprocess_aggregate.py", None),
+        ("calculate_consensus.py", None),
+        ("calculate_divergence.py", None),
+        ("calculate_indicators.py", None)
+    ]
 
-    # Update cache file path to be inside the base GDi/custom directory
-    cache_file = os.path.join(base_output_dir, CACHE_FILENAME)
-    print(f"Using cache file: {cache_file}")
-    print("(Consider adding this cache file path to your .gitignore)")
+    all_success = True
+    for script_name, extra_args in scripts_to_run:
+        success = run_script(script_name, gd_num, extra_args)
+        if not success:
+            all_success = False
+            logging.error(f"Pipeline stopped due to failure in {script_name}.")
+            break # Stop pipeline on first failure
 
-    # --- Load and Preprocess Data ---
-    all_questions_data, first_question_segment_details = load_and_preprocess_data(input_csv_path, cache_file, args.force_reparse, args.padding_rows)
-    if not all_questions_data: print("Failed to load data."); exit(1)
-    print(f"\nSuccessfully loaded/processed {len(all_questions_data)} questions from {input_csv_path}.")
-
-    # --- Determine Major Segments for specific consensus analysis ---
-    major_segment_column_names = []
-    if first_question_segment_details:
-        # Try to find the 'All' segment to get total N
-        all_segment_info = next((details for col, details in first_question_segment_details.items() if col.lower().startswith('all(')), None)
-        total_N = 0
-        min_threshold = args.min_segment_size # Default to general min size if 'All' not found
-
-        if all_segment_info and 'size' in all_segment_info and pd.notna(all_segment_info['size']):
-            total_N = all_segment_info['size']
-            # Use the dynamic threshold: max of 15 or 1% of total N
-            # Use max with the *provided* min_segment_size arg as a lower bound, instead of fixed 15.
-            dynamic_threshold = max(1, round(total_N / 100.0)) # Ensure at least 1% is required
-            min_threshold = max(args.min_segment_size, dynamic_threshold)
-            print(f"\nDetermining Major Segments using Total N = {total_N}. Calculated min size threshold: {min_threshold} (max({args.min_segment_size}, {dynamic_threshold}))")
-        else:
-            print(f"\nWarning: Could not determine Total N from 'All' segment in first question. Using default min_segment_size ({args.min_segment_size}) for major segment filtering.")
-            min_threshold = args.min_segment_size
-
-        for col_name, details in first_question_segment_details.items():
-            # Exclude 'All' segment itself
-            if col_name.lower().startswith('all('):
-                continue
-
-            o_code = details.get('o_code')
-            size = details.get('size')
-
-            # Check conditions: Not O1 (Language), Not O7 (Country), Size >= threshold
-            if o_code not in ['O1', 'O7'] and pd.notna(size) and size >= min_threshold:
-                major_segment_column_names.append(col_name)
-
-        print(f"  Identified {len(major_segment_column_names)} major segments meeting criteria: {major_segment_column_names}")
-        if not major_segment_column_names:
-             print("  Warning: No segments met the criteria to be considered 'major' for the major segment consensus report.")
-
+    if all_success:
+        logging.info(f"Analysis pipeline for GD{gd_num} completed successfully.")
     else:
-        print("\nWarning: Could not determine major segments because segment details from the first question were not available.")
+        logging.warning(f"Analysis pipeline for GD{gd_num} completed with errors.")
+        sys.exit(1) # Exit with non-zero code to indicate failure
 
-
-    # --- Generate Segment Report (using first question data) ---
-    generate_segment_report(first_question_segment_details, segments_output_dir)
-
-    # --- Filter segments based on size for *general* subsequent analyses ---
-    # Note: Major segment filtering above is *only* for the specific major_segment_consensus report.
-    # The general divergence/consensus/indicators use the args.min_segment_size directly.
-    print(f"\nFiltering segments with size < {args.min_segment_size} for general divergence/consensus/indicators analysis...")
-    original_total_segments = 0
-    filtered_total_segments = 0
-    processed_questions_data_filtered = [] # Store results after filtering
-
-    for metadata, df in all_questions_data:
-        original_segments = metadata.get('segment_cols', [])
-        segment_details = metadata.get('segment_details', {})
-        original_total_segments += len(original_segments)
-
-        # Filter segment columns based on size
-        # Use np.nan_to_num to treat NaN sizes as 0 for comparison
-        valid_segments = [
-            col for col in original_segments
-            if col in segment_details and np.nan_to_num(segment_details[col]['size']) >= args.min_segment_size
-        ]
-        filtered_total_segments += len(valid_segments)
-
-        # Create a new metadata dict with filtered segments list
-        # Keep original segment_details dict untouched for reference if needed
-        filtered_metadata = metadata.copy()
-        filtered_metadata['analysis_segment_cols'] = valid_segments # Use a distinct key
-
-        processed_questions_data_filtered.append((filtered_metadata, df))
-
-        # Log changes for this question if any segments were removed
-        removed_count = len(original_segments) - len(valid_segments)
-        if removed_count > 0:
-            print(f"  QID {metadata.get('id', 'N/A')}: Removed {removed_count} segments. Kept {len(valid_segments)} / {len(original_segments)}.")
-
-    # Replace the main list with the one containing filtered segment lists for analysis
-    analysis_questions_data = processed_questions_data_filtered # Use a new variable name for clarity
-    print(f"Segment filtering complete. Total segments kept for divergence/consensus/indicators analysis: {filtered_total_segments} / {original_total_segments}.")
-
-
-    # --- Run Analysis Functions (using filtered data) ---
-    divergence_results = calculate_divergence_report(
-        analysis_questions_data,  # Use filtered data
-        divergence_output_dir, # Pass specific directory
-        top_n_per_question=args.top_n_divergence,
-        top_n_overall=args.top_n_divergence_overall
-    )
-
-    consensus_results = calculate_consensus_profiles(
-        analysis_questions_data, # Use filtered data
-        consensus_output_dir, # Pass specific directory
-        percentiles_to_calc=args.consensus_percentiles,
-        top_n_percentiles=args.consensus_top_n_percentiles,
-        top_n_count=args.consensus_top_n_count
-    )
-    
-    generate_indicator_heatmaps(
-        args.indicator_codesheet, 
-        analysis_questions_data, # Use filtered data
-        indicators_output_dir # Pass specific directory
-    )
-
-    # --- NEW: Run Major Segment Consensus Analysis ---
-    # Use the 'analysis_questions_data' which has already been filtered by min_segment_size,
-    # but the function itself will apply the logic based on the major_segment_column_names list.
-    if major_segment_column_names:
-        major_consensus_results = calculate_major_segment_consensus(
-            analysis_questions_data, # Data already filtered by general min size
-            major_segment_column_names, # List of major segments identified earlier
-            consensus_output_dir # Save within the consensus folder
-        )
-    else:
-        print("\nSkipping Major Segment Consensus calculation as no major segments were identified.")
-
-
-    # --- Optional: Further summary based on results ---
-    if divergence_results is not None and not divergence_results.empty:
-        # Example: Find most divergent question overall
-        most_divergent_q_group = divergence_results.loc[divergence_results['Divergence Score'].idxmax()]
-        print("\n--- Overall Summary Snippets ---")
-        print(f"Most Divergent Response Overall (Score: {most_divergent_q_group['Divergence Score']:.4f}):")
-        print(f"  Question : {most_divergent_q_group['Question Text'][:100]}...")
-        print(f"  Response : {most_divergent_q_group['Response Text'][:100]}...")
-        print(f"  Segments : {most_divergent_q_group['Min Segment']} ({most_divergent_q_group['Min Agreement']:.1%}) vs {most_divergent_q_group['Max Segment']} ({most_divergent_q_group['Max Agreement']:.1%})")
-    else:
-        print("\nNo divergence results to summarize.")
-
-    # Consensus summary (add example)
-    if consensus_results is not None and not consensus_results.empty and 'MinAgree_90pct' in consensus_results.columns:
-         highest_consensus_90pct = consensus_results.loc[consensus_results['MinAgree_90pct'].idxmax()]
-         print("\nHighest Consensus Response (90th Percentile Minimum):")
-         print(f"  Score    : {highest_consensus_90pct['MinAgree_90pct']:.4f}")
-         print(f"  Question : {highest_consensus_90pct['Question Text'][:100]}...")
-         print(f"  Response : {highest_consensus_90pct['Response Text'][:100]}...")
-         print(f"  (Based on {highest_consensus_90pct['Num Valid Segments']} segments)")
-    else:
-         print("\nNo consensus results to summarize (or 90pct column missing).")
-
-    print("\nScript finished.") 
+if __name__ == "__main__":
+    main() 
