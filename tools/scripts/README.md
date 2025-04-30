@@ -1,8 +1,16 @@
 # Analysis Scripts
 
-This directory contains scripts for processing raw Remesh.ai data for Global Dialogues analysis.
+This directory contains scripts for processing raw Remesh.ai data for Global Dialogues analysis and generating standard reports.
 
-## `preprocess_tag_files.py`
+## Workflow Overview
+
+1.  **Preprocessing:** Run `preprocess_aggregate.py` first. This takes the raw `GD<N>_aggregate.csv` and creates the necessary standardized files: `GD<N>_aggregate_standardized.csv` and `GD<N>_segment_counts_by_question.csv`.
+2.  **Individual Analyses:** Run the individual `calculate_*.py` scripts (`calculate_consensus.py`, `calculate_divergence.py`, `calculate_indicators.py`). Each script takes the standardized files produced by the preprocessing step as input and generates specific analysis outputs (e.g., consensus reports, divergence scores, indicator heatmaps).
+3.  **Master Script (Optional):** Run `analyze_dialogues.py`. This script acts as a controller, automatically running the preprocessing step and then all the individual `calculate_*.py` scripts in the correct order for a given Global Dialogue cadence number.
+
+## Script Details
+
+### `preprocess_tag_files.py`
 
 **Purpose:** Cleans and organizes raw tag export files (`*_Tag_Categories.csv`, `*_Thought_Labels.csv`) downloaded from Remesh for each Ask Opinion question.
 
@@ -23,13 +31,13 @@ This directory contains scripts for processing raw Remesh.ai data for Global Dia
 
 *Note: Rerunning the script with new/updated files in the raw directory will update the corresponding individual files and rebuild the combined files in the output directory.*
 
-## `preprocess_aggregate.py`
+### `preprocess_aggregate.py`
 
-**Purpose:** Processes the raw `_aggregate.csv` file (which contains metadata rows and repeated/varying header rows for different question types) into a standardized format suitable for analysis.
+**Purpose:** Processes the raw `_aggregate.csv` file (which contains metadata rows and repeated/varying header rows for different question types) into standardized formats suitable for analysis.
 
 **Workflow:**
 
-1.  **Input:** Takes either a Global Dialogue number (`--gd_number`) to find the standard input file (`Data/GD<N>/GD<N>_aggregate.csv`) or an explicit `--input_file` path.
+1.  **Input:** Takes either a Global Dialogue number (`--gd_number`) to find the standard input file (`Data/GD<N>/GD<N>_aggregate.csv`) or explicit `--input_file`, `--output_file`, and (optional) `--segment_counts_output` paths.
 2.  **Run Script:**
     ```bash
     # Simplest example using GD number:
@@ -38,32 +46,69 @@ This directory contains scripts for processing raw Remesh.ai data for Global Dia
 3.  **Output:** By default (when using `--gd_number`), generates two files in the corresponding `Data/GD<N>/` directory:
     *   `GD<N>_aggregate_standardized.csv`: A CSV with a single header row, consistent columns (including merged `Response` and `OriginalResponse` columns), and data mapped correctly from all question blocks. Metadata and repeated headers are removed.
     *   `GD<N>_segment_counts_by_question.csv`: A CSV detailing the participant count (`N`) for each segment *for each specific question*.
-4.  **Custom Paths:** You can specify explicit output paths using `--output_file` and `--segment_counts_output`.
 
-*Note: This script is crucial for preparing the aggregate data before running subsequent analysis scripts like `calculate_divergence.py` or `calculate_consensus.py`.*
+*Note: This script is crucial for preparing the aggregate data before running subsequent analysis scripts.*
 
-## `analyze_dialogues.py`
+### `calculate_consensus.py`
 
-**Purpose:** Analyzes a processed `aggregate.csv` file for a specific Global Dialogue cadence to generate divergence reports, consensus profiles, and indicator question heatmaps.
+**Purpose:** Calculates consensus profiles (percentile minimums) and highest minimum agreement across major segments for *Ask Opinion* questions.
 
-**Workflow:**
+**Input:** Uses `_aggregate_standardized.csv` and `_segment_counts_by_question.csv`.
 
-1.  **Prerequisites:** Ensure the relevant `aggregate.csv` file exists (e.g., `Data/GD3/GD3_aggregate.csv`) and the indicator codesheet (`Data/Documentation/INDICATOR_CODESHEET.csv`) is present.
-2.  **Run Script:** Execute the script, specifying the Global Dialogue cadence number OR the direct path to the `aggregate.csv` file. Other options control output location, filtering, etc.
-    ```bash
-    # Option 1: Specify by GD number (looks for Data/GD<N>/GD<N>_aggregate.csv)
-    python tools/scripts/analyze_dialogues.py --gd_number 3 
+**Run Script:**
+```bash
+# Simplest example using GD number:
+python tools/scripts/calculate_consensus.py --gd_number 3
+```
 
-    # Option 2: Specify explicit file path
-    python tools/scripts/analyze_dialogues.py --csv_filepath /path/to/your/aggregate.csv
+**Output:** Saves CSV reports (e.g., `consensus_profiles.csv`, `major_segment_min_agreement_top10.csv`) to the `analysis_output/GD<N>/consensus/` directory.
 
-    # Example with custom output and filtering:
-    python tools/scripts/analyze_dialogues.py --gd_number 3 -o custom_output --min_segment_size 50
-    ```
-3.  **Output:** The script saves results into a structured directory based on the GD cadence or input file (e.g., `analysis_output/GD3/`). Outputs include:
-    *   `processed_data.pkl`: Cached preprocessed data (consider adding `*processed_data.pkl` or `**/analysis_output/**/processed_data.pkl` to `.gitignore`).
-    *   `divergence/`: CSV reports on divergent responses.
-    *   `consensus/`: CSV reports on consensus profiles.
-    *   `indicators/`: PNG heatmaps for indicator question categories.
+### `calculate_divergence.py`
 
-*Note: The script uses caching (`processed_data.pkl`). Use the `--force_reparse` flag if you need to re-process the input CSV file instead of using the cache.* 
+**Purpose:** Calculates divergence scores for *Ask Opinion* questions, identifying responses with high disagreement between segments.
+
+**Input:** Uses `_aggregate_standardized.csv` and `_segment_counts_by_question.csv`.
+
+**Run Script:**
+```bash
+# Simplest example using GD number:
+python tools/scripts/calculate_divergence.py --gd_number 3
+```
+
+**Output:** Saves CSV reports (e.g., `divergence_by_question.csv`, `divergence_overall.csv`) to the `analysis_output/GD<N>/divergence/` directory.
+
+### `calculate_indicators.py`
+
+**Purpose:** Generates heatmaps visualizing responses to predefined *Indicator Poll* questions, grouped by category.
+
+**Input:** Uses `_aggregate_standardized.csv` and the `INDICATOR_CODESHEET.csv`.
+
+**Run Script:**
+```bash
+# Simplest example using GD number:
+python tools/scripts/calculate_indicators.py --gd_number 3
+```
+
+**Output:** Saves PNG heatmap images (e.g., `indicator_heatmap_<category>.png`) to the `analysis_output/GD<N>/indicators/` directory.
+
+### `analyze_dialogues.py` (Master Script)
+
+**Purpose:** Acts as a master controller to run the entire standard analysis pipeline for a given Global Dialogue cadence number.
+
+**Workflow:** Executes the following scripts in order, using the provided `--gd_number`:
+1.  `preprocess_aggregate.py`
+2.  `calculate_consensus.py`
+3.  `calculate_divergence.py`
+4.  `calculate_indicators.py`
+
+**Run Script:**
+```bash
+# Run full pipeline for GD3:
+python tools/scripts/analyze_dialogues.py 3
+```
+
+**Output:** Creates/populates the default output directories (e.g., `Data/GD3/` for standardized files, `analysis_output/GD3/{consensus,divergence,indicators}/` for reports and plots) as generated by the individual scripts.
+
+### `calculate_segments.py`
+
+*(Currently unused/placeholder. Segment count information is generated by `preprocess_aggregate.py`)*. 
