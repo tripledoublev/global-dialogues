@@ -157,7 +157,7 @@ def main(args):
         f"GD{gd_number}_binary.csv": ['Question ID', 'Participant ID', 'Thought ID', 'Vote'],
         f"GD{gd_number}_preference.csv": ['Question ID', 'Participant ID', 'Thought A ID', 'Thought B ID', 'Vote'],
         f"GD{gd_number}_verbatim_map.csv": ['Question ID', 'Question Text', 'Participant ID', 'Thought ID', 'Thought Text'],
-        f"GD{gd_number}_summary.csv": ['Conversation ID', 'Conversation Title', 'Questions Selected', 'Conversation Summary'],
+        f"GD{gd_number}_summary.csv": ['Conversation ID', 'Conversation Title', 'Questions Selected'],
         # Add other raw Remesh files if necessary
     }
 
