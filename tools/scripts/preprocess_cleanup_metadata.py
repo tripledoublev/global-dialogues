@@ -138,6 +138,162 @@ def clean_csv_metadata(file_path, header_index):
                  # Log if removal fails but don't stop the process
                  logging.error(f"Could not remove temporary file during final cleanup: {temp_file_path}")
 
+def clean_summary_csv(file_path):
+    """
+    Cleans the summary.csv file which has two sections (conversation and question summaries)
+    by creating a single combined header and concatenating the data.
+
+    Args:
+        file_path (Path): Path to the summary.csv file.
+
+    Returns:
+        bool: True if successful, False otherwise.
+    """
+    logging.info(f"Attempting special cleaning for {file_path}...")
+    header1_markers = ['Conversation ID', 'Conversation Title']
+    header2_markers = ['Question ID', 'Question Type'] # Use simpler markers for second header
+    header1_idx = -1
+    header2_idx = -1
+
+    # --- Find header indices --- # TODO: Refactor with find_header_row if possible
+    encodings_to_try = ['utf-8-sig', 'utf-8', 'latin1', 'iso-8859-1']
+    detected_encoding = 'utf-8-sig' # Assume default initially
+    try:
+        # Find header 1
+        for enc in encodings_to_try:
+            try:
+                with open(file_path, 'r', encoding=enc) as f:
+                    for i, line in enumerate(f):
+                        if all(m.lower() in line.lower() for m in header1_markers):
+                             # Quick pandas check
+                             try:
+                                 df_h1_test = pd.read_csv(file_path, header=i, nrows=0, encoding=enc)
+                                 df_h1_test.columns = df_h1_test.columns.str.replace('^\\ufeff', '', regex=True).str.strip()
+                                 if all(m in df_h1_test.columns for m in header1_markers):
+                                     header1_idx = i
+                                     detected_encoding = enc
+                                     logging.info(f"Found summary header 1 at index {header1_idx} with encoding {detected_encoding}")
+                                     break
+                             except Exception:
+                                 continue
+                if header1_idx != -1:
+                    break
+            except UnicodeDecodeError:
+                continue
+
+        if header1_idx == -1:
+            logging.error(f"Could not find summary header 1 using markers {header1_markers} in {file_path}")
+            return False
+
+        # Find header 2 (starting search after header 1)
+        header2_search_start_line = header1_idx + 1
+        with open(file_path, 'r', encoding=detected_encoding) as f:
+             # Skip lines up to the start point
+             for _ in range(header2_search_start_line):
+                 next(f)
+             # Search remaining lines
+             for i, line in enumerate(f, start=header2_search_start_line):
+                  if all(m.lower() in line.lower() for m in header2_markers):
+                      # Quick pandas check
+                      try:
+                            # Reading from the *original* file path with the found index
+                            df_h2_test = pd.read_csv(file_path, header=i, nrows=0, encoding=detected_encoding)
+                            df_h2_test.columns = df_h2_test.columns.str.replace('^\\ufeff', '', regex=True).str.strip()
+                            if all(m in df_h2_test.columns for m in header2_markers):
+                                header2_idx = i
+                                logging.info(f"Found summary header 2 at index {header2_idx}")
+                                break
+                      except Exception:
+                          continue
+
+        if header2_idx == -1:
+             logging.error(f"Could not find summary header 2 using markers {header2_markers} after index {header1_idx} in {file_path}")
+             # Decide if we should proceed without question summaries or fail
+             # For now, let's fail if the structure isn't as expected.
+             return False
+
+    except Exception as e:
+        logging.error(f"Error finding headers in {file_path}: {e}")
+        return False
+
+    # --- Check if already cleaned (single header at line 1) ---
+    if header1_idx == 0:
+         # Check if header 2 markers *also* exist in the first line header
+         try:
+             df_first_line = pd.read_csv(file_path, nrows=0, encoding=detected_encoding)
+             df_first_line.columns = df_first_line.columns.str.replace('^\\ufeff', '', regex=True).str.strip()
+             if all(m in df_first_line.columns for m in header2_markers):
+                 logging.info(f"{file_path} appears to be already cleaned (combined header). Skipping.")
+                 return True # Indicate success, no action needed
+             else:
+                 logging.warning(f"{file_path} header is at line 1, but doesn't seem to contain combined headers. Proceeding with caution (potential data loss if run twice).")
+                 # Fall through to process normally, but this state shouldn't occur with this script.
+
+         except Exception as e:
+              logging.error(f"Error checking if {file_path} is already cleaned: {e}")
+              # Proceed with cleaning as a safety measure
+
+    # --- Process the file --- #
+    try:
+        # Read the full file using the first header
+        df_full = pd.read_csv(file_path, header=header1_idx, encoding=detected_encoding, low_memory=False)
+        df_full.columns = df_full.columns.str.replace('^\\ufeff', '', regex=True).str.strip()
+
+        # Find the actual row index where the second header ("Question ID") appears in the *data*
+        # Use the first marker of the second header for location
+        header2_marker_for_loc = header2_markers[0]
+        header2_row_loc = -1
+        for idx, row_val in df_full.iloc[:, 0].astype(str).items(): # Check first column
+             if header2_marker_for_loc.lower() in row_val.lower(): # Case-insensitive check
+                 header2_row_loc = idx
+                 logging.info(f"Located second header content ('{header2_marker_for_loc}') at DataFrame index {header2_row_loc}")
+                 break
+
+        if header2_row_loc == -1:
+            logging.error(f"Could not locate the second header marker '{header2_marker_for_loc}' within the data read from {file_path} using header 1. Cannot split sections.")
+            return False
+
+        # Split into conversation and question parts
+        df_conv = df_full.iloc[:header2_row_loc].copy()
+        df_quest_raw = df_full.iloc[header2_row_loc:].copy()
+
+        if df_quest_raw.empty:
+             logging.warning(f"No data found for question summaries section in {file_path}. Result will only contain conversation summary.")
+             df_quest = pd.DataFrame() # Empty dataframe
+        else:
+            # Set new header for question part (it's the first row of df_quest_raw)
+            new_quest_header = df_quest_raw.iloc[0].astype(str).str.strip()
+            df_quest_raw.columns = new_quest_header
+            # Get actual question data (skip the header row)
+            df_quest = df_quest_raw.iloc[1:].reset_index(drop=True)
+            logging.info(f"Extracted {len(df_quest)} question summary rows.")
+
+        # Combine columns
+        conv_cols = df_conv.columns
+        quest_cols = df_quest.columns if not df_quest.empty else pd.Index([])
+        # Use pandas union to preserve order from conversation cols first
+        all_cols = conv_cols.union(quest_cols, sort=False)
+        logging.debug(f"Combined columns: {all_cols.tolist()}")
+
+        # Reindex both parts
+        df_conv = df_conv.reindex(columns=all_cols)
+        if not df_quest.empty:
+            df_quest = df_quest.reindex(columns=all_cols)
+        else: # Handle case where there were no question rows
+            df_quest = pd.DataFrame(columns=all_cols) # Ensure it has the columns even if empty
+
+        # Concatenate
+        df_final = pd.concat([df_conv, df_quest], ignore_index=True)
+
+        # Overwrite the original file
+        df_final.to_csv(file_path, index=False, encoding='utf-8')
+        logging.info(f"Successfully cleaned and overwrote {file_path} with combined header.")
+        return True
+
+    except Exception as e:
+        logging.error(f"Failed during processing/writing of {file_path}: {e}", exc_info=True)
+        return False
+
 def main(args):
     gd_number = args.gd_number
     data_dir = Path("./Data") / f"GD{gd_number}"
@@ -165,10 +321,15 @@ def main(args):
     hardcoded_headers = {
         f"GD{gd_number}_participants.csv": 11,
         f"GD{gd_number}_discussion_guide.csv": 12,
-        # f"GD{gd_number}_summary.csv": 7 # Removed - rely on marker detection
+        # f"GD{gd_number}_summary.csv": 7 # Removed - handled separately
     }
 
+    # --- Process standard files ---
     for filename, markers in files_to_clean.items():
+        # Skip summary file in this loop
+        if "summary.csv" in filename:
+            continue
+
         file_path = data_dir / filename
         if file_path.exists():
             logging.info(f"Processing file: {file_path}")
@@ -223,6 +384,16 @@ def main(args):
 
         else:
             logging.warning(f"File not found, skipping: {file_path}")
+
+    # --- Process the special summary.csv file ---
+    summary_filename = f"GD{gd_number}_summary.csv"
+    summary_file_path = data_dir / summary_filename
+    if summary_file_path.exists():
+        logging.info(f"Processing special file: {summary_file_path}")
+        if not clean_summary_csv(summary_file_path):
+             logging.error(f"Failed to clean {summary_filename}.")
+    else:
+        logging.warning(f"File not found, skipping: {summary_file_path}")
 
     logging.info(f"Metadata cleanup for GD{gd_number} completed.")
 
