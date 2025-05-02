@@ -32,8 +32,11 @@ def find_header_row(file_path, expected_markers):
                 # For now, simple line reading is okay
                 for i, line in enumerate(f):
                     line_content = line.strip()
-                    # Basic checks: not empty, contains commas, contains markers
-                    if line_content and ',' in line_content:
+                    # Skip empty lines
+                    if not line_content:
+                        continue
+                    # Basic checks: contains commas, contains markers
+                    if ',' in line_content:
                         # Check if all markers are present (case-insensitive)
                         line_lower = line_content.lower()
                         if all(marker.lower() in line_lower for marker in expected_markers):
@@ -162,7 +165,7 @@ def main(args):
     hardcoded_headers = {
         f"GD{gd_number}_participants.csv": 11,
         f"GD{gd_number}_discussion_guide.csv": 12,
-        f"GD{gd_number}_summary.csv": 7 # Add summary index (1-based line 8)
+        # f"GD{gd_number}_summary.csv": 7 # Removed - rely on marker detection
     }
 
     for filename, markers in files_to_clean.items():
@@ -170,22 +173,54 @@ def main(args):
         if file_path.exists():
             logging.info(f"Processing file: {file_path}")
             header_idx = -1
+            needs_cleaning = False
 
-            # Check for hardcoded index first
-            if filename in hardcoded_headers:
-                header_idx = hardcoded_headers[filename]
-                logging.info(f"Using hardcoded header index {header_idx} for {filename}.")
-            else:
-                # Fallback to marker detection
-                header_idx = find_header_row(file_path, markers)
+            # 1. Try marker-based detection first
+            detected_idx = find_header_row(file_path, markers)
 
-            if header_idx == -1:
-                logging.error(f"Could not find header for {filename}. Skipping cleanup.")
-            elif header_idx == 0:
-                logging.info(f"Header already at line 1 for {filename}. No cleanup needed.")
-            else:
-                # Header found at a later line, proceed with cleaning
+            if detected_idx == 0:
+                logging.info(f"Header already at line 1 (index 0) for {filename}. No cleanup needed.")
+                header_idx = 0 # Mark as found at 0
+            elif detected_idx > 0:
+                logging.info(f"Header found at index {detected_idx} using markers. Scheduling cleanup.")
+                header_idx = detected_idx
+                needs_cleaning = True
+            else: # detected_idx == -1 (markers didn't find it)
+                logging.warning(f"Marker-based detection failed for {filename}.")
+                # 2. Check if it's a file with a hardcoded index
+                if filename in hardcoded_headers:
+                    logging.info(f"Checking hardcoded index for {filename}.")
+                    # 2a. Check if header is *already* at line 1 (index 0) even though markers failed
+                    # We need a quick check here without full find_header_row logic
+                    try:
+                        df_check = pd.read_csv(file_path, nrows=1, encoding='utf-8-sig') # Read first line + header
+                        df_check.columns = df_check.columns.str.replace('^\\ufeff', '', regex=True).str.strip()
+                        if all(marker in df_check.columns for marker in markers):
+                            logging.info(f"Header check confirms header is already at line 1 for {filename} (hardcoded case). No cleanup needed.")
+                            header_idx = 0 # Mark as found at 0
+                        else:
+                            logging.warning(f"Header not at line 1 for {filename}. Using hardcoded index.")
+                            header_idx = hardcoded_headers[filename]
+                            needs_cleaning = True
+                    except Exception as e:
+                        logging.error(f"Error checking line 1 for {filename} before using hardcoded index: {e}")
+                        # Fallback to assuming it needs cleaning with hardcoded index
+                        logging.warning(f"Falling back to hardcoded index {hardcoded_headers[filename]} for {filename}.")
+                        header_idx = hardcoded_headers[filename]
+                        needs_cleaning = True
+                else:
+                    # Markers failed, and no hardcoded index available
+                    logging.error(f"Could not find header for {filename} using markers and no hardcoded index provided. Skipping cleanup.")
+                    # Keep header_idx = -1
+
+            # 3. Perform cleanup if needed and possible
+            if needs_cleaning and header_idx > 0:
                 clean_csv_metadata(file_path, header_idx)
+            elif not needs_cleaning and header_idx == 0:
+                pass # Already clean, do nothing
+            elif header_idx == -1:
+                logging.error(f"Final decision: Skipping cleanup for {filename} as header could not be reliably located.")
+
         else:
             logging.warning(f"File not found, skipping: {file_path}")
 
