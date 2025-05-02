@@ -26,10 +26,10 @@ def safe_read_csv(path, **kwargs):
         min_commas_for_header = 5 # Heuristic: header row should have at least this many fields
         # Define essential columns that MUST be in the header
         essential_markers = {
-            'participants': ['Participant Id'], # Focus on the most critical ID
+            'participants': ['Participant Id', 'Sample Provider Id'], # Be more specific
             'labels': ['Question ID', 'Participant ID', 'ResponseText'],
             'categories': ['Question ID', 'Category'],
-            'guide': ['Item type (dropdown)', 'Content'],
+            'guide': ['Item type (dropdown)', 'Content', 'Duration in minutes (dropdown)'], # Use expected names
             'aggregate': ['Question ID', 'Question Type', 'Question'], # Standardized aggregate
         }
         markers = []
@@ -73,63 +73,59 @@ def safe_read_csv(path, **kwargs):
 
                 # Add on_bad_lines specifically for discussion guide if needed
                 read_kwargs = kwargs.copy()
-                if 'guide' in filename:
-                     read_kwargs['on_bad_lines'] = 'warn'
-                     logging.info("Applying 'on_bad_lines=warn' for discussion guide file.")
+                # Use startswith for better matching (e.g., GD3_participants.csv)
+                is_participants_file = filename.startswith('participants') or 'participants' in filename
+                is_guide_file = filename.startswith('guide') or 'guide' in filename # Check again for validation context
+                is_agg_std_file = filename.startswith('aggregate_standardized') or 'aggregate_standardized' in filename # Standardized Aggregate
+
+                if is_guide_file:
+                    read_kwargs['on_bad_lines'] = 'warn'
+                    logging.info("Applying 'on_bad_lines=warn' for discussion guide file.")
 
                 df_temp = pd.read_csv(path, header=header_row, **read_kwargs)
 
-                # Validate: Check if essential markers are actual columns
-                is_participants_file = 'participants' in filename
-                is_guide_file = 'guide' in filename
-                validation_passed = False
+                # --- Standardized Column Cleaning ---
+                # Clean column names (remove BOM/extra spaces if any) *immediately* after loading
+                df_temp.columns = df_temp.columns.str.replace('^\\ufeff', '', regex=True).str.strip()
+                logging.info(f"Cleaned columns after loading {filename}: {df_temp.columns.tolist()[:10]}...") # Log cleaned columns
 
+
+                # --- Validate Columns ---
+                validation_passed = False
+                required_cols = markers # Use the detected markers for validation
+
+                # Add specific validation rules if needed
                 if is_participants_file:
-                    participant_id_col_name = 'Participant Id' # The target name
-                    expected_index = 2
-                    if len(df_temp.columns) > expected_index:
-                        logging.info(f"Participants file detected. Checking column at index {expected_index}.")
-                        # Assume column at index 2 is Participant Id, rename it
-                        original_name = df_temp.columns[expected_index]
-                        if original_name != participant_id_col_name:
-                             df_temp.rename(columns={original_name: participant_id_col_name}, inplace=True)
-                             logging.info(f"Renamed participants column '{original_name}' (index {expected_index}) to '{participant_id_col_name}'.")
-                        else:
-                             logging.info(f"Column at index {expected_index} already named '{participant_id_col_name}'.")
-                        validation_passed = True # Override validation based on position
+                    # Just check if the required markers are present by name now
+                    if all(marker in df_temp.columns for marker in required_cols):
+                         logging.info(f"Participants file validation passed based on column names: {required_cols}")
+                         validation_passed = True
                     else:
-                        logging.error(f"Participants file loaded but has < {expected_index + 1} columns. Cannot find Participant Id.")
+                         missing = [marker for marker in required_cols if marker not in df_temp.columns]
+                         logging.error(f"Participants file loaded but missing expected columns: {missing}. Found: {df_temp.columns.tolist()[:20]}")
                 elif is_guide_file:
-                    item_type_col = 'Item type (dropdown)'
-                    content_col = 'Content'
-                    expected_item_type_idx = 3
-                    expected_content_idx = 4
-                    if len(df_temp.columns) > expected_content_idx: # Check if enough columns exist
-                        logging.info(f"Discussion guide file detected. Checking columns at indices {expected_item_type_idx} and {expected_content_idx}.")
-                        # Get the original names at the expected indices
-                        orig_item_type_name = df_temp.columns[expected_item_type_idx]
-                        orig_content_name = df_temp.columns[expected_content_idx]
-                        # Build the rename map using the original names as keys
-                        rename_map = {}
-                        if orig_item_type_name != item_type_col:
-                            rename_map[orig_item_type_name] = item_type_col
-                        if orig_content_name != content_col:
-                            rename_map[orig_content_name] = content_col
-                        if rename_map:
-                            df_temp.rename(columns=rename_map, inplace=True)
-                            logging.info(f"Renamed discussion guide columns: {rename_map}")
-                        else:
-                             logging.info(f"Discussion guide columns already correctly named.")
+                    # Check if required guide markers are present
+                    if all(marker in df_temp.columns for marker in required_cols):
+                         logging.info(f"Discussion guide file validation passed based on column names: {required_cols}")
+                         validation_passed = True
+                    else:
+                         missing = [marker for marker in required_cols if marker not in df_temp.columns]
+                         logging.error(f"Guide file loaded but missing expected columns: {missing}. Found: {df_temp.columns.tolist()[:10]}")
+                elif is_agg_std_file: # Validation for standardized aggregate
+                     required_cols = ['Question ID', 'Participant ID', 'Question'] # Specific check
+                     if all(marker in df_temp.columns for marker in required_cols):
+                          logging.info(f"Aggregate standardized file validation passed based on column names: {required_cols}")
+                          validation_passed = True
+                     else:
+                          missing = [marker for marker in required_cols if marker not in df_temp.columns]
+                          logging.error(f"Aggregate standardized file loaded but missing expected columns: {missing}. Found: {df_temp.columns.tolist()[:10]}")
+                else: # Validation for other files (labels, categories)
+                    if all(marker in df_temp.columns for marker in required_cols):
+                        logging.info(f"Header validated for other file ({filename}). Columns look reasonable: {df_temp.columns[:5].tolist()}...")
                         validation_passed = True
                     else:
-                        logging.error(f"Discussion guide file loaded but has <= {expected_content_idx} columns. Cannot find essential columns.")
-                else:
-                    # Standard validation for other files
-                    if all(marker in df_temp.columns for marker in markers):
-                        logging.info(f"Header validated for non-participants file. Columns look reasonable: {df_temp.columns[:5].tolist()}...")
-                        validation_passed = True
-                    else:
-                         logging.error(f"Header validation failed for non-participants file! Detected header on line {header_row+1} but loaded columns ({df_temp.columns.tolist()}) don't contain all markers {markers}. Check file structure or markers.")
+                        missing = [marker for marker in required_cols if marker not in df_temp.columns]
+                        logging.error(f"Header validation failed for other file ({filename})! Detected header on line {header_row+1} but loaded columns ({df_temp.columns.tolist()}) don't contain all markers {missing}.")
 
                 # Return df if validation passed
                 if validation_passed:
@@ -233,45 +229,103 @@ def load_and_prep_data(gd_number, data_dir):
         missing_cats = analysis_df['Category'].isnull().sum()
         if missing_cats > 0:
             logging.warning(f"{missing_cats} tag instances could not be mapped to a category. Check consistency between labels and categories files.")
-            # Optionally fill missing categories
-            # analysis_df['Category'].fillna('Uncategorized', inplace=True)
-        logging.info(f"  Merge complete. Current rows: {len(analysis_df)}")
+            analysis_df['Category'].fillna('Uncategorized', inplace=True)
+            logging.info(f"  Merge complete. Current rows: {len(analysis_df)}")
 
         # 3. Load Participants Data for Segments
         logging.info(f"Loading {paths['participants']}...")
-        participants_df = safe_read_csv(paths['participants'], encoding='utf-8-sig', low_memory=False)
-        logging.info(f"  Loaded {len(participants_df)} rows.")
-        participants_df.columns = participants_df.columns.str.replace('^\ufeff', '', regex=True).str.strip()
+        # --- Load participants.csv (assuming header is now on line 1) ---
+        participants_file_path = paths['participants']
+        try:
+            # Now read with default header=0
+            participants_df = pd.read_csv(participants_file_path, encoding='utf-8-sig', low_memory=False)
+            participants_df.columns = participants_df.columns.str.replace('^\\ufeff', '', regex=True).str.strip()
 
-        # --- Add check/rename for Participant Id due to leading empty columns ---
-        participant_id_col = 'Participant Id'
-        if participant_id_col not in participants_df.columns:
-            logging.warning(f"'{participant_id_col}' not found in columns: {participants_df.columns.tolist()[:5]}... Attempting to use column at index 2.")
-            if len(participants_df.columns) > 2:
-                original_name = participants_df.columns[2]
-                participants_df.rename(columns={original_name: participant_id_col}, inplace=True)
-                logging.info(f"Renamed column '{original_name}' to '{participant_id_col}'.")
+            # Basic validation for expected columns
+            participant_id_col = 'Participant Id'
+            sample_id_col = 'Sample Provider Id'
+            expected_participant_cols = [participant_id_col, sample_id_col]
+            missing_p_cols = [col for col in expected_participant_cols if col not in participants_df.columns]
+            if missing_p_cols:
+                 logging.error(f"Participants file missing columns AFTER cleanup: {missing_p_cols}. Found: {participants_df.columns.tolist()[:10]}")
+                 return None
             else:
-                logging.error("Participants file has fewer than 3 columns, cannot find Participant Id.")
-                return None
+                 logging.info(f"Successfully loaded cleaned participants file. Columns validated: {expected_participant_cols}")
+                 # Ensure Participant Id is string for merging
+                 participants_df[participant_id_col] = participants_df[participant_id_col].astype(str)
 
-        # Ensure Participant Id is string for merging
-        if participant_id_col not in participants_df.columns:
-             # This check should ideally not fail now, but keep as safeguard
-             logging.error(f"'{participant_id_col}' column still not found after attempting rename.")
+        except FileNotFoundError:
+             logging.error(f"Participants file not found: {participants_file_path}")
              return None
-        participants_df[participant_id_col] = participants_df[participant_id_col].astype(str)
+        except Exception as e:
+             logging.error(f"Error loading cleaned participants file: {e}")
+             return None
+        # --- End participants loading ---
+        logging.info(f"  Loaded {len(participants_df)} rows.")
 
         # Identify Segment Columns - Use Discussion Guide
         logging.info(f"Loading {paths['discussion_guide']} to identify segment questions...")
-        guide_df = safe_read_csv(paths['discussion_guide'], encoding='utf-8-sig')
-        guide_df.columns = guide_df.columns.str.replace('^\ufeff', '', regex=True).str.strip()
-        # Segment questions are typically 'onboarding single select' or potentially early 'poll single select'
-        # We need their 'Content' (which matches the column header in participants_df)
-        segment_q_types = ['onboarding single select', 'poll single select'] # Add more if needed
-        segment_questions = guide_df[guide_df['Item type (dropdown)'].isin(segment_q_types)]['Content'].tolist()
+        # --- Load discussion_guide.csv (assuming header is now on line 1) ---
+        guide_file_path = paths['discussion_guide']
+        try:
+            # Now read with default header=0 and handle potential bad lines
+            guide_df = pd.read_csv(guide_file_path, encoding='utf-8-sig', on_bad_lines='warn')
+            guide_df.columns = guide_df.columns.str.replace('^\\ufeff', '', regex=True).str.strip()
+            logging.info(f"Discussion guide loaded (cleaned). Columns: {guide_df.columns.tolist()[:10]}...")
+
+            # --- Basic validation for guide cols ---
+            item_type_col = 'Item type (dropdown)'
+            content_col = 'Content'
+            if item_type_col not in guide_df.columns or content_col not in guide_df.columns:
+                 logging.error(f"Required columns '{item_type_col}' or '{content_col}' not found in cleaned discussion guide. Found: {guide_df.columns.tolist()[:10]}")
+                 return None
+            # --- End validation ---
+
+        except FileNotFoundError:
+            logging.error(f"Discussion guide file not found: {guide_file_path}")
+            return None
+        except Exception as e:
+            logging.error(f"Error loading cleaned discussion guide file: {e}")
+            return None
+        # --- End guide loading ---
+
+        # --- REMOVED Section for positional renaming - no longer needed ---
+        # if guide_df is None:
+        #      logging.error("Failed to load discussion guide. Cannot identify segment columns.")
+        #      return None # Cannot proceed without guide
+
+        # item_type_col = 'Item type (dropdown)'
+        # content_col = 'Content'
+
+        # --- Verify required columns exist after loading ---
+        # if item_type_col not in guide_df.columns or content_col not in guide_df.columns:
+        #     logging.error(f"Required columns '{item_type_col}' or '{content_col}' not found in discussion guide after loading. Found: {guide_df.columns.tolist()[:10]}")
+        #     return None
+
+
+        # --- DEBUG: Check columns before segment extraction ---
+        logging.info(f"DEBUG guide_df columns BEFORE segment extraction: {guide_df.columns.tolist()[:10]}...")
+        # --- DEBUG: Check unique item types ---
+        try:
+             logging.info(f"DEBUG Unique item types in guide_df['{item_type_col}']: {guide_df[item_type_col].unique()}")
+        except KeyError:
+             logging.error(f"DEBUG KeyError accessing '{item_type_col}' for unique value check.")
+        # --- End DEBUG ---
+        # Extract segment questions using the corrected column names
+        segment_q_types = ['onboarding single select', 'poll single select']
+        try:
+             segment_questions = guide_df[guide_df[item_type_col].isin(segment_q_types)][content_col].tolist()
+             # --- DEBUG: Print extracted segment questions ---
+             logging.info(f"DEBUG Extracted segment questions from guide: {segment_questions}")
+             # --- End DEBUG ---
+        except KeyError:
+            logging.error(f"Failed to extract segment questions. Check if '{item_type_col}' or '{content_col}' exist after rename.")
+            segment_questions = [] # Ensure it's an empty list if extraction fails
 
         # Filter participants_df to keep only Participant Id and actual segment columns present
+        # --- DEBUG: Print participant columns before filtering ---
+        logging.info(f"DEBUG participants_df columns BEFORE filtering for segments: {participants_df.columns.tolist()[:20]}") # Print more columns
+        # --- End DEBUG ---
         segment_cols_to_keep = [col for col in participants_df.columns if col in segment_questions]
         if not segment_cols_to_keep:
             logging.warning("Could not identify any segment columns in participants file based on discussion guide. Segment frequency analysis will be limited.")
@@ -306,7 +360,8 @@ def load_and_prep_data(gd_number, data_dir):
         # If exact 'All' not found, try the fallback pattern
         if not all_agreement_col:
             for col in agg_df.columns:
-                if all_col_pattern_fallback.match(col):
+                 # Ensure column name is treated as string
+                 if isinstance(col, str) and all_col_pattern_fallback.match(col):
                      all_agreement_col = col
                      logging.info(f"Found agreement column using fallback pattern: {all_agreement_col}")
                      break
@@ -317,9 +372,14 @@ def load_and_prep_data(gd_number, data_dir):
         logging.info(f"Found agreement column: {all_agreement_col}")
 
         cols_to_keep_agg = ['Question ID', 'Participant ID', 'Question', all_agreement_col]
-        if not all(c in agg_df.columns for c in ['Question ID', 'Participant ID', 'Question']):
-             logging.error("Missing required columns ('Question ID', 'Participant ID', 'Question') in aggregate_standardized.csv")
+        # Check required cols before subsetting
+        missing_agg_cols = [c for c in ['Question ID', 'Participant ID', 'Question'] if c not in agg_df.columns]
+        if missing_agg_cols:
+             logging.error(f"Missing required columns {missing_agg_cols} in aggregate_standardized.csv before subsetting. Found: {agg_df.columns.tolist()[:10]}")
              return None
+        # if not all(c in agg_df.columns for c in ['Question ID', 'Participant ID', 'Question']):
+        #      logging.error("Missing required columns ('Question ID', 'Participant ID', 'Question') in aggregate_standardized.csv")
+        #      return None
 
         agg_subset = agg_df[cols_to_keep_agg].copy()
         # Ensure types for merging
