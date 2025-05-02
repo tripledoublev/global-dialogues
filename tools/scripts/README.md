@@ -2,11 +2,24 @@
 
 This directory contains scripts for processing raw Remesh.ai data for Global Dialogues analysis and generating standard reports.
 
+**IMPORTANT:** Before running most analysis scripts, you should run the preprocessing scripts first.
+
 ## Workflow Overview
 
-1.  **Preprocessing:** Run `preprocess_aggregate.py` first. This takes the raw `GD<N>_aggregate.csv` and creates the necessary standardized files: `GD<N>_aggregate_standardized.csv` and `GD<N>_segment_counts_by_question.csv`.
-2.  **Individual Analyses:** Run the individual `calculate_*.py` scripts (`calculate_consensus.py`, `calculate_divergence.py`, `calculate_indicators.py`). Each script takes the standardized files produced by the preprocessing step as input and generates specific analysis outputs (e.g., consensus reports, divergence scores, indicator heatmaps).
-3.  **Master Script (Optional):** Run `analyze_dialogues.py`. This script acts as a controller, automatically running the preprocessing step and then all the individual `calculate_*.py` scripts in the correct order for a given Global Dialogue cadence number.
+1.  **Download Raw Data:** Place raw Remesh CSVs into the correct `Data/GD<N>/` directory.
+2.  **Cleanup Metadata:** Run `preprocess_cleanup_metadata.py` to remove metadata headers from most raw CSVs (modifies files in place).
+    ```bash
+    python tools/scripts/preprocess_cleanup_metadata.py <N>
+    ```
+3.  **Preprocess Aggregate:** Run `preprocess_aggregate.py` to standardize the complex `aggregate.csv` file.
+    ```bash
+    python tools/scripts/preprocess_aggregate.py --gd_number <N>
+    ```
+4.  **Preprocess Tags (Optional):** Run `preprocess_tag_files.py` if analyzing tags (requires separate raw tag exports).
+    ```bash
+    python tools/scripts/preprocess_tag_files.py --raw_dir Data/GD<N>/tag_codes_raw/ --output_dir Data/GD<N>/tags/
+    ```
+5.  **Run Analyses:** Now you can run individual `calculate_*.py` scripts or the master `analyze_dialogues.py` script, as they expect the preprocessed data.
 
 ## Script Details
 

@@ -4,3 +4,8 @@ Data/.DS_Store
 /Data/*/tag_codes_raw
 *.pyc
 /venv
+# Large data files
+Data/GD3/GD3_embeddings.json
+
+# Environment variables
+.env
