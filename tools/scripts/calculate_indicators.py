@@ -12,6 +12,43 @@ from lib.analysis_utils import load_standardized_data, parse_percentage
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+# --- Semantic Ordering for Responses ---
+# Defines the desired order for common response sets on the heatmap x-axis.
+RESPONSE_ORDERS = {
+    # Trust Scale (Distrust -> Trust)
+    tuple(sorted(("Strongly Distrust", "Somewhat Distrust", "Neither Trust Nor Distrust", "Somewhat Trust", "Strongly Trust"))):
+        ["Strongly Distrust", "Somewhat Distrust", "Neither Trust Nor Distrust", "Somewhat Trust", "Strongly Trust"],
+    # Frequency Scale (Least -> Most Frequent)
+    tuple(sorted(("daily", "weekly", "monthly", "annually", "never"))):
+        ["never", "annually", "monthly", "weekly", "daily"],
+    # Societal Impact Scale (Risk -> Benefit)
+    tuple(sorted(("Risks far outweigh benefits", "Risks slightly outweigh benefits", "Risks and benefits are equal", "Benefits slightly outweigh risks", "Benefits far outweigh risks"))):
+        ["Risks far outweigh benefits", "Risks slightly outweigh benefits", "Risks and benefits are equal", "Benefits slightly outweigh risks", "Benefits far outweigh risks"],
+    # Future/Current Impact Scale (Worse -> Better)
+    tuple(sorted(("Profoundly Worse", "Noticeably Worse", "No Major Change", "Noticeably Better", "Profoundly Better"))):
+        ["Profoundly Worse", "Noticeably Worse", "No Major Change", "Noticeably Better", "Profoundly Better"],
+    # AI Perception Scale (Concerned -> Excited)
+    tuple(sorted(("More excited than concerned", "Equally concerned and excited", "More concerned than excited"))):
+        ["More concerned than excited", "Equally concerned and excited", "More excited than concerned"],
+    # Agree/Disagree/Unsure Scale (Disagree -> Agree)
+    tuple(sorted(("Agree", "Disagree", "Unsure"))):
+        ["Disagree", "Unsure", "Agree"],
+    # Yes/No/Don't Know Scale (No -> Yes)
+    tuple(sorted(("Yes", "No", "Don't Know"))):
+         ["No", "Don't Know", "Yes"],
+    # Automation Impact Scale (Least -> Most Affected)
+    tuple(sorted(("Not at all", "I know someone who has lost their job", "I know several people who have lost their job", "I know many people who have lost their job"))):
+        ["Not at all", "I know someone who has lost their job", "I know several people who have lost their job", "I know many people who have lost their job"]
+}
+
+def get_ordered_columns(columns):
+    """Finds the correct predefined semantic order for a given set of column/response names."""
+    # Sort the input column names to ensure consistent dictionary key lookup
+    sorted_columns_tuple = tuple(sorted(columns))
+    return RESPONSE_ORDERS.get(sorted_columns_tuple)
+
+# --- End Semantic Ordering ---
+
 def longest_common_suffix(strings):
     """Calculates the longest common suffix of a list of strings."""
     if not strings:
@@ -130,6 +167,28 @@ def generate_indicator_heatmaps(standardized_df, indicator_codesheet_path, outpu
         if heatmap_pivot.empty:
             print(f"    Warning: Pivoted data empty for '{category}'."); continue
             
+        # --- >>> Apply Semantic Column Ordering <<< ---
+        try:
+            current_columns = heatmap_pivot.columns.tolist()
+            ordered_columns = get_ordered_columns(current_columns)
+            if ordered_columns:
+                # Filter order to only columns present in the data
+                final_order = [col for col in ordered_columns if col in current_columns]
+                # Apply order only if it perfectly matches the columns present
+                if set(final_order) == set(current_columns):
+                     heatmap_pivot = heatmap_pivot[final_order]
+                     logging.debug(f"    Applied custom column order for '{category}': {final_order}")
+                else:
+                     logging.warning(f"    Custom order definition mismatch for category '{category}'. Columns: {current_columns}. Defined order: {ordered_columns}. Using alphabetical sort.")
+                     heatmap_pivot = heatmap_pivot.sort_index(axis=1) # Fallback to alphabetical
+            else:
+                 logging.debug(f"    No custom column order defined for category '{category}'. Using alphabetical sort. Columns: {current_columns}")
+                 heatmap_pivot = heatmap_pivot.sort_index(axis=1) # Explicit alphabetical sort if no order defined
+        except Exception as sort_e:
+             logging.warning(f"    Error applying column sorting for category '{category}': {sort_e}. Using alphabetical sort.")
+             heatmap_pivot = heatmap_pivot.sort_index(axis=1) # Fallback on any sorting error
+        # --- <<< END Semantic Column Ordering >>> ---
+
         # --- Plotting (same logic as before) ---
         n_rows, n_cols = heatmap_pivot.shape
         fig_width = max(8, n_cols * 0.9 + max(0, max_lines_in_ylabel -1) * 1.5 )
