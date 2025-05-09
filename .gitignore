@@ -7,5 +7,9 @@ Data/.DS_Store
 # Large data files
 Data/GD3/GD3_embeddings.json
 
+# Sanity upload files
+Data/GD*/GD*_sanity_upload.csv
+
 # Environment variables
 .env
+
