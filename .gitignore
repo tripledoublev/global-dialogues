@@ -5,7 +5,7 @@ Data/.DS_Store
 *.pyc
 /venv
 # Large data files
-Data/GD3/GD3_embeddings.json
+Data/GD*/GD*_embeddings.json
 
 # Sanity upload files
 Data/GD*/GD*_sanity_upload.csv
