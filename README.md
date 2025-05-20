@@ -20,7 +20,7 @@ pip install -r requirements.txt
     ```bash
     python tools/scripts/preprocess_cleanup_metadata.py <N>
     ```
-3.  **Preprocess Aggregate Data:** Run `preprocess_aggregate.py` to generate the essential `_aggregate_standardized.csv` and `_segment_counts_by_question.csv` files needed by many analysis scripts.
+3.  **Preprocess Aggregate Data:** Run `preprocess_aggregate.py` to generate the essential `_aggregate_standardized.csv` and `_segment_counts_by_question.csv` files needed by ALL analysis scripts. This is a critical step as the standardized format is the primary reference for analysis.
     ```bash
     python tools/scripts/preprocess_aggregate.py --gd_number <N>
     ```
@@ -68,14 +68,23 @@ Some analyses require pre-computed text embeddings, which result in large data f
 
 ### Data Files per Cadence
 
-Each cadence folder contains the following core data files (raw outputs from Remesh.ai):
+Each cadence folder contains the following data files:
 
-*   **`aggregate.csv`**: Survey data aggregated by Question, including segment agreement rates for *Ask Opinion* questions.
-*   **`binary.csv`**: Individual participant votes (`agree`/`disagree`/`neutral`) on *Ask Opinion* responses.
-*   **`participants.csv`**: Survey data organized by Participant, showing individual responses to each question. Includes overall agreement rates for *Ask Opinion* responses submitted by the participant.
-*   **`preference.csv`**: Pairwise preference judgments between *Ask Opinion* responses.
-*   **`verbatim_map.csv`**: Mapping of *Ask Opinion* response text (`Thought Text`) to the participant who authored it and the question it belongs to.
-*   **`summary.csv`**: LLM-generated summaries for the overall dialogue and individual questions.
+#### Primary Analysis Files (Processed)
+
+*   **`GD<N>_aggregate_standardized.csv`**: The primary file for all analyses - a cleaned and standardized version of the raw aggregate data with consistent columns and formatting. This file is created by running the preprocessing script and should be used for all analysis work.
+*   **`GD<N>_segment_counts_by_question.csv`**: Contains participant counts for each segment per question, needed for certain analyses.
+
+#### Raw Data Files (Original Exports from Remesh.ai)
+
+*   **`GD<N>_aggregate.csv`**: Raw survey data aggregated by Question, including segment agreement rates for *Ask Opinion* questions. Has inconsistent formatting and metadata rows.
+*   **`GD<N>_binary.csv`**: Individual participant votes (`agree`/`disagree`/`neutral`) on *Ask Opinion* responses.
+*   **`GD<N>_participants.csv`**: Survey data organized by Participant, showing individual responses to each question. Includes overall agreement rates for *Ask Opinion* responses submitted by the participant.
+*   **`GD<N>_preference.csv`**: Pairwise preference judgments between *Ask Opinion* responses.
+*   **`GD<N>_verbatim_map.csv`**: Mapping of *Ask Opinion* response text (`Thought Text`) to the participant who authored it and the question it belongs to.
+*   **`GD<N>_summary.csv`**: LLM-generated summaries for the overall dialogue and individual questions.
+
+Detailed descriptions of file formats and columns can be found in `Data/Documentation/DATA_GUIDE.md`.
 
 ## Analysis Tools
 

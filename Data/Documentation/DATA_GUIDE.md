@@ -42,9 +42,32 @@ This file outlines the structure and content of the dialogue as experienced by p
 | `Add 'None of the above' as an option`           | Indicates if a 'None of the above' option was available for polls (`yes`/`no`).                                                                                                                                                                                                         |
 | `Poll or Category Option 1`, `...Option N`       | Predefined response options for `poll single select` questions.                                                                                                                                                                                                                       |
 
-### **`aggregate.csv`**
+### **`aggregate_standardized.csv`**
 
-This file compiles Global Dialogue data aggregated by question, showing the breakdown of each Segment's agreement rate with each question response.
+This is the primary data file for analysis, created by preprocessing the raw `aggregate.csv` file. It provides a standardized format with consistent headers across all question types and segments expressed as percentages.
+
+| Column                | Description                                                                                                     |
+| :-------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| `Question ID`         | Unique ID for the question.                                                                                      |
+| `Question Type`       | Identifies the type of question: *Poll Single Select* or *Ask Opinion*.                                           |
+| `Question`            | Text of the question presented to participants.                                                                   |
+| `Response`            | For Poll questions: The response option. For Ask Opinion questions: The English translation of the response text. |
+| `OriginalResponse`    | For Ask Opinion questions: The verbatim response in its original language.                                        |
+| `Star`                | For Ask Opinion questions: Rating applied to the response.                                                        |
+| `Categories`          | For Ask Experience questions: Categories assigned to the response.                                                |
+| `Sentiment`           | For Ask Opinion questions: Sentiment analysis (Positive/Neutral/Negative) of the response.                        |
+| `Submitted By`        | For Ask Opinion questions: Segment description of the participant who submitted the response.                     |
+| `Language`            | For Ask Opinion questions: Original language of the response.                                                     |
+| `Sample ID`           | Platform-specific ID related to the participant's sample source.                                                  |
+| `Participant ID`      | Unique ID for the participant who authored the response.                                                          |
+| `All`                 | Agreement rate among ALL participants as a percentage (formatted without the % symbol).                          |
+| *Segment Columns*     | Various segment columns (regions, demographics, etc.) showing agreement rates as percentages.                    |
+
+**Note:** This standardized format is the primary source for all analysis scripts. Segment names appear as column headers directly (without the `(N)` participant count suffix found in the raw file), and agreement rates are expressed as percentages (e.g., `75.5%`).
+
+### **`aggregate.csv`** (Raw Data)
+
+This is the raw export file from Remesh.ai that compiles Global Dialogue data aggregated by question, showing the breakdown of each Segment's agreement rate with each question response.
 
 | Column                | Description                                                                                                                                                                                                                                                                                                                      |
 | :-------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -67,6 +90,8 @@ This file compiles Global Dialogue data aggregated by question, showing the brea
 | `O6: <religion> (N)`  | Agreement rate among participants segmented by religion.                                                                                                                                                                                                                                                                         |
 | `O7: <country> (N)`   | Agreement rate among participants segmented by country.                                                                                                                                                                                                                                                                          |
 | `<Region> (N)`        | Agreement rate among participants grouped by region.                                                                                                                                                                                                                                                                             |
+
+**Note:** This raw file format is processed by the `preprocess_aggregate.py` script to create the standardized `aggregate_standardized.csv` file, which should be used for all analyses.
 
 \* **Agreement Rate Definition:**
 -   For *Poll* Questions: The percentage of participants who selected a specific response.
