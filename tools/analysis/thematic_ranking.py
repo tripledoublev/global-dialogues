@@ -5,6 +5,9 @@ from sklearn.metrics.pairwise import cosine_similarity
 import os
 import openai
 from dotenv import load_dotenv
+import datetime
+import warnings
+import uuid
 
 # --- Load Environment Variables --- Must be called early!
 load_dotenv()
@@ -22,11 +25,16 @@ else:
 
 # --- Configuration ---
 DATA_FILE_PATH = os.path.join("Data", "GD3", "GD3_embeddings.json")
-EXPECTED_EMBEDDING_DIM = 1024 # Defined based on known source model
+EXPECTED_EMBEDDING_DIM = 1024  # Defined based on known source model
+OUTPUT_DIR = os.path.join("analysis_output", "GD3", "thematic_rankings")
+TOP_N_RESULTS = 100  # Number of top results to save for each theme
 
-# --- Potential Column Names --- Update if necessary ---
+# --- Column Names ---
 EMBEDDING_COLUMN = 'embedding'
 TEXT_COLUMN = 'English Responses'
+QUESTION_ID_COLUMN = 'Question ID'
+QUESTION_TEXT_COLUMN = 'Question'
+PARTICIPANT_ID_COLUMN = 'Participant ID'
 
 # Define the standard thematic queries
 THEMATIC_QUERIES = [
@@ -68,9 +76,9 @@ def get_embedding(text, model="text-embedding-3-small", dimensions=EXPECTED_EMBE
     except Exception as e:
         # Catch potential dimension errors if the model doesn't support it
         if "dimensions" in str(e).lower():
-             print(f"Error: Model '{model}' may not support the dimensions parameter ({dimensions}). Details: {e}")
+            print(f"Error: Model '{model}' may not support the dimensions parameter ({dimensions}). Details: {e}")
         else:
-             print(f"An unexpected error occurred during OpenAI embedding: {e}")
+            print(f"An unexpected error occurred during OpenAI embedding: {e}")
         return None
 
 # --- Helper Functions ---
@@ -110,8 +118,8 @@ def load_data_with_embeddings(file_path):
             return None
 
         if EMBEDDING_COLUMN not in combined_df.columns:
-             print(f"Error: Combined DataFrame must contain '{EMBEDDING_COLUMN}' column.")
-             return None
+            print(f"Error: Combined DataFrame must contain '{EMBEDDING_COLUMN}' column.")
+            return None
 
         print(f"Successfully loaded and combined {len(combined_df)} items into DataFrame from {file_path}")
         return combined_df
@@ -122,9 +130,56 @@ def load_data_with_embeddings(file_path):
         print(f"An unexpected error occurred while loading {file_path}: {e}")
         return None
 
+def validate_embeddings(embeddings_list):
+    """
+    Validates embeddings to prevent numpy warnings in similarity calculations.
+    Returns clean embeddings and indices of valid embeddings.
+    """
+    valid_embeddings = []
+    valid_indices = []
+    
+    for idx, emb in enumerate(embeddings_list):
+        # Skip if not a list or not the right dimension
+        if not isinstance(emb, list) or len(emb) != EXPECTED_EMBEDDING_DIM:
+            continue
+            
+        # Check for NaN or Inf values
+        has_invalid = False
+        for val in emb:
+            if not np.isfinite(val):
+                has_invalid = True
+                break
+                
+        # Convert to array and check if it's all zeros
+        emb_array = np.array(emb)
+        if np.all(emb_array == 0):
+            has_invalid = True
+            
+        if not has_invalid:
+            valid_embeddings.append(emb)
+            valid_indices.append(idx)
+    
+    return valid_embeddings, valid_indices
+
+def normalize_embeddings(embeddings_matrix):
+    """
+    Normalize embedding vectors to unit length to ensure valid cosine similarity.
+    Prevents divide by zero and other numerical issues.
+    """
+    # Calculate the norm (length) of each vector
+    norms = np.linalg.norm(embeddings_matrix, axis=1, keepdims=True)
+    
+    # Replace zero norms with 1 to avoid division by zero
+    norms[norms == 0] = 1
+    
+    # Normalize by dividing each vector by its norm
+    normalized_matrix = embeddings_matrix / norms
+    
+    return normalized_matrix
+
 def rank_responses_by_similarity(response_df, query_text):
     """Ranks responses in a DataFrame based on cosine similarity to the query text's embedding."""
-    # Query embedding will now be 1024 dimensions
+    # Get query embedding (1024 dimensions)
     query_embedding = get_embedding(query_text)
 
     if query_embedding is None:
@@ -135,35 +190,107 @@ def rank_responses_by_similarity(response_df, query_text):
         return None
 
     df_copy = response_df.copy()
-
-    valid_embeddings = []
-    valid_indices = []
-    # Use the known expected dimension
-    embedding_dim = EXPECTED_EMBEDDING_DIM # Should be 1024
-
-    embedding_series = df_copy[EMBEDDING_COLUMN]
-
-    for index, embedding in embedding_series.items():
-        if isinstance(embedding, list) and len(embedding) == embedding_dim:
-            valid_embeddings.append(embedding)
-            valid_indices.append(index)
-        elif isinstance(embedding, list) and len(embedding) != embedding_dim:
-             print(f"Warning: Skipping row index {index}. Embedding dimension {len(embedding)} != expected {embedding_dim}.")
+    
+    # Extract embeddings and validate them
+    embeddings_list = df_copy[EMBEDDING_COLUMN].tolist()
+    valid_embeddings, valid_indices = validate_embeddings(embeddings_list)
 
     if not valid_embeddings:
-        # This error message should now be accurate if it appears
-        print(f"No valid embeddings found matching dimension {embedding_dim} in the response DataFrame.")
+        print(f"No valid embeddings found matching dimension {EXPECTED_EMBEDDING_DIM} in the response DataFrame.")
         return None
 
+    # Convert to numpy arrays and normalize
     embeddings_matrix = np.array(valid_embeddings)
-    similarities = cosine_similarity([query_embedding], embeddings_matrix)[0]
+    query_embedding_array = np.array([query_embedding])
+    
+    # Normalize both query and response embeddings
+    normalized_query = normalize_embeddings(query_embedding_array)
+    normalized_embeddings = normalize_embeddings(embeddings_matrix)
+    
+    # Suppress warnings during calculation
+    with warnings.catch_warnings():
+        warnings.filterwarnings('ignore', category=RuntimeWarning)
+        # Calculate cosine similarity
+        similarities = cosine_similarity(normalized_query, normalized_embeddings)[0]
 
-    similarity_series = pd.Series(similarities, index=valid_indices)
+    # Map similarities back to original indices
+    similarity_dict = {df_copy.index[idx]: sim for idx, sim in zip(valid_indices, similarities)}
+    
+    # Create a Series with similarities
+    similarity_series = pd.Series(similarity_dict)
     df_copy['cosine_similarity'] = similarity_series
-
+    
+    # Add theme info
+    df_copy['theme'] = query_text
+    
+    # Sort by similarity
     df_sorted = df_copy.sort_values(by='cosine_similarity', ascending=False, na_position='last')
-
+    
     return df_sorted
+
+def save_thematic_rankings(all_rankings, output_dir=OUTPUT_DIR, top_n=TOP_N_RESULTS):
+    """
+    Save thematic rankings to a single CSV file containing all themes.
+    """
+    # Create output directory if it doesn't exist
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # Get timestamp for metadata
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    # List to store all top results
+    all_top_results = []
+    
+    # Generate unique run ID
+    run_id = str(uuid.uuid4())[:8]
+    
+    # Process each theme's results
+    for theme, df in all_rankings.items():
+        if df is None or df.empty:
+            print(f"Skipping empty results for theme: '{theme}'")
+            continue
+        
+        # Get top N results
+        top_results = df.head(top_n).reset_index(drop=True)
+        
+        # Add metadata
+        top_results['run_id'] = run_id
+        top_results['timestamp'] = timestamp
+        
+        # Add to combined results
+        all_top_results.append(top_results)
+    
+    # Save single file with all themes
+    if all_top_results:
+        combined_results = pd.concat(all_top_results, ignore_index=True)
+        output_file = os.path.join(output_dir, "thematic_rankings.csv")
+        
+        try:
+            # Sort by theme then similarity
+            combined_results = combined_results.sort_values(
+                by=['theme', 'cosine_similarity'], 
+                ascending=[True, False]
+            )
+            
+            # Select columns to save (exclude embedding to save space)
+            columns_to_save = [
+                'theme', 'cosine_similarity', TEXT_COLUMN, 
+                QUESTION_ID_COLUMN, QUESTION_TEXT_COLUMN, PARTICIPANT_ID_COLUMN,
+                'run_id', 'timestamp'
+            ]
+            
+            # Filter to columns that actually exist
+            existing_columns = [col for col in columns_to_save if col in combined_results.columns]
+            
+            # Save to CSV
+            combined_results[existing_columns].to_csv(output_file, index=False, encoding='utf-8')
+            print(f"Saved all thematic rankings to {output_file}")
+        except Exception as e:
+            print(f"Error saving thematic rankings: {e}")
+    else:
+        print("No valid rankings to save")
+    
+    return run_id, timestamp
 
 # --- Main Execution ---
 
@@ -174,6 +301,7 @@ if __name__ == "__main__":
     if survey_df is not None:
         print("\n--- Starting Thematic Ranking ---")
         all_rankings = {}
+        
         for theme in THEMATIC_QUERIES:
             print(f"\nRanking responses for theme: '{theme}'")
             ranked_df = rank_responses_by_similarity(survey_df, theme)
@@ -188,26 +316,12 @@ if __name__ == "__main__":
                     sim_str = f"{similarity:.4f}" if isinstance(similarity, (int, float)) and not np.isnan(similarity) else "NaN"
                     print(f"  {i+1}. Similarity: {sim_str} - \"{response_text[:100]}...\"")
             else:
-                 print(f"Could not generate rankings for theme: '{theme}'")
+                print(f"Could not generate rankings for theme: '{theme}'")
 
-        # Example: Save top N results for each theme to CSV
-        # ... (saving logic remains the same, uses ranked_df)
-        # output_dir = "thematic_rankings_output"
-        # os.makedirs(output_dir, exist_ok=True)
-        # for theme, df in all_rankings.items():
-        #     safe_theme_name = "".join(c if c.isalnum() else '_' for c in theme) # Sanitize filename
-        #     output_file = os.path.join(output_dir, f"ranking_{safe_theme_name}.csv")
-        #     try:
-        #         # Make sure columns exist before saving
-        #         cols_to_save = [TEXT_COLUMN, 'cosine_similarity'] # Add other relevant columns if needed
-        #         cols_exist = [col for col in cols_to_save if col in df.columns]
-        #         if EMBEDDING_COLUMN not in df.columns: # Don't save embedding if column name is uncertain
-        #              cols_exist.append(EMBEDDING_COLUMN)
-        #         df.head(100)[cols_exist].to_csv(output_file, index=False, encoding='utf-8')
-        #         print(f"Saved top 100 rankings for '{theme}' to {output_file}")
-        #     except Exception as e:
-        #          print(f"Error saving rankings for '{theme}' to CSV: {e}")
-
+        # Save results to CSV
+        run_id, timestamp = save_thematic_rankings(all_rankings)
+        print(f"\nAll thematic rankings saved to {os.path.join(OUTPUT_DIR, 'thematic_rankings.csv')}")
+        print(f"Run ID: {run_id}, Timestamp: {timestamp}")
         print("\n--- Thematic Ranking Complete ---")
     else:
-        print("Could not load data. Exiting.") 
+        print("Could not load data. Exiting.")
