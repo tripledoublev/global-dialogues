@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 import datetime
 import warnings
 import uuid
+import argparse
 
 # --- Load Environment Variables --- Must be called early!
 load_dotenv()
@@ -24,9 +25,7 @@ else:
     print("Warning: OPENAI_API_KEY not found in environment. OpenAI calls will fail.")
 
 # --- Configuration ---
-DATA_FILE_PATH = os.path.join("Data", "GD3", "GD3_embeddings.json")
 EXPECTED_EMBEDDING_DIM = 1024  # Defined based on known source model
-OUTPUT_DIR = os.path.join("analysis_output", "GD3", "thematic_rankings")
 TOP_N_RESULTS = 100  # Number of top results to save for each theme
 
 # --- Column Names ---
@@ -46,6 +45,12 @@ THEMATIC_QUERIES = [
     "governance and regulation of AI",
     # Add more themes as needed
 ]
+
+def get_data_paths(gd_number):
+    """Get the appropriate file paths based on GD number."""
+    data_file_path = os.path.join("Data", f"GD{gd_number}", f"GD{gd_number}_embeddings.json")
+    output_dir = os.path.join("analysis_output", f"GD{gd_number}", "thematic_rankings")
+    return data_file_path, output_dir
 
 def get_embedding(text, model="text-embedding-3-small", dimensions=EXPECTED_EMBEDDING_DIM):
     """Generates an embedding using the specified OpenAI model and dimensions."""
@@ -295,7 +300,16 @@ def save_thematic_rankings(all_rankings, output_dir=OUTPUT_DIR, top_n=TOP_N_RESU
 # --- Main Execution ---
 
 if __name__ == "__main__":
-    print("Loading data...")
+    # Add command line argument parsing
+    parser = argparse.ArgumentParser(description='Run thematic ranking analysis on Global Dialogues data')
+    parser.add_argument('--gd', type=int, choices=[1, 2, 3], required=True,
+                      help='Global Dialogue number to analyze (1, 2, or 3)')
+    args = parser.parse_args()
+
+    # Get appropriate file paths
+    DATA_FILE_PATH, OUTPUT_DIR = get_data_paths(args.gd)
+
+    print(f"Loading data for GD{args.gd}...")
     survey_df = load_data_with_embeddings(DATA_FILE_PATH)
 
     if survey_df is not None:

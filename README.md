@@ -50,21 +50,48 @@ Data for each completed cadence is stored in its respective folder within `/Data
 
 ### Large Embedding Data
 
-Some analyses require pre-computed text embeddings, which result in large data files unsuitable for direct storage in this Git repository. These files are hosted separately.
+Some advanced analyses (such as thematic ranking) require pre-computed text embeddings, which result in large data files (~800MB each) unsuitable for direct storage in this Git repository. These files are hosted separately and can be downloaded as needed.
 
-*   **GD3 Embeddings:** The combined aggregate data and text embeddings for GD3 (`GD3_embeddings.json`, ~800MB) can be downloaded from:
-    *   [**LINK_TO_YOUR_DATA_HOSTING_HERE**] (e.g., Zenodo, Figshare, Google Drive)
+#### Automated Download
 
-    Please download this file and place it in the `Data/GD3/` directory:
-    ```
-    global-dialogues/
-    └── Data/
-        └── GD3/
-            └── GD3_embeddings.json  # <-- Place downloaded file here
-            └── aggregate.csv
-            └── ... (other GD3 files)
-    ```
-    *Note: This file path is included in `.gitignore` to prevent accidental commits.*
+The repository includes a script to easily download embedding files:
+
+```bash
+# Show available embedding files and their status
+python tools/scripts/download_embeddings.py --list
+
+# Download embeddings for a specific Global Dialogue
+python tools/scripts/download_embeddings.py 3  # For GD3
+
+# Download all available embedding files
+python tools/scripts/download_embeddings.py --all
+
+# Force re-download even if file already exists
+python tools/scripts/download_embeddings.py 3 --force
+```
+
+You can also use the Makefile commands:
+
+```bash
+make download-embeddings        # Show available files
+make download-embeddings-gd3    # Download for GD3
+make download-all-embeddings    # Download all
+```
+
+The files will be automatically placed in the correct locations:
+
+```
+global-dialogues/
+└── Data/
+    ├── GD1/
+    │   └── GD1_embeddings.json
+    ├── GD2/
+    │   └── GD2_embeddings.json
+    └── GD3/
+        └── GD3_embeddings.json
+```
+
+*Note: These embedding files are included in `.gitignore` to prevent accidental commits.*
 
 ### Data Files per Cadence
 

@@ -16,7 +16,8 @@ RESET := \033[0m
         preprocess-gd1 preprocess-gd2 preprocess-gd3 preprocess-all \
         analyze-gd1 analyze-gd2 analyze-gd3 analyze-all \
         tag-analysis preprocess-tags \
-        run-thematic-ranking
+        download-embeddings download-embeddings-gd1 download-embeddings-gd2 download-embeddings-gd3 download-all-embeddings \
+        run-thematic-ranking run-thematic-ranking-gd1 run-thematic-ranking-gd2 run-thematic-ranking-gd3
 
 # Default target
 help:
@@ -31,6 +32,13 @@ help:
 	@echo "  $(GREEN)make preprocess-tags-gd1$(RESET)  - Preprocess tag data for GD1"
 	@echo "  $(GREEN)make preprocess-tags-gd2$(RESET)  - Preprocess tag data for GD2"
 	@echo "  $(GREEN)make preprocess-tags-gd3$(RESET)  - Preprocess tag data for GD3"
+	@echo ""
+	@echo "$(BLUE)Data Commands:$(RESET)"
+	@echo "  $(GREEN)make download-embeddings$(RESET)  - Show available embedding files and download options"
+	@echo "  $(GREEN)make download-embeddings-gd1$(RESET) - Download embeddings for GD1"
+	@echo "  $(GREEN)make download-embeddings-gd2$(RESET) - Download embeddings for GD2" 
+	@echo "  $(GREEN)make download-embeddings-gd3$(RESET) - Download embeddings for GD3"
+	@echo "  $(GREEN)make download-all-embeddings$(RESET) - Download all embeddings"
 	@echo ""
 	@echo "$(BLUE)Analysis Commands:$(RESET)"
 	@echo "  $(GREEN)make analyze-gd1$(RESET)          - Run full analysis pipeline on GD1"
@@ -47,6 +55,7 @@ help:
 	@echo ""
 	@echo "$(BLUE)Advanced Analysis Commands:$(RESET)"
 	@echo "  $(GREEN)make run-thematic-ranking$(RESET) - Run thematic ranking analysis (requires API key and embeddings)"
+	@echo "  $(GREEN)make run-thematic-ranking-gd<N>$(RESET) - Run thematic ranking for GD<N>"
 	@echo ""
 	@echo "$(BLUE)Utilities:$(RESET)"
 	@echo "  $(GREEN)make preview-csvs-gd<N>$(RESET)   - Preview all CSV files in GD<N> directory"
@@ -170,21 +179,69 @@ pri-gd3:
 	@echo "$(BLUE)Calculating participant reliability index for GD3...$(RESET)"
 	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py
 
+# Embeddings download
+download-embeddings:
+	@echo "$(BLUE)Downloading embeddings files...$(RESET)"
+	$(PYTHON) $(TOOLS_DIR)/download_embeddings.py --list
+	@echo ""
+	@echo "$(BLUE)To download embeddings for a specific Global Dialogue:$(RESET)"
+	@echo "  $(GREEN)make download-embeddings-gd1$(RESET) - Download for GD1"
+	@echo "  $(GREEN)make download-embeddings-gd2$(RESET) - Download for GD2"
+	@echo "  $(GREEN)make download-embeddings-gd3$(RESET) - Download for GD3"
+	@echo "  $(GREEN)make download-all-embeddings$(RESET) - Download all embeddings"
+
+download-embeddings-gd1:
+	$(PYTHON) $(TOOLS_DIR)/download_embeddings.py 1
+
+download-embeddings-gd2:
+	$(PYTHON) $(TOOLS_DIR)/download_embeddings.py 2
+
+download-embeddings-gd3:
+	$(PYTHON) $(TOOLS_DIR)/download_embeddings.py 3
+
+download-all-embeddings:
+	$(PYTHON) $(TOOLS_DIR)/download_embeddings.py --all
+
 # Advanced analysis commands
 run-thematic-ranking:
 	@echo "$(BLUE)Running thematic ranking analysis...$(RESET)"
-	@echo "$(YELLOW)NOTE: This requires an OpenAI API key in .env and GD3_embeddings.json$(RESET)"
-	@if [ ! -f Data/GD3/GD3_embeddings.json ]; then \
-		echo "$(RED)Error: Data/GD3/GD3_embeddings.json not found$(RESET)"; \
-		echo "$(YELLOW)Please download this file as described in the README$(RESET)"; \
-		exit 1; \
-	fi
+	@echo "$(YELLOW)NOTE: This requires an OpenAI API key in .env and GD<N>_embeddings.json$(RESET)"
 	@if [ ! -f .env ]; then \
 		echo "$(RED)Error: .env file with OPENAI_API_KEY not found$(RESET)"; \
 		echo "$(YELLOW)Please create a .env file with your OpenAI API key$(RESET)"; \
 		exit 1; \
 	fi
-	$(PYTHON) $(ANALYSIS_DIR)/thematic_ranking.py
+	@echo "$(BLUE)Please specify which Global Dialogue to analyze:$(RESET)"
+	@echo "  $(GREEN)make run-thematic-ranking-gd1$(RESET) - Run for GD1"
+	@echo "  $(GREEN)make run-thematic-ranking-gd2$(RESET) - Run for GD2"
+	@echo "  $(GREEN)make run-thematic-ranking-gd3$(RESET) - Run for GD3"
+
+run-thematic-ranking-gd1:
+	@echo "$(BLUE)Running thematic ranking analysis for GD1...$(RESET)"
+	@if [ ! -f Data/GD1/GD1_embeddings.json ]; then \
+		echo "$(RED)Error: Data/GD1/GD1_embeddings.json not found$(RESET)"; \
+		echo "$(YELLOW)Please download this file as described in the README$(RESET)"; \
+		exit 1; \
+	fi
+	$(PYTHON) $(ANALYSIS_DIR)/thematic_ranking.py --gd 1
+
+run-thematic-ranking-gd2:
+	@echo "$(BLUE)Running thematic ranking analysis for GD2...$(RESET)"
+	@if [ ! -f Data/GD2/GD2_embeddings.json ]; then \
+		echo "$(RED)Error: Data/GD2/GD2_embeddings.json not found$(RESET)"; \
+		echo "$(YELLOW)Please download this file as described in the README$(RESET)"; \
+		exit 1; \
+	fi
+	$(PYTHON) $(ANALYSIS_DIR)/thematic_ranking.py --gd 2
+
+run-thematic-ranking-gd3:
+	@echo "$(BLUE)Running thematic ranking analysis for GD3...$(RESET)"
+	@if [ ! -f Data/GD3/GD3_embeddings.json ]; then \
+		echo "$(RED)Error: Data/GD3/GD3_embeddings.json not found$(RESET)"; \
+		echo "$(YELLOW)Please download this file as described in the README$(RESET)"; \
+		exit 1; \
+	fi
+	$(PYTHON) $(ANALYSIS_DIR)/thematic_ranking.py --gd 3
 
 # Preview CSV files
 preview-csvs-gd1:
