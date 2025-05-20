@@ -19,19 +19,19 @@ import time
 # Format: GD number -> (file_size_bytes, direct_download_url, gdrive_url)
 EMBEDDING_FILES = {
     1: (
-        800000000,  # Approximate file size in bytes (800MB)
-        "https://drive.usercontent.google.com/download?id=YOUR_GD1_ID_HERE&export=download",
-        "https://drive.google.com/file/d/YOUR_GD1_ID_HERE/view"
-    ),
-    2: (
-        800000000,  # Approximate file size in bytes (800MB)
-        "https://drive.usercontent.google.com/download?id=YOUR_GD2_ID_HERE&export=download",
-        "https://drive.google.com/file/d/YOUR_GD2_ID_HERE/view"
-    ),
-    3: (
-        800000000,  # Approximate file size in bytes (800MB)
+        530000000,  # Approximate file size in bytes (530MB)
         "https://drive.usercontent.google.com/download?id=17Mwnr2_IX2xx0C3VMn8mS2RDjNMkuabI&export=download",
         "https://drive.google.com/file/d/17Mwnr2_IX2xx0C3VMn8mS2RDjNMkuabI/view"
+    ),
+    2: (
+        555000000,  # Approximate file size in bytes (555MB)
+        "https://drive.usercontent.google.com/download?id=1gFWgiSu-csqVfuTn4Clfjxctd0mna9Wp&export=download&confirm=t&uuid=2a40be5a-446e-44dc-9ad7-ce170fdfc3e1",
+        "https://drive.google.com/file/d/1gFWgiSu-csqVfuTn4Clfjxctd0mna9Wp/view"
+    ),
+    3: (
+        771000000,  # Approximate file size in bytes (771MB)
+        "https://drive.usercontent.google.com/download?id=1R1ijVWoCtoclUWP_gevxsTiGoT8Cp4h1&export=download&confirm=t&uuid=16d23370-b34e-48ce-815e-1e38f528e3fa",
+        "https://drive.google.com/file/d/1R1ijVWoCtoclUWP_gevxsTiGoT8Cp4h1/view"
     )
 }
 
