@@ -63,6 +63,55 @@ def validate_file(file_path, expected_size):
     
     return size_min <= actual_size <= size_max
 
+def get_gdrive_confirmation_id(file_id):
+    """
+    Get the confirmation ID needed to bypass Google Drive's virus scan warning.
+    
+    Args:
+        file_id (str): Google Drive file ID
+        
+    Returns:
+        str: URL with confirmation parameters
+    """
+    url = f"https://drive.google.com/uc?export=download&id={file_id}"
+    
+    try:
+        # Create a session to handle cookies
+        opener = urllib.request.build_opener()
+        response = opener.open(url)
+        
+        # Sometimes small files don't need confirmation
+        if response.geturl() != url:
+            # Check if this is a download link
+            if 'download' in response.geturl():
+                return response.geturl()
+        
+        # Get the HTML response
+        try:
+            html = response.read().decode('utf-8')
+        except UnicodeDecodeError:
+            # If we can't decode, we're likely already getting the file
+            return url
+            
+        # Extract the confirmation code
+        confirm_match = re.search(r'confirm=([0-9A-Za-z]+)', html)
+        if confirm_match:
+            confirm_code = confirm_match.group(1)
+            return f"https://drive.google.com/uc?export=download&confirm={confirm_code}&id={file_id}"
+        
+        # Look for the form action in case the pattern changes
+        form_match = re.search(r'action="([^"]*)"', html)
+        if form_match:
+            form_action = form_match.group(1)
+            if 'download' in form_action:
+                return f"https://drive.google.com{form_action}"
+                
+        # If no confirmation needed or pattern changed, use the original URL
+        return url
+    except Exception as e:
+        print(f"Warning: Could not get confirmation ID: {e}")
+        return url
+
 def download_embedding(gd_number, force=False):
     """
     Download embeddings file for the specified Global Dialogue number.
@@ -101,11 +150,58 @@ def download_embedding(gd_number, force=False):
     print(f"File will be saved to: {file_path}")
     print(f"Expected file size: ~{file_size / 1024 / 1024:.1f} MB")
     
+    # Get file ID from the Google Drive URL
+    file_id_match = re.search(r'id=([^&]+)', direct_url)
+    if not file_id_match:
+        print("Could not extract file ID from URL. Using direct URL as fallback.")
+        download_url = direct_url
+    else:
+        file_id = file_id_match.group(1)
+        print(f"File ID: {file_id}")
+        
+        # Get confirmed download URL
+        print("Getting download URL with confirmation...")
+        download_url = get_gdrive_confirmation_id(file_id)
+    
+    # Create a request with a custom User-Agent
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+    
     try:
-        print(f"Starting download from: {direct_url[:60]}...")
+        print(f"Starting download with confirmed URL...")
         start_time = time.time()
         
-        urllib.request.urlretrieve(direct_url, file_path, show_progress)
+        # Create a request with headers
+        req = urllib.request.Request(download_url, headers=headers)
+        
+        # Open with the request
+        with urllib.request.urlopen(req) as response, open(file_path, 'wb') as out_file:
+            # Get content length for progress if available
+            content_length = response.getheader('Content-Length')
+            if content_length:
+                total_size = int(content_length)
+            else:
+                total_size = -1  # Unknown size
+            
+            # Download in chunks with progress
+            downloaded = 0
+            block_size = 8192  # 8KB chunks
+            
+            while True:
+                buffer = response.read(block_size)
+                if not buffer:
+                    break
+                    
+                out_file.write(buffer)
+                downloaded += len(buffer)
+                
+                if total_size > 0:
+                    percent = min(100, downloaded * 100 / total_size)
+                    sys.stdout.write(f"\r[{'#' * int(percent // 2)}{'.' * (50 - int(percent // 2))}] {percent:.1f}% ")
+                else:
+                    sys.stdout.write(f"\rDownloaded: {downloaded / (1024*1024):.1f} MB")
+                sys.stdout.flush()
         
         elapsed = time.time() - start_time
         print(f"\nDownload completed in {elapsed:.1f} seconds!")
@@ -113,14 +209,32 @@ def download_embedding(gd_number, force=False):
         # Validate downloaded file
         if validate_file(file_path, file_size):
             print(f"Validation successful! File saved to {file_path}")
+            # Check if it's a valid JSON
+            is_json = validate_embeddings_json(file_path)
+            if not is_json:
+                print(f"Downloaded file is not a valid JSON. It might be an HTML error page.")
+                return False
             return True
         else:
             print(f"Warning: Downloaded file has unexpected size. It may be incomplete.")
+            # Check if it's HTML (most likely an error page)
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    content_start = f.read(1000).strip()
+                    if content_start.startswith('<!DOCTYPE html>') or content_start.startswith('<html'):
+                        print("Error: Downloaded file appears to be HTML, not JSON data.")
+                        print("This typically happens with Google Drive's virus warning page.")
+                        print(f"Please manually download from: {gdrive_url}")
+                        print(f"And save to: {file_path}")
+                        return False
+            except UnicodeDecodeError:
+                # Binary data, possibly incomplete file
+                pass
             return False
     
     except urllib.error.URLError as e:
         print(f"\nError downloading file: {e}")
-        print("\nIf the direct download link has expired, please:")
+        print("\nPlease manually download the file:")
         print(f"1. Visit the Google Drive link: {gdrive_url}")
         print(f"2. Click 'Download' and save the file manually to: {file_path}")
         return False
