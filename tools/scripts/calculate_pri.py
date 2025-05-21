@@ -338,26 +338,32 @@ def calculate_asc_score(participant_id, binary_df, aggregate_std_df):
     """
     print(f"[ASCDebug {participant_id}] Calculating ASC score...")
 
-    # --- Debug: Inspect high/low consensus rows before filtering ---
-    print(f"[ASCDebug {participant_id}] High consensus rows sample (All_Agreement >= {ASC_HIGH_THRESHOLD}):")
-    print(aggregate_std_df.loc[aggregate_std_df['All_Agreement'] >= ASC_HIGH_THRESHOLD, ['All_Agreement', 'Thought ID']].head())
-    print(f"[ASCDebug {participant_id}] Low consensus rows sample (All_Agreement <= {ASC_LOW_THRESHOLD}):")
-    print(aggregate_std_df.loc[aggregate_std_df['All_Agreement'] <= ASC_LOW_THRESHOLD, ['All_Agreement', 'Thought ID']].head())
-    # --- End Debug ---
-
-    # Identify strong consensus thoughts
-    strong_agree_ids = aggregate_std_df.loc[aggregate_std_df['All_Agreement'] >= ASC_HIGH_THRESHOLD, 'Thought ID'].unique()
-    strong_disagree_ids = aggregate_std_df.loc[aggregate_std_df['All_Agreement'] <= ASC_LOW_THRESHOLD, 'Thought ID'].unique()
+    # Filter out NaN Thought IDs first
+    valid_consensus_df = aggregate_std_df.dropna(subset=['Thought ID']).copy()
+    
+    # Identify strong consensus thoughts (with valid Thought IDs)
+    strong_agree_df = valid_consensus_df[valid_consensus_df['All_Agreement'] >= ASC_HIGH_THRESHOLD]
+    strong_disagree_df = valid_consensus_df[valid_consensus_df['All_Agreement'] <= ASC_LOW_THRESHOLD]
+    
+    strong_agree_ids = strong_agree_df['Thought ID'].unique()
+    strong_disagree_ids = strong_disagree_df['Thought ID'].unique()
+    
+    # Debug Print (use filtered dataframes)
+    print(f"[ASCDebug {participant_id}] High consensus rows (All_Agreement >= {ASC_HIGH_THRESHOLD}): {len(strong_agree_df)} rows")
+    print(f"[ASCDebug {participant_id}] Low consensus rows (All_Agreement <= {ASC_LOW_THRESHOLD}): {len(strong_disagree_df)} rows")
+    
+    # Combine valid IDs (no need for pd.notna filter since we already dropped NaNs)
     strong_consensus_ids = np.concatenate([
-        strong_agree_ids[pd.notna(strong_agree_ids)],
-        strong_disagree_ids[pd.notna(strong_disagree_ids)]
-    ])
+        strong_agree_ids if len(strong_agree_ids) > 0 else np.array([]),
+        strong_disagree_ids if len(strong_disagree_ids) > 0 else np.array([])
+    ]) if (len(strong_agree_ids) > 0 or len(strong_disagree_ids) > 0) else np.array([])
 
     # Debug Print
     print(f"[ASCDebug {participant_id}] Found {len(strong_agree_ids)} strong agree IDs, {len(strong_disagree_ids)} strong disagree IDs. Total: {len(strong_consensus_ids)}")
 
+    # Return NaN if no consensus thoughts were found with valid IDs
     if len(strong_consensus_ids) == 0:
-        # print(f"Warning [P:{participant_id}]: No strong consensus thoughts found.")
+        print(f"[ASCDebug {participant_id}] No strong consensus thoughts found with valid IDs.")
         return np.nan
 
     # Get participant's votes on these specific thoughts
@@ -373,9 +379,9 @@ def calculate_asc_score(participant_id, binary_df, aggregate_std_df):
         # print(f"[ASCDebug {participant_id}] Participant did not vote on any consensus thoughts.")
         return np.nan
 
-    # Join votes with consensus info
+    # Join votes with consensus info - use our filtered dataframe for better merge
     votes_with_consensus = participant_votes.merge(
-        aggregate_std_df[['Thought ID', 'All_Agreement']].drop_duplicates(subset=['Thought ID']).dropna(subset=['Thought ID', 'All_Agreement']), # Ensure unique, non-null Thought ID and Agreement for merge
+        valid_consensus_df[['Thought ID', 'All_Agreement']].drop_duplicates(subset=['Thought ID']), # Already filtered for non-null values
         on='Thought ID',
         how='left'
     )
@@ -494,28 +500,75 @@ if __name__ == "__main__":
     print(pri_signals_df.head())
 
     # --- Phase 3: Normalization and Final PRI ---
-    # TODO: Implement normalization functions (e.g., percentile rank, min-max, custom bins)
-    # TODO: Apply normalization to each signal (ensuring higher = better reliability)
-    # TODO: Define weights and calculate final weighted PRI score
-
-    # Example placeholder for normalization and final calculation
-    # pri_signals_df['Duration_Norm'] = normalize_duration(pri_signals_df['Duration_seconds'])
-    # pri_signals_df['LowQualityTag_Norm'] = 1 - pri_signals_df['LowQualityTag_Perc'] # Higher % is bad -> invert
-    # pri_signals_df['UniversalDisagreement_Norm'] = 1 - pri_signals_df['UniversalDisagreement_Perc'] # Higher % is bad -> invert
-    # pri_signals_df['ASC_Norm'] = 1 - pri_signals_df['ASC_Score_Raw'].fillna(0.5) # Higher raw score is bad -> invert. Fill NaNs with neutral value?
-
-    # weights = {'Duration_Norm': 0.25, 'LowQualityTag_Norm': 0.25, 'UniversalDisagreement_Norm': 0.25, 'ASC_Norm': 0.25}
-    # pri_signals_df['PRI_Score'] = (
-    #     pri_signals_df['Duration_Norm'] * weights['Duration_Norm'] +
-    #     pri_signals_df['LowQualityTag_Norm'] * weights['LowQualityTag_Norm'] +
-    #     pri_signals_df['UniversalDisagreement_Norm'] * weights['UniversalDisagreement_Norm'] +
-    #     pri_signals_df['ASC_Norm'] * weights['ASC_Norm']
-    # )
-
-    # print("PRI Scores Head (Placeholder):")
-    # print(pri_signals_df.head())
-
-    # TODO: Save results to CSV
-    # output_path = f"{DATA_DIR}/GD{GD_NUMBER}_pri_scores.csv"
-    # pri_signals_df.to_csv(output_path, index=False)
-    # print(f"Results saved to {output_path}")
+    print("\nApplying normalization and calculating final PRI scores...")
+    
+    # Simple min-max normalization function
+    def min_max_normalize(series, invert=False):
+        """Min-max normalization with optional inversion"""
+        if series.isna().all():
+            return series  # Return as-is if all NaN
+        
+        # Replace NaN with median for normalization purposes
+        median_val = series.median()
+        filled_series = series.fillna(median_val)
+        
+        min_val = filled_series.min()
+        max_val = filled_series.max()
+        
+        # Avoid division by zero
+        if min_val == max_val:
+            normalized = pd.Series(0.5, index=series.index)
+        else:
+            normalized = (filled_series - min_val) / (max_val - min_val)
+            
+        # Invert if needed (for metrics where lower raw value is better)
+        if invert:
+            normalized = 1 - normalized
+            
+        # Restore NaN values
+        normalized[series.isna()] = np.nan
+        
+        return normalized
+    
+    # Normalize duration (longer duration is better)
+    pri_signals_df['Duration_Norm'] = min_max_normalize(pri_signals_df['Duration_seconds'])
+    
+    # Normalize low quality tags (lower percentage is better, so invert)
+    pri_signals_df['LowQualityTag_Norm'] = min_max_normalize(pri_signals_df['LowQualityTag_Perc'], invert=True)
+    
+    # Normalize universal disagreement (lower percentage is better, so invert)
+    pri_signals_df['UniversalDisagreement_Norm'] = min_max_normalize(pri_signals_df['UniversalDisagreement_Perc'], invert=True)
+    
+    # Normalize ASC score (lower raw score is better, so invert)
+    pri_signals_df['ASC_Norm'] = min_max_normalize(pri_signals_df['ASC_Score_Raw'], invert=True)
+    
+    # Define weights for each component
+    weights = {
+        'Duration_Norm': 0.2,
+        'LowQualityTag_Norm': 0.3,
+        'UniversalDisagreement_Norm': 0.3,
+        'ASC_Norm': 0.2
+    }
+    
+    # Calculate final weighted PRI score
+    pri_signals_df['PRI_Score'] = (
+        pri_signals_df['Duration_Norm'] * weights['Duration_Norm'] +
+        pri_signals_df['LowQualityTag_Norm'] * weights['LowQualityTag_Norm'] +
+        pri_signals_df['UniversalDisagreement_Norm'] * weights['UniversalDisagreement_Norm'] +
+        pri_signals_df['ASC_Norm'] * weights['ASC_Norm']
+    )
+    
+    # Create a 1-5 scale version for easier interpretation
+    pri_signals_df['PRI_Scale_1_5'] = pri_signals_df['PRI_Score'] * 4 + 1
+    
+    print("PRI Score Statistics:")
+    print(pri_signals_df[['PRI_Score', 'PRI_Scale_1_5']].describe())
+    print("\nTop 5 Most Reliable Participants:")
+    print(pri_signals_df.sort_values('PRI_Score', ascending=False).head(5)[['Participant ID', 'PRI_Score', 'PRI_Scale_1_5']])
+    print("\nBottom 5 Least Reliable Participants:")
+    print(pri_signals_df.sort_values('PRI_Score', ascending=True).head(5)[['Participant ID', 'PRI_Score', 'PRI_Scale_1_5']])
+    
+    # Save results to CSV
+    output_path = f"{DATA_DIR}/GD{GD_NUMBER}_pri_scores.csv"
+    pri_signals_df.to_csv(output_path, index=False)
+    print(f"\nResults saved to {output_path}")
