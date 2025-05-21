@@ -117,6 +117,10 @@ Detailed descriptions of file formats and columns can be found in `Data/Document
 
 Analysis scripts and notebooks can be found in the `/tools` directory.
 
+### Participant Reliability Index (PRI)
+
+The PRI is a composite score that assesses participant response quality and reliability. It combines multiple signals including duration, response quality tags, universal disagreement rates, and consensus voting patterns. For detailed documentation, see [PRI_GUIDE.md](Data/Documentation/PRI_GUIDE.md).
+
  
 
 
