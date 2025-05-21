@@ -29,6 +29,9 @@ UNIVERSAL_DISAGREEMENT_COVERAGE = 0.90 # Minimum proportion of population needed
 def load_and_clean_data():
     """Loads and performs initial cleaning on necessary CSV files."""
     print("Loading data...")
+    # Configure pandas to display more information
+    pd.set_option('display.max_columns', 10)
+    pd.set_option('display.width', 120)
 
     # --- Load Binary ---
     binary_required_cols = ['Participant ID', 'Thought ID', 'Vote', 'Timestamp']
@@ -136,10 +139,22 @@ def load_and_clean_data():
     aggregate_std_required_cols = ['All', 'Participant ID', 'Question ID']
     try:
         warnings.simplefilter(action='ignore', category=pd.errors.DtypeWarning)
+        # To avoid fragmentation warnings, first read with low_memory=False to determine dtypes
+        aggregate_dtypes = pd.read_csv(
+            AGGREGATE_STD_PATH,
+            low_memory=False,
+            nrows=100  # Read just enough rows to infer types
+        ).dtypes
+        
+        # Then read the full file with the determined types
         aggregate_std_df = pd.read_csv(
             AGGREGATE_STD_PATH,
-            low_memory=False
+            low_memory=False,
+            dtype={col: str if 'object' in str(typ) else typ for col, typ in aggregate_dtypes.items()}
         )
+        
+        # Create a copy to avoid fragmentation
+        aggregate_std_df = aggregate_std_df.copy()
         warnings.simplefilter(action='default', category=pd.errors.DtypeWarning)
         print(f"Columns for {AGGREGATE_STD_PATH}: {aggregate_std_df.columns[:20]}...")
         actual_participant_col = 'Participant ID'
@@ -159,12 +174,18 @@ def load_and_clean_data():
              print("Added placeholder 'Thought ID' and 'Thought Text' columns")
              segment_cols = [col for col in aggregate_std_df.columns if col.startswith(('O1:', 'O2:', 'O3:', 'O4:', 'O5:', 'O6:', 'O7:'))]
              print(f"Found {len(segment_cols)} segment columns to parse.")
+             # Process all columns in a more efficient way to avoid fragmentation warnings
+             numeric_columns = {}
              for col in [actual_all_col] + segment_cols:
                  numeric_col_name = f"{col}_numeric"
                  try:
-                     aggregate_std_df[numeric_col_name] = aggregate_std_df[col].astype(str).str.rstrip('%').astype(float) / 100.0
+                     numeric_columns[numeric_col_name] = aggregate_std_df[col].astype(str).str.rstrip('%').astype(float) / 100.0
                  except Exception as parse_err:
-                     aggregate_std_df[numeric_col_name] = np.nan
+                     numeric_columns[numeric_col_name] = np.nan
+             
+             # Add all numeric columns at once to avoid fragmentation
+             numeric_df = pd.DataFrame(numeric_columns)
+             aggregate_std_df = pd.concat([aggregate_std_df, numeric_df], axis=1)
              print("Finished parsing segment columns.")
              if f"{actual_all_col}_numeric" in aggregate_std_df.columns:
                   aggregate_std_df.rename(columns={f"{actual_all_col}_numeric": 'All_Agreement'}, inplace=True)
@@ -178,45 +199,49 @@ def load_and_clean_data():
     if not verbatim_map_df.empty and not aggregate_std_df.empty:
         print(f"Aggregate shape before merge: {aggregate_std_df.shape}")
         print(f"Aggregate Thought ID null count before merge: {aggregate_std_df['Thought ID'].isnull().sum()}")
-        print(f"Aggregate Thought ID unique values before merge: {aggregate_std_df['Thought ID'].nunique()}") # Should be 1 (placeholder)
+        print(f"Aggregate Thought ID unique values before merge: {aggregate_std_df['Thought ID'].nunique()}")
+        
+        # Get a list of unique Question IDs to check overlap
+        agg_questions = aggregate_std_df['Question ID'].unique()
+        verbatim_questions = verbatim_map_df['Question ID'].unique()
+        common_questions = set(agg_questions) & set(verbatim_questions)
+        print(f"Aggregate has {len(agg_questions)} unique questions, Verbatim has {len(verbatim_questions)}")
+        print(f"Common questions between datasets: {len(common_questions)}")
 
-        # Select only necessary columns from verbatim_map for the merge
-        verbatim_subset = verbatim_map_df[['Question ID', 'Participant ID', 'Thought ID', 'Thought Text']].copy()
-        print(f"Verbatim Map subset shape: {verbatim_subset.shape}")
-
-        # Perform the merge
-        aggregate_std_df = pd.merge(
-            aggregate_std_df,
-            verbatim_subset,
-            how='left',
-            left_on=['Question ID', 'Author Participant ID'],
-            right_on=['Question ID', 'Participant ID'],
-            suffixes=('_agg', '_vmap') # Use specific suffixes
+        # CRITICAL FIX: In the aggregate data, the unique identifier for a response is a combination of 
+        # Question ID and Response, not Question ID and Participant ID
+        # Let's create a direct mapping of Thought IDs from verbatim_map
+        thought_id_map = verbatim_map_df[['Thought ID', 'Thought Text']].set_index('Thought ID')
+        
+        # Let's also check if we can safely use verbatim_map_df directly as a source of thought data
+        print(f"Verbatim Map contains {len(verbatim_map_df)} rows and {verbatim_map_df['Thought ID'].nunique()} unique thoughts")
+        
+        # Instead of trying to merge the dataframes, we'll set the verbatim map as our source of truth
+        # for ASC calculations. We'll use the aggregate data for agreement scores, but the verbatim
+        # data for thought IDs and participant mapping.
+        
+        # Add this as a separate property to avoid modifying aggregate_std_df
+        
+        print("Using verbatim_map directly as source of truth for Thought IDs.")
+        
+        # Show sample of verbatim map to ensure it has proper structure
+        print("\nSample of verbatim map data:")
+        print(verbatim_map_df[['Question ID', 'Participant ID', 'Thought ID']].head())
+        
+        # Check for agreement scores with valid IDs
+        test_join = pd.merge(
+            verbatim_map_df[['Question ID', 'Thought ID']],
+            aggregate_std_df[['Question ID', 'All_Agreement']],
+            on='Question ID',
+            how='inner'
         )
-        print(f"Aggregate shape after merge: {aggregate_std_df.shape}")
-        print(f"Columns after merge: {aggregate_std_df.columns.tolist()}")
-
-        # Check if the merge created the expected columns from verbatim_map
-        if 'Thought ID_vmap' in aggregate_std_df.columns:
-            # Update original 'Thought ID' where merge was successful
-            aggregate_std_df['Thought ID'] = aggregate_std_df['Thought ID_vmap'].fillna(aggregate_std_df['Thought ID_agg'])
-            print(f"Aggregate Thought ID null count after update: {aggregate_std_df['Thought ID'].isnull().sum()}")
-            print(f"Aggregate Thought ID unique values after update: {aggregate_std_df['Thought ID'].nunique()}")
-            matched_rows = aggregate_std_df['Thought ID_vmap'].notna().sum()
-            print(f"Found {matched_rows} rows matched from Verbatim Map based on Thought ID_vmap.")
-
-            # Update 'Thought Text' similarly
-            if 'Thought Text_vmap' in aggregate_std_df.columns:
-                 aggregate_std_df['Thought Text'] = aggregate_std_df['Thought Text_vmap'].fillna(aggregate_std_df['Thought Text_agg'])
-
-            # Drop temporary and redundant columns
-            cols_to_drop = ['Participant ID_vmap', 'Thought ID_agg', 'Thought ID_vmap', 'Thought Text_agg', 'Thought Text_vmap']
-            aggregate_std_df.drop(columns=[col for col in cols_to_drop if col in aggregate_std_df.columns], inplace=True)
-            print(f"Columns after cleanup: {aggregate_std_df.columns.tolist()}")
-            print(f"Final Aggregate shape: {aggregate_std_df.shape}")
+        print(f"\nJoining verbatim and aggregate on Question ID produces {len(test_join)} matched rows")
+        
+        # If we have valid data, we can proceed with the ASC calculation
+        if len(test_join) > 0:
+            print("Proceeding with ASC calculation using verbatim_map as source of truth")
         else:
-            print("Merge did not produce 'Thought ID_vmap' column. Check merge keys and verbatim_map data.")
-
+            print("WARNING: No matching Question IDs between verbatim and aggregate. ASC calculation may fail!")
     else:
         print("Skipping join due to empty or incomplete dataframes.")
 
@@ -330,40 +355,81 @@ def calculate_universal_disagreement_perc(participant_id, verbatim_map_df, aggre
     return num_universally_disagreed / actual_evaluated_count
 
 
-def calculate_asc_score(participant_id, binary_df, aggregate_std_df):
+def calculate_asc_score(participant_id, binary_df, aggregate_std_df, verbatim_map_df=None):
     """
     Calculates the participant's rate of voting AGAINST strong consensus.
     (Lower is better, so this raw score needs inversion later).
-    NOTE: Relies on aggregate_std_df having 'Thought ID' populated via join.
+    NOTE: Uses verbatim_map_df as a source of thought IDs when available
     """
     print(f"[ASCDebug {participant_id}] Calculating ASC score...")
 
-    # Filter out NaN Thought IDs first
-    valid_consensus_df = aggregate_std_df.dropna(subset=['Thought ID']).copy()
+    # Check for verbatim_map - if provided, use it to get thought IDs
+    if verbatim_map_df is not None and not verbatim_map_df.empty:
+        # Create a mapping of question ID to agreement score from aggregate data
+        question_agreement_map = {}
+        for _, row in aggregate_std_df.iterrows():
+            if 'Question ID' in row and 'All_Agreement' in row and pd.notna(row['All_Agreement']):
+                question_id = row['Question ID']
+                agreement = row['All_Agreement']
+                # For each question, store the highest agreement score we find
+                if question_id in question_agreement_map:
+                    question_agreement_map[question_id] = max(question_agreement_map[question_id], agreement)
+                else:
+                    question_agreement_map[question_id] = agreement
+        
+        print(f"[ASCDebug {participant_id}] Created agreement map for {len(question_agreement_map)} questions")
+        
+        # For each thought in verbatim map, get its question's agreement score
+        thought_agreement_pairs = []
+        for _, row in verbatim_map_df.iterrows():
+            thought_id = row['Thought ID']
+            question_id = row['Question ID']
+            if question_id in question_agreement_map:
+                thought_agreement_pairs.append((thought_id, question_agreement_map[question_id]))
+        
+        # Create a DataFrame with these pairs for easier filtering
+        thought_agreement_df = pd.DataFrame(thought_agreement_pairs, columns=['Thought ID', 'All_Agreement'])
+        
+        # Filter for strong consensus thoughts
+        strong_agree_df = thought_agreement_df[thought_agreement_df['All_Agreement'] >= ASC_HIGH_THRESHOLD]
+        strong_disagree_df = thought_agreement_df[thought_agreement_df['All_Agreement'] <= ASC_LOW_THRESHOLD]
+        
+        strong_agree_ids = strong_agree_df['Thought ID'].unique()
+        strong_disagree_ids = strong_disagree_df['Thought ID'].unique()
+        
+        print(f"[ASCDebug {participant_id}] Using verbatim map as source of Thought IDs")
+        print(f"[ASCDebug {participant_id}] Mapped {len(thought_agreement_df)} thoughts to agreement scores")
+    else:
+        # Fallback to using aggregate_std_df directly
+        print(f"[ASCDebug {participant_id}] No verbatim_map provided, using aggregate_std_df")
+        valid_consensus_df = aggregate_std_df[aggregate_std_df['Thought ID'].notna()].copy()
+        
+        if valid_consensus_df.empty:
+            print(f"[ASCDebug {participant_id}] No valid Thought IDs found. Unable to calculate ASC score.")
+            return np.nan
+        
+        strong_agree_df = valid_consensus_df[valid_consensus_df['All_Agreement'] >= ASC_HIGH_THRESHOLD]
+        strong_disagree_df = valid_consensus_df[valid_consensus_df['All_Agreement'] <= ASC_LOW_THRESHOLD]
+        
+        strong_agree_ids = strong_agree_df['Thought ID'].unique()
+        strong_disagree_ids = strong_disagree_df['Thought ID'].unique()
     
-    # Identify strong consensus thoughts (with valid Thought IDs)
-    strong_agree_df = valid_consensus_df[valid_consensus_df['All_Agreement'] >= ASC_HIGH_THRESHOLD]
-    strong_disagree_df = valid_consensus_df[valid_consensus_df['All_Agreement'] <= ASC_LOW_THRESHOLD]
-    
-    strong_agree_ids = strong_agree_df['Thought ID'].unique()
-    strong_disagree_ids = strong_disagree_df['Thought ID'].unique()
-    
-    # Debug Print (use filtered dataframes)
+    # Debug Print
     print(f"[ASCDebug {participant_id}] High consensus rows (All_Agreement >= {ASC_HIGH_THRESHOLD}): {len(strong_agree_df)} rows")
     print(f"[ASCDebug {participant_id}] Low consensus rows (All_Agreement <= {ASC_LOW_THRESHOLD}): {len(strong_disagree_df)} rows")
     
-    # Combine valid IDs (no need for pd.notna filter since we already dropped NaNs)
+    # Combine strong consensus IDs
     strong_consensus_ids = np.concatenate([
         strong_agree_ids if len(strong_agree_ids) > 0 else np.array([]),
         strong_disagree_ids if len(strong_disagree_ids) > 0 else np.array([])
     ]) if (len(strong_agree_ids) > 0 or len(strong_disagree_ids) > 0) else np.array([])
-
+    
     # Debug Print
     print(f"[ASCDebug {participant_id}] Found {len(strong_agree_ids)} strong agree IDs, {len(strong_disagree_ids)} strong disagree IDs. Total: {len(strong_consensus_ids)}")
-
-    # Return NaN if no consensus thoughts were found with valid IDs
+    
+    # Return NaN if no consensus thoughts were found
     if len(strong_consensus_ids) == 0:
-        print(f"[ASCDebug {participant_id}] No strong consensus thoughts found with valid IDs.")
+        print(f"[ASCDebug {participant_id}] No strong consensus thoughts found.")
         return np.nan
 
     # Get participant's votes on these specific thoughts
@@ -379,26 +445,35 @@ def calculate_asc_score(participant_id, binary_df, aggregate_std_df):
         # print(f"[ASCDebug {participant_id}] Participant did not vote on any consensus thoughts.")
         return np.nan
 
-    # Join votes with consensus info - use our filtered dataframe for better merge
-    votes_with_consensus = participant_votes.merge(
-        valid_consensus_df[['Thought ID', 'All_Agreement']].drop_duplicates(subset=['Thought ID']), # Already filtered for non-null values
-        on='Thought ID',
-        how='left'
-    )
-
+    # Join votes with consensus info - using the appropriate source
+    if verbatim_map_df is not None and not verbatim_map_df.empty:
+        # Create an agreement map for direct lookup
+        thought_agreement_map = dict(thought_agreement_pairs)
+        
+        # Add agreement scores directly to votes
+        votes_with_consensus = participant_votes.copy()
+        votes_with_consensus['All_Agreement'] = votes_with_consensus['Thought ID'].map(thought_agreement_map)
+    else:
+        # Fallback to using aggregate_std_df for merge
+        votes_with_consensus = participant_votes.merge(
+            valid_consensus_df[['Thought ID', 'All_Agreement']].drop_duplicates(subset=['Thought ID']),
+            on='Thought ID',
+            how='left'
+        )
+    
     # Debug Print
-    print(f"[ASCDebug {participant_id}] Shape after merging votes with consensus: {votes_with_consensus.shape}")
-    print(f"[ASCDebug {participant_id}] Null All_Agreement count after merge: {votes_with_consensus['All_Agreement'].isnull().sum()}")
-
-    # Check if merge failed (no matching Thought IDs with valid agreement)
-    if 'All_Agreement' not in votes_with_consensus.columns or votes_with_consensus['All_Agreement'].isnull().all():
-         # print(f"Warning [P:{participant_id}]: Could not merge votes with consensus (All_Agreement missing or all null). ASC score is NaN.")
-         return np.nan
-
-    # Filter out rows where merge failed to find an agreement score
-    votes_with_consensus.dropna(subset=['All_Agreement'], inplace=True)
+    print(f"[ASCDebug {participant_id}] Shape after adding agreement scores: {votes_with_consensus.shape}")
+    print(f"[ASCDebug {participant_id}] Null All_Agreement count: {votes_with_consensus['All_Agreement'].isna().sum()}")
+    
+    # Check if we have valid agreement scores
+    if 'All_Agreement' not in votes_with_consensus.columns or votes_with_consensus['All_Agreement'].isna().all():
+        print(f"[ASCDebug {participant_id}] No agreement scores available for participant's votes.")
+        return np.nan
+    
+    # Filter out rows with missing agreement scores
+    votes_with_consensus = votes_with_consensus.dropna(subset=['All_Agreement'])
     if votes_with_consensus.empty:
-        # print(f"[ASCDebug {participant_id}] No valid consensus votes remain after dropping merge NaNs.")
+        print(f"[ASCDebug {participant_id}] No valid consensus votes remain after dropping null agreements.")
         return np.nan
 
     # Identify votes AGAINST consensus
@@ -449,9 +524,9 @@ def calculate_all_pri_signals(binary_df, preference_df, thought_labels_df, verba
     binary_times_df = binary_df[['Participant ID', 'Timestamp']].copy()
     preference_times_df = preference_df[['Participant ID', 'Timestamp']].copy()
 
-    # TODO: Pre-join aggregate_std_df with verbatim_map_df if 'Thought ID' isn't directly in aggregate
-    # This depends on the exact structure revealed after loading aggregate_std_df
-
+    # Make a copy of the DataFrame to avoid fragmentation warnings
+    aggregate_std_df = aggregate_std_df.copy()
+    
 
     for participant_id in all_participant_ids:
         # 1. Duration
@@ -464,7 +539,7 @@ def calculate_all_pri_signals(binary_df, preference_df, thought_labels_df, verba
         universal_disagreement_perc = calculate_universal_disagreement_perc(participant_id, verbatim_map_df, aggregate_std_df)
 
         # 4. ASC Score (raw - lower is better)
-        asc_raw = calculate_asc_score(participant_id, binary_df, aggregate_std_df)
+        asc_raw = calculate_asc_score(participant_id, binary_df, aggregate_std_df, verbatim_map_df)
 
         results.append({
             'Participant ID': participant_id,
@@ -501,6 +576,10 @@ if __name__ == "__main__":
 
     # --- Phase 3: Normalization and Final PRI ---
     print("\nApplying normalization and calculating final PRI scores...")
+    
+    # Check how many NaN values we have in each column
+    print("\nNaN counts in raw signals:")
+    print(pri_signals_df[['Duration_seconds', 'LowQualityTag_Perc', 'UniversalDisagreement_Perc', 'ASC_Score_Raw']].isna().sum())
     
     # Simple min-max normalization function
     def min_max_normalize(series, invert=False):
