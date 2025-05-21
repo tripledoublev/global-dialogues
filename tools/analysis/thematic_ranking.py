@@ -35,6 +35,11 @@ QUESTION_ID_COLUMN = 'Question ID'
 QUESTION_TEXT_COLUMN = 'Question'
 PARTICIPANT_ID_COLUMN = 'Participant ID'
 
+# Default paths - overridden by get_data_paths function
+DEFAULT_GD_NUMBER = 3 
+DEFAULT_DATA_FILE_PATH = os.path.join("Data", f"GD{DEFAULT_GD_NUMBER}", f"GD{DEFAULT_GD_NUMBER}_embeddings.json")
+DEFAULT_OUTPUT_DIR = os.path.join("analysis_output", f"GD{DEFAULT_GD_NUMBER}", "thematic_rankings")
+
 # Define the standard thematic queries
 THEMATIC_QUERIES = [
     "faith and religion",
@@ -233,7 +238,7 @@ def rank_responses_by_similarity(response_df, query_text):
     
     return df_sorted
 
-def save_thematic_rankings(all_rankings, output_dir=OUTPUT_DIR, top_n=TOP_N_RESULTS):
+def save_thematic_rankings(all_rankings, output_dir=DEFAULT_OUTPUT_DIR, top_n=TOP_N_RESULTS):
     """
     Save thematic rankings to a single CSV file containing all themes.
     """
