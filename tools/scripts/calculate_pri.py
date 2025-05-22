@@ -139,18 +139,30 @@ def load_and_clean_data():
     aggregate_std_required_cols = ['All', 'Participant ID', 'Question ID']
     try:
         warnings.simplefilter(action='ignore', category=pd.errors.DtypeWarning)
-        # To avoid fragmentation warnings, first read with low_memory=False to determine dtypes
-        aggregate_dtypes = pd.read_csv(
-            AGGREGATE_STD_PATH,
-            low_memory=False,
-            nrows=100  # Read just enough rows to infer types
-        ).dtypes
-        
-        # Then read the full file with the determined types
+        # First, try to read the first few rows to see what's in the file
+        try:
+            sample_df = pd.read_csv(
+                AGGREGATE_STD_PATH,
+                low_memory=False,
+                nrows=5
+            )
+            print(f"Sample of aggregate standardized data (first 5 rows, first 5 columns):")
+            print(sample_df.iloc[:5, :5])
+        except Exception as e:
+            print(f"Error reading sample from {AGGREGATE_STD_PATH}: {e}")
+            
+        # Now read the full file, being explicit about types to avoid conversion errors
         aggregate_std_df = pd.read_csv(
             AGGREGATE_STD_PATH,
             low_memory=False,
-            dtype={col: str if 'object' in str(typ) else typ for col, typ in aggregate_dtypes.items()}
+            dtype={
+                'Question ID': str,
+                'Question Type': str,
+                'Question': str,
+                'Response': str,
+                'All': str,  # Keep percentage columns as strings initially
+                'Participant ID': str
+            }
         )
         
         # Create a copy to avoid fragmentation
@@ -174,16 +186,53 @@ def load_and_clean_data():
              print("Added placeholder 'Thought ID' and 'Thought Text' columns")
              segment_cols = [col for col in aggregate_std_df.columns if col.startswith(('O1:', 'O2:', 'O3:', 'O4:', 'O5:', 'O6:', 'O7:'))]
              print(f"Found {len(segment_cols)} segment columns to parse.")
-             # Process all columns in a more efficient way to avoid fragmentation warnings
-             numeric_columns = {}
-             for col in [actual_all_col] + segment_cols:
-                 numeric_col_name = f"{col}_numeric"
-                 try:
-                     numeric_columns[numeric_col_name] = aggregate_std_df[col].astype(str).str.rstrip('%').astype(float) / 100.0
-                 except Exception as parse_err:
-                     numeric_columns[numeric_col_name] = np.nan
+             # Safer percentage conversion with better error handling
+             print(f"Converting percentage columns to numeric values...")
              
-             # Add all numeric columns at once to avoid fragmentation
+             # Define a function to safely convert percentage strings to floats
+             def safe_pct_to_float(x):
+                 if pd.isna(x):
+                     return np.nan
+                 try:
+                     # First check if it's already a numeric value
+                     if isinstance(x, (int, float)):
+                         return float(x) / 100.0 if x > 1 else float(x)
+                     # Then try to convert from string
+                     x_str = str(x).strip()
+                     if x_str.endswith('%'):
+                         return float(x_str.rstrip('%')) / 100.0
+                     else:
+                         # If no % sign, try direct conversion but check range
+                         val = float(x_str)
+                         return val / 100.0 if val > 1 else val
+                 except (ValueError, TypeError) as e:
+                     print(f"Warning: Could not convert value '{x}' to float: {e}")
+                     return np.nan
+             
+             # Process columns in batches to avoid fragmentation
+             numeric_columns = {}
+             print(f"Converting {actual_all_col} column to numeric...")
+             
+             # Always convert the 'All' column
+             numeric_columns[f"{actual_all_col}_numeric"] = aggregate_std_df[actual_all_col].apply(safe_pct_to_float)
+             
+             # Sample some values to check
+             sample_values = aggregate_std_df[actual_all_col].head(5).tolist()
+             sample_converted = [safe_pct_to_float(x) for x in sample_values]
+             print(f"Sample conversion of '{actual_all_col}' column:")
+             for orig, conv in zip(sample_values, sample_converted):
+                 print(f"  '{orig}' -> {conv}")
+             
+             # Convert segment columns in smaller batches
+             batch_size = 20
+             for i in range(0, len(segment_cols), batch_size):
+                 batch = segment_cols[i:i+batch_size]
+                 print(f"Converting batch of {len(batch)} segment columns...")
+                 for col in batch:
+                     numeric_col_name = f"{col}_numeric"
+                     numeric_columns[numeric_col_name] = aggregate_std_df[col].apply(safe_pct_to_float)
+             
+             # Add all numeric columns at once
              numeric_df = pd.DataFrame(numeric_columns)
              aggregate_std_df = pd.concat([aggregate_std_df, numeric_df], axis=1)
              print("Finished parsing segment columns.")
@@ -367,15 +416,28 @@ def calculate_asc_score(participant_id, binary_df, aggregate_std_df, verbatim_ma
     if verbatim_map_df is not None and not verbatim_map_df.empty:
         # Create a mapping of question ID to agreement score from aggregate data
         question_agreement_map = {}
-        for _, row in aggregate_std_df.iterrows():
-            if 'Question ID' in row and 'All_Agreement' in row and pd.notna(row['All_Agreement']):
-                question_id = row['Question ID']
-                agreement = row['All_Agreement']
-                # For each question, store the highest agreement score we find
-                if question_id in question_agreement_map:
-                    question_agreement_map[question_id] = max(question_agreement_map[question_id], agreement)
-                else:
-                    question_agreement_map[question_id] = agreement
+        
+        # First, check if aggregate_std_df has the required columns
+        if 'All_Agreement' not in aggregate_std_df.columns:
+            print(f"[ASCDebug {participant_id}] Warning: 'All_Agreement' column not found in aggregate_std_df")
+            print(f"[ASCDebug {participant_id}] Available columns: {aggregate_std_df.columns[:10]}...")
+            # Create some placeholder agreement scores for testing (all will be neutral)
+            # This allows us to test the rest of the processing pipeline
+            print(f"[ASCDebug {participant_id}] Creating placeholder agreement scores of 0.5 for all questions")
+            question_ids = verbatim_map_df['Question ID'].unique()
+            for qid in question_ids:
+                question_agreement_map[qid] = 0.5
+        else:
+            # Normal processing with real agreement scores
+            for _, row in aggregate_std_df.iterrows():
+                if 'Question ID' in row and 'All_Agreement' in row and pd.notna(row['All_Agreement']):
+                    question_id = row['Question ID']
+                    agreement = row['All_Agreement']
+                    # For each question, store the highest agreement score we find
+                    if question_id in question_agreement_map:
+                        question_agreement_map[question_id] = max(question_agreement_map[question_id], agreement)
+                    else:
+                        question_agreement_map[question_id] = agreement
         
         print(f"[ASCDebug {participant_id}] Created agreement map for {len(question_agreement_map)} questions")
         
@@ -560,10 +622,22 @@ if __name__ == "__main__":
     binary_df, preference_df, thought_labels_df, verbatim_map_df, aggregate_std_df, all_participant_ids = load_and_clean_data()
 
     # Check if data loading was successful
-    if any(df.empty for df in [binary_df, preference_df, thought_labels_df, verbatim_map_df, aggregate_std_df]):
-         print("Error during data loading. Exiting.")
-         # exit() # Temporarily disable exit to see partial loads/calcs
-         pass
+    essential_dfs = [binary_df, preference_df, verbatim_map_df]
+    if any(df.empty for df in essential_dfs):
+        print("Error during data loading of essential datasets. Exiting.")
+        exit(1)
+    
+    # Verify we have the necessary data in verbatim_map
+    if 'Participant ID' not in verbatim_map_df.columns or 'Thought ID' not in verbatim_map_df.columns:
+        print("Error: verbatim_map_df is missing required columns. Exiting.")
+        exit(1)
+    
+    # If aggregate has issues but verbatim_map is good, we can still calculate some metrics
+    if aggregate_std_df.empty:
+        print("Warning: aggregate_std_df is empty, but will attempt to continue using verbatim_map.")
+    elif 'All_Agreement' not in aggregate_std_df.columns:
+        print("Warning: 'All_Agreement' column not found in aggregate_std_df.")
+        print("This will affect ASC score calculation, but other metrics can still be computed.")
 
 
     # 2. Calculate Raw Signals
@@ -618,24 +692,45 @@ if __name__ == "__main__":
     # Normalize universal disagreement (lower percentage is better, so invert)
     pri_signals_df['UniversalDisagreement_Norm'] = min_max_normalize(pri_signals_df['UniversalDisagreement_Perc'], invert=True)
     
-    # Normalize ASC score (lower raw score is better, so invert)
-    pri_signals_df['ASC_Norm'] = min_max_normalize(pri_signals_df['ASC_Score_Raw'], invert=True)
+    # Check if we have valid ASC scores
+    asc_available = not pri_signals_df['ASC_Score_Raw'].isna().all()
     
-    # Define weights for each component
-    weights = {
-        'Duration_Norm': 0.2,
-        'LowQualityTag_Norm': 0.3,
-        'UniversalDisagreement_Norm': 0.3,
-        'ASC_Norm': 0.2
-    }
-    
-    # Calculate final weighted PRI score
-    pri_signals_df['PRI_Score'] = (
-        pri_signals_df['Duration_Norm'] * weights['Duration_Norm'] +
-        pri_signals_df['LowQualityTag_Norm'] * weights['LowQualityTag_Norm'] +
-        pri_signals_df['UniversalDisagreement_Norm'] * weights['UniversalDisagreement_Norm'] +
-        pri_signals_df['ASC_Norm'] * weights['ASC_Norm']
-    )
+    if asc_available:
+        # Normal calculation with ASC
+        pri_signals_df['ASC_Norm'] = min_max_normalize(pri_signals_df['ASC_Score_Raw'], invert=True)
+        
+        # Define weights for each component
+        weights = {
+            'Duration_Norm': 0.2,
+            'LowQualityTag_Norm': 0.3,
+            'UniversalDisagreement_Norm': 0.3,
+            'ASC_Norm': 0.2
+        }
+        
+        # Calculate final weighted PRI score with all components
+        pri_signals_df['PRI_Score'] = (
+            pri_signals_df['Duration_Norm'] * weights['Duration_Norm'] +
+            pri_signals_df['LowQualityTag_Norm'] * weights['LowQualityTag_Norm'] +
+            pri_signals_df['UniversalDisagreement_Norm'] * weights['UniversalDisagreement_Norm'] +
+            pri_signals_df['ASC_Norm'] * weights['ASC_Norm']
+        )
+    else:
+        # Adjusted calculation without ASC
+        print("Warning: No valid ASC scores available. Calculating PRI without ASC component.")
+        
+        # Adjust weights to distribute ASC's weight to other components
+        adjusted_weights = {
+            'Duration_Norm': 0.25,
+            'LowQualityTag_Norm': 0.375,
+            'UniversalDisagreement_Norm': 0.375
+        }
+        
+        # Calculate final weighted PRI score without ASC
+        pri_signals_df['PRI_Score'] = (
+            pri_signals_df['Duration_Norm'] * adjusted_weights['Duration_Norm'] +
+            pri_signals_df['LowQualityTag_Norm'] * adjusted_weights['LowQualityTag_Norm'] +
+            pri_signals_df['UniversalDisagreement_Norm'] * adjusted_weights['UniversalDisagreement_Norm']
+        )
     
     # Create a 1-5 scale version for easier interpretation
     pri_signals_df['PRI_Scale_1_5'] = pri_signals_df['PRI_Score'] * 4 + 1
