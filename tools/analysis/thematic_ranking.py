@@ -338,7 +338,7 @@ if __name__ == "__main__":
                 print(f"Could not generate rankings for theme: '{theme}'")
 
         # Save results to CSV
-        run_id, timestamp = save_thematic_rankings(all_rankings)
+        run_id, timestamp = save_thematic_rankings(all_rankings, OUTPUT_DIR)
         print(f"\nAll thematic rankings saved to {os.path.join(OUTPUT_DIR, 'thematic_rankings.csv')}")
         print(f"Run ID: {run_id}, Timestamp: {timestamp}")
         print("\n--- Thematic Ranking Complete ---")
