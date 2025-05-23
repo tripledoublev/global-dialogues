@@ -147,7 +147,7 @@ python tools/scripts/analyze_dialogues.py 3
 
 **How It Works:**
 - Uses cosine similarity to compare response embeddings against predefined thematic queries
-- Default themes include: faith and religion, economic impacts and jobs, human-AI relationships, cultural integrity, safety concerns, and AI governance
+- Themes are defined in `tools/analysis/thematic_queries.txt` (one per line) and can be customized
 - Ranks the top 100 most relevant responses for each theme using semantic similarity
 
 **Output:** Saves a comprehensive CSV file (`thematic_rankings.csv`) to `analysis_output/GD<N>/thematic_rankings/` containing:
