@@ -40,16 +40,30 @@ DEFAULT_GD_NUMBER = 3
 DEFAULT_DATA_FILE_PATH = os.path.join("Data", f"GD{DEFAULT_GD_NUMBER}", f"GD{DEFAULT_GD_NUMBER}_embeddings.json")
 DEFAULT_OUTPUT_DIR = os.path.join("analysis_output", f"GD{DEFAULT_GD_NUMBER}", "thematic_rankings")
 
-# Define the standard thematic queries
-THEMATIC_QUERIES = [
-    "faith and religion",
-    "economic impacts and jobs",
-    "human-AI relationships and collaboration",
-    "cultural integrity and diversity",
-    "safety and security concerns",
-    "governance and regulation of AI",
-    # Add more themes as needed
-]
+def load_thematic_queries(queries_file=None):
+    """Load thematic queries from a text file, one per line."""
+    if queries_file is None:
+        queries_file = os.path.join(os.path.dirname(__file__), "thematic_queries.txt")
+    
+    try:
+        with open(queries_file, 'r', encoding='utf-8') as f:
+            queries = [line.strip() for line in f if line.strip() and not line.strip().startswith('#')]
+        return queries
+    except FileNotFoundError:
+        print(f"Warning: Thematic queries file not found at {queries_file}")
+        print("Using default themes.")
+        # Fallback to default themes
+        return [
+            "faith and religion",
+            "economic impacts and jobs",
+            "human-AI relationships and collaboration",
+            "cultural integrity and diversity",
+            "safety and security concerns",
+            "governance and regulation of AI"
+        ]
+    except Exception as e:
+        print(f"Error loading thematic queries from {queries_file}: {e}")
+        return []
 
 def get_data_paths(gd_number):
     """Get the appropriate file paths based on GD number."""
@@ -309,6 +323,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Run thematic ranking analysis on Global Dialogues data')
     parser.add_argument('--gd', type=int, choices=[1, 2, 3], required=True,
                       help='Global Dialogue number to analyze (1, 2, or 3)')
+    parser.add_argument('--themes', type=str, 
+                      help='Path to text file containing thematic queries (one per line)')
     args = parser.parse_args()
 
     # Get appropriate file paths
@@ -318,10 +334,16 @@ if __name__ == "__main__":
     survey_df = load_data_with_embeddings(DATA_FILE_PATH)
 
     if survey_df is not None:
-        print("\n--- Starting Thematic Ranking ---")
+        # Load thematic queries
+        thematic_queries = load_thematic_queries(args.themes)
+        if not thematic_queries:
+            print("No thematic queries found. Exiting.")
+            return
+        
+        print(f"\n--- Starting Thematic Ranking with {len(thematic_queries)} themes ---")
         all_rankings = {}
         
-        for theme in THEMATIC_QUERIES:
+        for theme in thematic_queries:
             print(f"\nRanking responses for theme: '{theme}'")
             ranked_df = rank_responses_by_similarity(survey_df, theme)
 
