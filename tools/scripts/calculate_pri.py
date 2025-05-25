@@ -29,11 +29,11 @@ def get_constants(gd_number):
     VERBATIM_MAP_PATH = f"{DATA_DIR}/GD{gd_number}_verbatim_map.csv"
     THOUGHT_LABELS_PATH = f"{TAGS_DIR}/all_thought_labels.csv"
 
-    # Signal Thresholds (examples, need tuning)
-    ASC_HIGH_THRESHOLD = 0.80  # Agreement rate for strong agreement
-    ASC_LOW_THRESHOLD = 0.20   # Agreement rate for strong disagreement
-    UNIVERSAL_DISAGREEMENT_THRESHOLD = 0.20  # Max agreement rate for a response to be considered 'disagreed'
-    UNIVERSAL_DISAGREEMENT_COVERAGE = 0.90  # Minimum proportion of population needed for 'universal' disagreement
+    # Signal Thresholds (adjusted for better coverage)
+    ASC_HIGH_THRESHOLD = 0.70  # Agreement rate for strong agreement (lowered from 0.80)
+    ASC_LOW_THRESHOLD = 0.30   # Agreement rate for strong disagreement (raised from 0.20)
+    UNIVERSAL_DISAGREEMENT_THRESHOLD = 0.25  # Max agreement rate for a response to be considered 'disagreed' (raised from 0.20)
+    UNIVERSAL_DISAGREEMENT_COVERAGE = 0.80  # Minimum proportion of population needed for 'universal' disagreement (lowered from 0.90)
     
     return {
         'DATA_DIR': DATA_DIR,
@@ -637,6 +637,10 @@ def calculate_all_pri_signals(binary_df, preference_df, thought_labels_df, verba
     # Use for progress reporting
     progress_step = max(1, participant_limit // 10)
     start_time = time.time()
+    
+    # Pre-compute consensus data for ASC calculation
+    print("Pre-computing consensus data for ASC calculation...")
+    consensus_data = compute_consensus_data(aggregate_std_df, verbatim_map_df, config, debug)
 
     for i, participant_id in enumerate(all_participant_ids):
         if i % progress_step == 0 or i == participant_limit - 1:
@@ -661,7 +665,7 @@ def calculate_all_pri_signals(binary_df, preference_df, thought_labels_df, verba
             
             # 4. Anti-Social Consensus Score (raw - lower is better)
             asc_raw = calculate_asc_score(
-                participant_id, binary_df, aggregate_std_df, verbatim_map_df, config, debug
+                participant_id, binary_df, consensus_data, debug
             )
             
             # Add results
