@@ -6,34 +6,57 @@ This repository contains data and analysis tools from the "Global Dialogues" sur
 ## About the Project
 Global Dialogues are recurring surveys where participants answer demographic questions, attitude polls, and open-ended opinion questions. Participants also vote (Agree/Disagree) on a sample of other participants' responses and complete pairwise comparisons of responses.
 
-## Installation
+## Quick Start
 
 Install required packages:
 ```bash
 pip install -r requirements.txt
 ```
 
-## Workflow Overview
+This repository includes a comprehensive Makefile with commands for all common tasks. To see all available commands:
+```bash
+make help
+```
+
+For new users, the typical workflow is:
+1. **Preprocess data**: `make preprocess-gd3` (or other GD number)
+2. **Run analysis**: `make analyze-gd3`
+3. **Download embeddings** (for advanced analysis): `make download-embeddings-gd3`
+
+## Detailed Workflow
+
+For users who prefer direct Python commands or need to understand the underlying processes:
 
 1.  **Download Raw Data:** Obtain the raw CSV export files from Remesh.ai for a given Global Dialogue cadence (e.g., GD3) and place them in the corresponding `Data/GD<N>/` directory.
-2.  **Cleanup Metadata:** Run the `preprocess_cleanup_metadata.py` script to remove initial metadata rows from the raw CSV files, ensuring the header is the first line. This modifies the files in place.
+
+2.  **Preprocess Data:** Use the Makefile command (recommended) or run scripts directly:
     ```bash
-    python tools/scripts/preprocess_cleanup_metadata.py <N>
+    # Recommended: Use Makefile
+    make preprocess-gd3
+    
+    # Alternative: Run scripts directly
+    python tools/scripts/preprocess_cleanup_metadata.py 3
+    python tools/scripts/preprocess_aggregate.py --gd_number 3
     ```
-3.  **Preprocess Aggregate Data:** Run `preprocess_aggregate.py` to generate the essential `_aggregate_standardized.csv` and `_segment_counts_by_question.csv` files needed by ALL analysis scripts. This is a critical step as the standardized format is the primary reference for analysis.
+
+3.  **Run Analysis:** Use the Makefile command (recommended) or run scripts directly:
     ```bash
-    python tools/scripts/preprocess_aggregate.py --gd_number <N>
+    # Recommended: Use Makefile for full analysis pipeline
+    make analyze-gd3
+    
+    # Alternative: Run individual analyses
+    python tools/scripts/calculate_consensus.py --gd_number 3
+    python tools/scripts/calculate_divergence.py --gd_number 3
+    # etc.
     ```
-4.  **Preprocess Tag Data (if using tags):** Run `preprocess_tag_files.py` if you need to analyze Remesh tag data (requires separate raw tag exports).
+
+4.  **Advanced Analysis (Optional):** Download embeddings and run thematic analysis:
     ```bash
-    python tools/scripts/preprocess_tag_files.py --raw_dir Data/GD<N>/tag_codes_raw/ --output_dir Data/GD<N>/tags/
+    make download-embeddings-gd3
+    make run-thematic-ranking-gd3
     ```
-5.  **Run Analyses:** Execute the desired analysis scripts (e.g., `calculate_tags.py`, `calculate_consensus.py`, etc.) or the master `analyze_dialogues.py` script.
-    ```bash
-    python tools/scripts/calculate_tags.py <N>
-    # OR
-    python tools/scripts/analyze_dialogues.py <N>
-    ```
+
+**Note:** All Make commands are documented in the Makefile. Run `make help` to see the full list of available commands for preprocessing, analysis, and utilities.
 
 ## Data Structure
 
@@ -70,7 +93,7 @@ python tools/scripts/download_embeddings.py --all
 python tools/scripts/download_embeddings.py 3 --force
 ```
 
-You can also use the Makefile commands:
+You can also use the Makefile commands (recommended):
 
 ```bash
 make download-embeddings        # Show available files
