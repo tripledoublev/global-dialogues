@@ -163,21 +163,15 @@ tags-gd3:
 
 pri-gd1:
 	@echo "$(BLUE)Calculating participant reliability index for GD1...$(RESET)"
-	@echo "$(YELLOW)NOTE: Making temporary edits to calculate_pri.py to use GD1 data$(RESET)"
-	sed -i'.bak' 's/GD_NUMBER = 3/GD_NUMBER = 1/' $(TOOLS_DIR)/calculate_pri.py
-	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py
-	mv $(TOOLS_DIR)/calculate_pri.py.bak $(TOOLS_DIR)/calculate_pri.py
+	$(PYTHON) $(TOOLS_DIR)/pri_calculator.py 1
 
 pri-gd2:
 	@echo "$(BLUE)Calculating participant reliability index for GD2...$(RESET)"
-	@echo "$(YELLOW)NOTE: Making temporary edits to calculate_pri.py to use GD2 data$(RESET)"
-	sed -i'.bak' 's/GD_NUMBER = 3/GD_NUMBER = 2/' $(TOOLS_DIR)/calculate_pri.py
-	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py
-	mv $(TOOLS_DIR)/calculate_pri.py.bak $(TOOLS_DIR)/calculate_pri.py
+	$(PYTHON) $(TOOLS_DIR)/pri_calculator.py 2
 
 pri-gd3:
 	@echo "$(BLUE)Calculating participant reliability index for GD3...$(RESET)"
-	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py
+	$(PYTHON) $(TOOLS_DIR)/pri_calculator.py 3
 
 # Embeddings download
 download-embeddings:
