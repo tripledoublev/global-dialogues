@@ -57,16 +57,35 @@ def get_config(gd_number):
         'OUTPUT_PATH': str(data_dir / f"GD{gd_number}_pri_scores.csv"),
         
         # PRI Parameters (per documentation)
-        'ASC_HIGH_THRESHOLD': 0.70,                # Agreement rate for strong agreement
-        'ASC_LOW_THRESHOLD': 0.30,                 # Agreement rate for strong disagreement
-        'UNIVERSAL_DISAGREEMENT_THRESHOLD': 0.20,  # Max agreement for "disagreed" responses
-        'UNIVERSAL_DISAGREEMENT_COVERAGE': 0.90,   # Min population for "universal" disagreement
+        'ASC_HIGH_THRESHOLD': 0.70,                         # Agreement rate for strong agreement
+        'ASC_LOW_THRESHOLD': 0.30,                          # Agreement rate for strong disagreement
+        'UNIVERSAL_DISAGREEMENT_THRESHOLD_ALL': 0.30,       # Max agreement for "disagreed" responses for 'All'
+        'UNIVERSAL_DISAGREEMENT_THRESHOLD_SEGMENTS': 0.40,  # Max agreement for "disagreed" responses for all individual Segments
+        'UNIVERSAL_DISAGREEMENT_COVERAGE': 0.90,            # Min population for "universal" disagreement (NOT IMPLEMENTED)
+        'DURATION_REASONABLE_MAX': 60*90,                   # Reasonable max duration to complete survey in seconds
+
         
         # Component weights for final PRI score
-        'DURATION_WEIGHT': 0.20,
+        'DURATION_WEIGHT': 0.30,
         'LOW_QUALITY_TAG_WEIGHT': 0.30,
-        'UNIVERSAL_DISAGREEMENT_WEIGHT': 0.30,
+        'UNIVERSAL_DISAGREEMENT_WEIGHT': 0.20,
         'ASC_WEIGHT': 0.20,
+
+        # Segments to include for Segment analysis in PRI
+        'SEGMENTS': [
+            # Regions
+            'Africa','Asia','Caribbean','Central America','Central Asia','Eastern Africa','Eastern Asia','Eastern Europe','Europe','Middle Africa','North America','Norther Europe','Northern Africa','Northern America','Oceania','South America','South Eastern Asia','Souther Asia','Southern Africa','Southern Europe','Western Africa','Western Asia','Western Europe',
+            # Ages (18+)
+            'O2: 18-25','O2: 26-35','O2: 36-45','O2: 46-55','O2: 56-65','O2: 65+',
+            # Sex
+            'O3: Female','O3: Male','O3: Non-binary',
+            # Environment
+            'O4: Rural','O4: Suburban','O4: Urban',
+            # Excitement for AI
+            'O5: Equally concerned and excited','O5: More concerned than excited','O5: More excited than concerned',
+            # Religion
+            'O6: Buddhism','O6: Christianity','O6: Hinduism','O6: I do not identify with any religious group or faith','O6: Islam','O6: Judaism','O6: Other religious group','O6: Sikhism',
+        ],
     }
     
     return config
@@ -156,6 +175,19 @@ def load_data(config, debug=False):
                     lambda x: parse_percentage(x, debug)
                 )
             
+            # Convert percetnage columns to numeric values for all Segment columns
+            # Ignore O7: <countries> for now since there are so many and the longtail of countries are small and sensitive compared to the other segments
+            # TODO: refactor how we do Segment parsing here to make sure we're getting the relevant segments we want for PRI (this may need to involve parsing _segment_counts_by_question.csv)
+            # segment_cols = [col for col in aggregate_std_df.columns if col.startswith(('O1:', 'O2:', 'O3:', 'O4:', 'O5:', 'O6:'))] #, 'O7:'))]
+            segment_cols = [col for col in aggregate_std_df.columns if col.startswith(tuple(config['SEGMENTS']))]
+            if not segment_cols:
+                if debug:
+                    print(f"No segment columns found for analysis")
+            else:
+                for col in segment_cols:
+                    segment_agreement_col = f'{col}_Agreement'
+                    aggregate_std_df[segment_agreement_col] = aggregate_std_df[col].apply(lambda x: parse_percentage(x, debug))
+
             print(f"Loaded aggregate data with shape: {aggregate_std_df.shape}")
     except Exception as e:
         print(f"Error loading aggregate data: {e}")
@@ -324,6 +356,7 @@ def calculate_universal_disagreement_percentage(participant_id, verbatim_map_df,
     # Get agreement rates for these thoughts from aggregate data
     authored_thoughts_data = []
     
+    
     # Process each authored thought
     for thought_id in authored_thought_ids:
         # Get question ID for this thought
@@ -333,28 +366,37 @@ def calculate_universal_disagreement_percentage(participant_id, verbatim_map_df,
             
         question_id = question_row['Question ID'].iloc[0]
         
-        # Find agreement data for this question in aggregate
-        question_data = aggregate_std_df[aggregate_std_df['Question ID'] == question_id]
+        # Find agreement data for the response from this Participant on this question in aggregate
+        # TODO: Don't we actually need the agreement data for this specific Thought for this Question? Not the agreement rates across all Thoughts on this Question?
+        # TODO: We can get the authoring Participant Id from aggregate_standardized, but not the Thought ID. So that's what we should be filtering on
+        question_data = aggregate_std_df[
+            (aggregate_std_df['Question ID'] == question_id) &
+            (aggregate_std_df['Participant ID'] == participant_id)
+        ]
+
         if question_data.empty:
             continue
-            
-        # Get all segment columns that have agreement data
-        segment_cols = [col for col in aggregate_std_df.columns if col.startswith(('O1:', 'O2:', 'O3:', 'O4:', 'O5:', 'O6:', 'O7:'))]
+
+        segment_agreement_cols = [f'{col}_Agreement' for col in config['SEGMENTS']]
+
+        # get the Maximum agreement rate found among any Segment for responses from this Participant on this question
+        max_segment_agreement_value = question_data[segment_agreement_cols].max().max()
         
-        if not segment_cols:
-            if debug:
-                print(f"[UniversalDisagreement {participant_id}] No segment columns found for analysis")
+        if debug:
             continue
+            # print(f"[UniversalDisagreement {participant_id}] max_segment_agreement_value: {max_segment_agreement_value} for thought {thought_id}")
+
             
         # For now, we'll use the 'All_Agreement' as a proxy for simplicity
-        # In a complete implementation, we would check agreement across segments
+        # In a complete implementation, we would check agreement across segments (started implementation, TODO: use only 'major' segments rather than all Segments)
         agreement_value = question_data['All_Agreement'].iloc[0] if 'All_Agreement' in question_data.columns else None
         
         if agreement_value is not None and not pd.isna(agreement_value):
             authored_thoughts_data.append({
                 'Thought ID': thought_id,
                 'Question ID': question_id,
-                'All_Agreement': agreement_value
+                'All_Agreement': agreement_value,
+                'Max_Segment_Agreement': max_segment_agreement_value,
             })
     
     if not authored_thoughts_data:
@@ -365,9 +407,12 @@ def calculate_universal_disagreement_percentage(participant_id, verbatim_map_df,
     # Create DataFrame with thought agreement data
     authored_aggr_df = pd.DataFrame(authored_thoughts_data)
     
-    # Check how many thoughts have universal disagreement (below threshold)
-    threshold = config['UNIVERSAL_DISAGREEMENT_THRESHOLD']
-    is_universally_disagreed = authored_aggr_df['All_Agreement'] < threshold
+    # Check how many thoughts from this prticipant have universal disagreement (below threshold)
+    threshold_all = config['UNIVERSAL_DISAGREEMENT_THRESHOLD_ALL']
+    threshold_segments = config['UNIVERSAL_DISAGREEMENT_THRESHOLD_SEGMENTS']
+    # consider the Participant's Thought (Response) 'Universally disagreed' if EITHER agreement across 'ALL' participants is below some threshold,
+    # OR if no single segment has an agreement rate above some threshold
+    is_universally_disagreed = (authored_aggr_df['All_Agreement'] < threshold_all) | (authored_aggr_df['Max_Segment_Agreement'] < threshold_segments)
     num_universally_disagreed = is_universally_disagreed.sum()
     total_evaluated = len(authored_aggr_df)
     
@@ -653,8 +698,8 @@ def normalize_and_calculate_pri(pri_signals_df, config, debug=False):
                               'UniversalDisagreement_Perc', 'ASC_Score_Raw']].isna().sum())
     
     # Simple min-max normalization function
-    def min_max_normalize(series, invert=False):
-        """Min-max normalization with optional inversion"""
+    def min_max_normalize(series, invert=False, reasonable_max=None):
+        """Min-max normalization with optional inversion and reasonable maximum"""
         if series.isna().all():
             return series  # Return as-is if all NaN
         
@@ -669,7 +714,12 @@ def normalize_and_calculate_pri(pri_signals_df, config, debug=False):
         if min_val == max_val:
             normalized = pd.Series(0.5, index=series.index)
         else:
-            normalized = (filled_series - min_val) / (max_val - min_val)
+            if reasonable_max is not None and max_val > reasonable_max:
+                normalized = (filled_series <= reasonable_max).astype(float)  # Set values at or above 'reasonable_max' to 1
+                normalized[(filled_series > min_val) & (filled_series <= reasonable_max)] = (filled_series - min_val) / (reasonable_max - min_val)
+            else:
+                normalized = (filled_series - min_val) / (max_val - min_val)
+     
             
         # Invert if needed (for metrics where lower raw value is better)
         if invert:
@@ -683,7 +733,7 @@ def normalize_and_calculate_pri(pri_signals_df, config, debug=False):
     # Normalize metrics
     
     # 1. Duration (longer duration is better)
-    pri_signals_df['Duration_Norm'] = min_max_normalize(pri_signals_df['Duration_seconds'])
+    pri_signals_df['Duration_Norm'] = min_max_normalize(pri_signals_df['Duration_seconds'], reasonable_max=config['DURATION_REASONABLE_MAX'])
     
     # 2. Low Quality Tags (lower percentage is better, so invert)
     pri_signals_df['LowQualityTag_Norm'] = min_max_normalize(pri_signals_df['LowQualityTag_Perc'], invert=True)
