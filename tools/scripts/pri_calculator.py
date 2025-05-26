@@ -241,7 +241,7 @@ def calculate_duration(participant_id, binary_df, preference_df, debug=False):
 
 def calculate_low_quality_tag_percentage(participant_id, thought_labels_df, debug=False):
     """
-    Calculate the percentage of a participant's responses tagged as 'Uninformative Answer'.
+    Calculate the percentage of a participant's responses tagged as 'Uninformative answer'.
     
     Args:
         participant_id: Unique ID of the participant
@@ -279,9 +279,9 @@ def calculate_low_quality_tag_percentage(participant_id, thought_labels_df, debu
             print(f"[LowQuality {participant_id}] No tag columns found")
         return 0.0  # No tag columns, cannot evaluate
     
-    # Check for 'Uninformative Answer' tag in any tag column
+    # Check for 'Uninformative answer' tag in any tag column
     is_low_quality = participant_labels[tag_cols].apply(
-        lambda row: any('Uninformative Answer' == val for val in row.values if pd.notna(val)), 
+        lambda row: any('Uninformative answer' == val for val in row.values if pd.notna(val)), 
         axis=1
     )
     
