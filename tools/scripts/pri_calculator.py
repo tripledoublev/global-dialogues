@@ -2142,8 +2142,8 @@ async def batch_process_llm_judge(participant_ids, verbatim_map_df, evaluatable_
     print(f"Starting efficient batch LLM processing for {len(participant_ids)} participants...")
     
     # Configuration for batching
-    BATCH_SIZE = 50  # Process 50 participants concurrently
-    MAX_CONCURRENT_REQUESTS = 100  # Limit concurrent API requests
+    BATCH_SIZE = 100  # Process 100 participants concurrently
+    MAX_CONCURRENT_REQUESTS = 200  # Limit concurrent API requests
     
     semaphore = asyncio.Semaphore(MAX_CONCURRENT_REQUESTS)
     results = {}
