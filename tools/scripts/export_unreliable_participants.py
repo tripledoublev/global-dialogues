@@ -181,15 +181,16 @@ def identify_unreliable_participants(pri_scores_df, method='outliers', threshold
         debug: Whether to print debug information
         
     Returns:
-        List of participant IDs identified as unreliable
+        Tuple of (unreliable_participant_ids, effective_threshold_used)
     """
     valid_scores = pri_scores_df['PRI_Scale_1_5'].dropna()
     
     if len(valid_scores) == 0:
         print("Warning: No valid PRI scores to analyze")
-        return []
+        return [], None
     
     unreliable_participants = []
+    effective_threshold = None
     
     if method == 'outliers':
         # Use boxplot outlier calculation (1.5 * IQR rule)
@@ -205,10 +206,14 @@ def identify_unreliable_participants(pri_scores_df, method='outliers', threshold
         
         unreliable_participants = pri_scores_df[low_outlier_mask]['Participant ID'].tolist()
         
+        # Set effective threshold to the lower bound (cutoff for outliers)
+        effective_threshold = lower_bound
+        
         if debug:
             print(f"Outlier analysis: Q1={q1:.3f}, Q3={q3:.3f}, IQR={iqr:.3f}")
             print(f"Lower bound: {lower_bound:.3f}, Upper bound: {upper_bound:.3f}")
             print(f"Total outliers: {outlier_mask.sum()}, Low outliers (unreliable): {low_outlier_mask.sum()}")
+            print(f"Effective threshold (lower bound): {effective_threshold:.3f}")
     
     elif method == 'percentile':
         if threshold is None:
@@ -217,6 +222,8 @@ def identify_unreliable_participants(pri_scores_df, method='outliers', threshold
         percentile_threshold = valid_scores.quantile(threshold / 100)
         unreliable_mask = pri_scores_df['PRI_Scale_1_5'] <= percentile_threshold
         unreliable_participants = pri_scores_df[unreliable_mask]['Participant ID'].tolist()
+        
+        effective_threshold = percentile_threshold
         
         if debug:
             print(f"Percentile analysis: Bottom {threshold}th percentile threshold = {percentile_threshold:.3f}")
@@ -229,6 +236,8 @@ def identify_unreliable_participants(pri_scores_df, method='outliers', threshold
         unreliable_mask = pri_scores_df['PRI_Scale_1_5'] <= threshold
         unreliable_participants = pri_scores_df[unreliable_mask]['Participant ID'].tolist()
         
+        effective_threshold = threshold
+        
         if debug:
             print(f"Hard threshold analysis: Threshold = {threshold}")
             print(f"Participants below threshold: {unreliable_mask.sum()}")
@@ -239,7 +248,7 @@ def identify_unreliable_participants(pri_scores_df, method='outliers', threshold
     if debug:
         print(f"Identified {len(unreliable_participants)} unreliable participants using method '{method}'")
     
-    return unreliable_participants
+    return unreliable_participants, effective_threshold
 
 
 def main():
@@ -293,7 +302,7 @@ def main():
         sys.exit(1)
     
     # 4. Identify unreliable participants
-    unreliable_participant_ids = identify_unreliable_participants(
+    unreliable_participant_ids, effective_threshold = identify_unreliable_participants(
         pri_scores_df, method=method, threshold=threshold, debug=debug
     )
     
@@ -303,8 +312,22 @@ def main():
     
     # 5. Get PRI score information for unreliable participants
     # Include final normalized component scores and PRI scores
-    columns_to_include = ['Participant ID', 'Duration_Norm', 'LowQualityTag_Norm', 
-                         'UniversalDisagreement_Norm', 'ASC_Norm', 'PRI_Score', 'PRI_Scale_1_5']
+    # Check if LLM judge columns are available
+    base_columns = ['Participant ID', 'Duration_Norm', 'LowQualityTag_Norm', 
+                   'UniversalDisagreement_Norm', 'ASC_Norm', 'PRI_Scale_1_5']
+    
+    # Look for LLM judge columns (they might have different names)
+    available_columns = pri_scores_df.columns.tolist()
+    llm_columns = [col for col in available_columns if 'llm' in col.lower() and 'norm' in col.lower()]
+    
+    if llm_columns:
+        columns_to_include = base_columns[:-1] + llm_columns + [base_columns[-1]]  # Insert LLM columns before PRI_Scale_1_5
+        if debug:
+            print(f"Found LLM judge columns: {llm_columns}")
+    else:
+        columns_to_include = base_columns
+        if debug:
+            print("No LLM judge columns found in PRI scores")
     
     unreliable_pri_df = pri_scores_df[
         pri_scores_df['Participant ID'].isin(unreliable_participant_ids)
@@ -328,8 +351,8 @@ def main():
     # 9. Add metadata columns
     final_df.insert(0, 'Recommended_Action', 'IGNORE')
     final_df.insert(1, 'Identification_Method', method)
-    if threshold is not None:
-        final_df.insert(2, 'Threshold_Used', threshold)
+    if effective_threshold is not None:
+        final_df.insert(2, 'Threshold_Used', round(effective_threshold, 3))
     else:
         final_df.insert(2, 'Threshold_Used', 'N/A')
     

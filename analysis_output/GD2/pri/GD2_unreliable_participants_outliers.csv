@@ -1,64 +1,64 @@
-Recommended_Action,Identification_Method,Threshold_Used,Participant ID,Duration_Norm,LowQualityTag_Norm,UniversalDisagreement_Norm,ASC_Norm,PRI_Score,PRI_Scale_1_5,Imagine you're working with an AI assistant on important tasks in your life. What principles or values would you want this AI to consistently demonstrate in all its interactions?,Would you want your AI to be tailored to your local context? What would that look like?,Is there anything about your life or your cultures that you would like your AI to know about you?,"When you work with an AI assistant, would you prefer it to: 
+Recommended_Action,Identification_Method,Threshold_Used,Participant ID,Duration_Norm,LowQualityTag_Norm,UniversalDisagreement_Norm,ASC_Norm,LLM_Judge_Norm,PRI_Scale_1_5,Imagine you're working with an AI assistant on important tasks in your life. What principles or values would you want this AI to consistently demonstrate in all its interactions?,Would you want your AI to be tailored to your local context? What would that look like?,Is there anything about your life or your cultures that you would like your AI to know about you?,"When you work with an AI assistant, would you prefer it to: 
 Be more formal or casual in its responses?
 Provide detailed explanations or get straight to the point?
 Take on a specific role (like a teacher, editor, or coach)?
 Focus on certain topics or areas of expertise?","Think about your goals:
 Would you prefer responses that encourage discussion or just give direct answers?"
-IGNORE,outliers,N/A,fee24bcd-7b09-482f-99db-43b25a6cd351,0.1777777777777777,0.3181818181818182,0.0,0.8846153846153846,0.296590109237168,2.1863604369486724,ALLE WERTE UND KRITERIRN,KURZ UND SACHLICH FREUNDLICH UND LOCKER,NEIN,"Locker
+IGNORE,outliers,2.912,fee24bcd-7b09-482f-99db-43b25a6cd351,0.1777777777777777,0.3181818181818182,0.0,0.8846153846153846,0.2156862745098038,2.1863604369486724,ALLE WERTE UND KRITERIRN,KURZ UND SACHLICH FREUNDLICH UND LOCKER,NEIN,"Locker
 
 AUF DEN PUNKT KOMMEN
 
 LEHRER
 
 FACHGEBIET",DIREKTE ANTWORTEN
-IGNORE,outliers,N/A,92f0f15d-6aca-4c97-86b3-904cca3ab49f,0.2555555555555555,0.2727272727272727,0.2727272727272728,0.84375,0.3025399212715389,2.210159685086156,"yes
+IGNORE,outliers,2.912,92f0f15d-6aca-4c97-86b3-904cca3ab49f,0.2555555555555555,0.2727272727272727,0.2727272727272728,0.84375,0.0980392156862745,2.210159685086156,"yes
 
 ",yes,mnxzdjlkhhkjzc,Be more formal or casual in its response ,Encourage discussion 
-IGNORE,outliers,N/A,7fbc259d-237b-4f3c-ab73-4e94e1633159,0.0555555555555555,0.375,0.5227272727272727,0.75,0.3064319667260843,2.2257278669043377,Yes,No ,,Provide details and straight to the point ,Yes
-IGNORE,outliers,N/A,93d36b3a-2aca-4958-be0f-475373e1ccb7,0.1777777777777777,0.3636363636363636,0.5454545454545455,0.9230769230769232,0.3579743132684309,2.431897253073724,Knowledge,Yes,Yes,Provide detailed explanations,Direct
-IGNORE,outliers,N/A,96f1c697-f362-4c3d-b581-2b71bdeda765,0.1555555555555555,0.5454545454545454,0.5454545454545455,0.5576923076923077,0.3586152246446363,2.4344608985785454,can't read,"No, she provided false information.","Generally,","I hope he is obedient and understands what people say, and the literature he found is all fake, which is really unintelligent
+IGNORE,outliers,2.912,7fbc259d-237b-4f3c-ab73-4e94e1633159,0.0555555555555555,0.375,0.5227272727272727,0.75,0.0980392156862745,2.2257278669043377,Yes,No ,,Provide details and straight to the point ,Yes
+IGNORE,outliers,2.912,93d36b3a-2aca-4958-be0f-475373e1ccb7,0.1777777777777777,0.3636363636363636,0.5454545454545455,0.9230769230769232,0.0980392156862745,2.431897253073724,Knowledge,Yes,Yes,Provide detailed explanations,Direct
+IGNORE,outliers,2.912,96f1c697-f362-4c3d-b581-2b71bdeda765,0.1555555555555555,0.5454545454545454,0.5454545454545455,0.5576923076923077,0.1764705882352941,2.4344608985785454,can't read,"No, she provided false information.","Generally,","I hope he is obedient and understands what people say, and the literature he found is all fake, which is really unintelligent
 
 ","Yes, it depends."
-IGNORE,outliers,N/A,990494fe-fc1a-4f55-b277-537efd501257,0.3888888888888889,0.409090909090909,0.5454545454545455,0.1538461538461538,0.3644910644910645,2.457964257964258,precise ,I hope to be able to generate a better answer that suits me.,no,"Any
+IGNORE,outliers,2.912,990494fe-fc1a-4f55-b277-537efd501257,0.3888888888888889,0.409090909090909,0.5454545454545455,0.1538461538461538,0.3333333333333333,2.457964257964258,precise ,I hope to be able to generate a better answer that suits me.,no,"Any
 
 Detailed explanation
 
 Can but not required
 
 Yes",Give the answer directly
-IGNORE,outliers,N/A,6f886653-126f-4182-b05f-6d37218e733f,0.4555555555555555,0.0909090909090909,0.9090909090909092,1.0,0.3956565656565656,2.5826262626262624,It's very nice experience ,It's very nice experience ,It's very nice experience ,It's very nice experience ,It's very nice experience 
-IGNORE,outliers,N/A,b7327212-cade-4cc0-905e-163b94cbda67,0.0888888888888888,0.6363636363636364,0.5454545454545455,0.43359375,0.4095548081922163,2.6382192327688654,kindness,no international,indivisualizm and communializm,casual. I want to get straight answer. I dont want specific role. no need to focus,direct answer
-IGNORE,outliers,N/A,15d86e10-6e18-45d4-b6fe-3f7ce846d89e,0.6444444444444445,0.4545454545454546,0.3636363636363637,0.1923076923076923,0.4267189999542941,2.7068759998171767,"None, I want to hear an idea that is not limited by anything for the first time. But I would prefer that some topics related to sexuality were taboo",No,No,"Formal answers
+IGNORE,outliers,2.912,6f886653-126f-4182-b05f-6d37218e733f,0.4555555555555555,0.0909090909090909,0.9090909090909092,1.0,0.0,2.5826262626262624,It's very nice experience ,It's very nice experience ,It's very nice experience ,It's very nice experience ,It's very nice experience 
+IGNORE,outliers,2.912,b7327212-cade-4cc0-905e-163b94cbda67,0.0888888888888888,0.6363636363636364,0.5454545454545455,0.43359375,0.392156862745098,2.6382192327688654,kindness,no international,indivisualizm and communializm,casual. I want to get straight answer. I dont want specific role. no need to focus,direct answer
+IGNORE,outliers,2.912,15d86e10-6e18-45d4-b6fe-3f7ce846d89e,0.6444444444444445,0.4545454545454546,0.3636363636363637,0.1923076923076923,0.4117647058823529,2.7068759998171767,"None, I want to hear an idea that is not limited by anything for the first time. But I would prefer that some topics related to sexuality were taboo",No,No,"Formal answers
 
 Giving detailed explanations and getting straight to the point are the same thing in my understanding
 
 No, I don't want specific roles
 
 Yes",Direct answers
-IGNORE,outliers,N/A,e767c19d-dd9a-4668-98bf-dbd2b8946f6b,0.0777777777777777,0.3333333333333333,1.0,0.1666666666666667,0.4395751633986928,2.7583006535947714,,"No, I prefer abstraction and generalization",,It is better for him to be formal in communication. It is always worth getting straight to the answers. The specific role is very important. Specialization is preferable,
-IGNORE,outliers,N/A,17dfc48a-ff5b-4ac1-961e-d9362cfc132c,0.1666666666666666,0.5909090909090908,0.5454545454545455,0.903846153846154,0.4453808446455505,2.781523378582202,Help,Yes,Programming,Provides detailed explanations.,Discussion
-IGNORE,outliers,N/A,b3bd93e9-6dde-4bc4-b427-0c8b59bcada1,0.5666666666666667,0.5,0.4545454545454546,0.4423076923076923,0.4478613053613053,2.7914452214452217,Principle - do no harm,More user settings,No,Focused on specific topics,Direct answers
-IGNORE,outliers,N/A,f45153be-31f2-4f8d-8adb-ba4a64290fa0,0.4111111111111111,0.5,0.4034090909090909,0.7115384615384616,0.449464355089355,2.7978574203574205,Principle of intelligence,I don't want it to be like my local context but I didn't understand the question,,"I prefer it to be more formal -
+IGNORE,outliers,2.912,e767c19d-dd9a-4668-98bf-dbd2b8946f6b,0.0777777777777777,0.3333333333333333,1.0,0.1666666666666667,0.6078431372549019,2.7583006535947714,,"No, I prefer abstraction and generalization",,It is better for him to be formal in communication. It is always worth getting straight to the answers. The specific role is very important. Specialization is preferable,
+IGNORE,outliers,2.912,17dfc48a-ff5b-4ac1-961e-d9362cfc132c,0.1666666666666666,0.5909090909090908,0.5454545454545455,0.903846153846154,0.2549019607843137,2.781523378582202,Help,Yes,Programming,Provides detailed explanations.,Discussion
+IGNORE,outliers,2.912,b3bd93e9-6dde-4bc4-b427-0c8b59bcada1,0.5666666666666667,0.5,0.4545454545454546,0.4423076923076923,0.3333333333333333,2.7914452214452217,Principle - do no harm,More user settings,No,Focused on specific topics,Direct answers
+IGNORE,outliers,2.912,f45153be-31f2-4f8d-8adb-ba4a64290fa0,0.4111111111111111,0.5,0.4034090909090909,0.7115384615384616,0.3333333333333333,2.7978574203574205,Principle of intelligence,I don't want it to be like my local context but I didn't understand the question,,"I prefer it to be more formal -
 
 I want it to give detailed explanations -
 
 It has a specific role -
 
 It focuses on specific topics-","Yes, I want responses that encourage discussion, but I don't like direct answers."
-IGNORE,outliers,N/A,bb0b5efc-52a6-4e19-b37b-07d049e50772,0.2111111111111111,0.4545454545454546,0.6363636363636365,0.609375,0.4552862262329174,2.8211449049316695,开始的最佳方式,用人工智能优化各种软件，不过各地方情况应该差不多,"我想用于训练的数据已经足够了
+IGNORE,outliers,2.912,bb0b5efc-52a6-4e19-b37b-07d049e50772,0.2111111111111111,0.4545454545454546,0.6363636363636365,0.609375,0.4509803921568628,2.8211449049316695,开始的最佳方式,用人工智能优化各种软件，不过各地方情况应该差不多,"我想用于训练的数据已经足够了
 
 ","更加正式的回答，详细的解释，担任教练角色，给出专业信息前给出解释
 
 ","视情况而定。有时候是需要讨论的开放式问题，直接给出答案对于专业问题也很好
 
 "
-IGNORE,outliers,N/A,20df6fe5-9d77-47e9-bc3c-7447c1fa120b,0.1777777777777777,0.5909090909090908,0.6363636363636365,0.6923076923076923,0.464802778920426,2.859211115681704,giving correct answers,no i just need it to work,no,provide detailed explanations,direct answers
-IGNORE,outliers,N/A,04f5bc9c-28d2-45e8-9d59-0f6d3840b7f6,0.2333333333333333,0.3636363636363636,0.7272727272727273,1.0,0.4667201426024956,2.8668805704099825,To learn and gather skill from Al,Should it challenge and provide support,Religious freedom ,Focus on certain topics and casual in its responses,Yes I prefer responses
-IGNORE,outliers,N/A,1b4167b2-18a0-4e24-8add-f10cd58d5a7d,0.0222222222222222,0.5,1.0,0.75,0.4669444444444444,2.8677777777777775,,yes,,any,
-IGNORE,outliers,N/A,a46c16de-86d1-45a4-bdb2-540b9d6d8b12,0.3444444444444444,0.6363636363636364,0.7272727272727273,0.4153225806451613,0.4675509123492994,2.870203649397198,Reasonableness.,Answer in Russian.,No,Focused on specific topics and areas of expertise.,Direct answers.
-IGNORE,outliers,N/A,37d9fb1e-2ff5-4a8c-a8e4-50291c44ea05,0.1222222222222222,0.7272727272727273,0.8181818181818182,0.3653846153846154,0.4709633666986608,2.883853466794643,Need to be ethical,I want it to be more local and close to life,NEED TO UNDERSTAND ASIAN CULTURE MORE,"I want it to be more casual and talk to me like a friend, it needs to be personal and professional at the same time. ",Need to have comprehensive. discussion
-IGNORE,outliers,N/A,01aaa22b-bd9a-4a24-a086-f6efd315ec71,0.4111111111111111,0.5909090909090908,0.4545454545454546,0.6923076923076923,0.4724320124320124,2.8897280497280495,I dont know ,I dont need this,Ni,"Be more formal, get straight to the point, yes také specific role, certain to main topics",I prefer Direct answers
-IGNORE,outliers,N/A,b3b21ddd-4cbe-4fa0-9d90-6153bb9aa248,0.9222222222222224,0.3636363636363636,0.4545454545454546,0.2500000000000001,0.4746182412358883,2.8984729649435534,"No values, just a formal talk with rational sense behind the answers","I Don't rely on AI and I really don't want a customized AI tool for my preferences
+IGNORE,outliers,2.912,20df6fe5-9d77-47e9-bc3c-7447c1fa120b,0.1777777777777777,0.5909090909090908,0.6363636363636365,0.6923076923076923,0.3725490196078432,2.859211115681704,giving correct answers,no i just need it to work,no,provide detailed explanations,direct answers
+IGNORE,outliers,2.912,04f5bc9c-28d2-45e8-9d59-0f6d3840b7f6,0.2333333333333333,0.3636363636363636,0.7272727272727273,1.0,0.2941176470588236,2.8668805704099825,To learn and gather skill from Al,Should it challenge and provide support,Religious freedom ,Focus on certain topics and casual in its responses,Yes I prefer responses
+IGNORE,outliers,2.912,1b4167b2-18a0-4e24-8add-f10cd58d5a7d,0.0222222222222222,0.5,1.0,0.75,0.3333333333333333,2.8677777777777775,,yes,,any,
+IGNORE,outliers,2.912,a46c16de-86d1-45a4-bdb2-540b9d6d8b12,0.3444444444444444,0.6363636363636364,0.7272727272727273,0.4153225806451613,0.3333333333333333,2.870203649397198,Reasonableness.,Answer in Russian.,No,Focused on specific topics and areas of expertise.,Direct answers.
+IGNORE,outliers,2.912,37d9fb1e-2ff5-4a8c-a8e4-50291c44ea05,0.1222222222222222,0.7272727272727273,0.8181818181818182,0.3653846153846154,0.4117647058823529,2.883853466794643,Need to be ethical,I want it to be more local and close to life,NEED TO UNDERSTAND ASIAN CULTURE MORE,"I want it to be more casual and talk to me like a friend, it needs to be personal and professional at the same time. ",Need to have comprehensive. discussion
+IGNORE,outliers,2.912,01aaa22b-bd9a-4a24-a086-f6efd315ec71,0.4111111111111111,0.5909090909090908,0.4545454545454546,0.6923076923076923,0.3333333333333333,2.8897280497280495,I dont know ,I dont need this,Ni,"Be more formal, get straight to the point, yes také specific role, certain to main topics",I prefer Direct answers
+IGNORE,outliers,2.912,b3b21ddd-4cbe-4fa0-9d90-6153bb9aa248,0.9222222222222224,0.3636363636363636,0.4545454545454546,0.2500000000000001,0.3725490196078432,2.8984729649435534,"No values, just a formal talk with rational sense behind the answers","I Don't rely on AI and I really don't want a customized AI tool for my preferences
 
 ",No,"AI assistant should judge the tone and answer in semi-formal/formal tone with a concise explanation, focusing on areas of expertise by using examples.",I agree with both
-IGNORE,outliers,N/A,80ab9274-bdf0-48e7-b6ba-f715fd68d575,0.5666666666666667,0.409090909090909,0.4545454545454546,0.8269230769230769,0.4756070889894419,2.9024283559577677,It should give what I exactly want,"Yes,it should be tailored to my local context ",Ask questions,Focus on certain topics or areas of expertise,Encourage discussions
+IGNORE,outliers,2.912,80ab9274-bdf0-48e7-b6ba-f715fd68d575,0.5666666666666667,0.409090909090909,0.4545454545454546,0.8269230769230769,0.2941176470588235,2.9024283559577677,It should give what I exactly want,"Yes,it should be tailored to my local context ",Ask questions,Focus on certain topics or areas of expertise,Encourage discussions
