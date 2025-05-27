@@ -53,6 +53,7 @@ def get_config(gd_number):
         'BINARY_PATH': str(data_dir / f"GD{gd_number}_binary.csv"),
         'PREFERENCE_PATH': str(data_dir / f"GD{gd_number}_preference.csv"),
         'AGGREGATE_STD_PATH': str(data_dir / f"GD{gd_number}_aggregate_standardized.csv"),
+        'SEGMENT_COUNTS_PATH': str(data_dir / f"GD{gd_number}_segment_counts_by_question.csv"),
         'THOUGHT_LABELS_PATH': str(tags_dir / "all_thought_labels.csv"),
         'OUTPUT_PATH': str(data_dir / f"GD{gd_number}_pri_scores.csv"),
         
@@ -61,7 +62,7 @@ def get_config(gd_number):
         'ASC_LOW_THRESHOLD': 0.30,                          # Agreement rate for strong disagreement
         'UNIVERSAL_DISAGREEMENT_THRESHOLD_ALL': 0.30,       # Max agreement for "disagreed" responses for 'All'
         'UNIVERSAL_DISAGREEMENT_THRESHOLD_SEGMENTS': 0.40,  # Max agreement for "disagreed" responses for all individual Segments
-        'UNIVERSAL_DISAGREEMENT_COVERAGE': 0.90,            # Min population for "universal" disagreement (NOT IMPLEMENTED)
+        'MAJOR_SEGMENT_MIN_PARTICIPANTS': 50,               # Min participants required for a segment to be considered "major"
         'DURATION_REASONABLE_MAX': 60*90,                   # Reasonable max duration to complete survey in seconds
 
         
@@ -70,22 +71,6 @@ def get_config(gd_number):
         'LOW_QUALITY_TAG_WEIGHT': 0.30,
         'UNIVERSAL_DISAGREEMENT_WEIGHT': 0.20,
         'ASC_WEIGHT': 0.20,
-
-        # Segments to include for Segment analysis in PRI
-        'SEGMENTS': [
-            # Regions
-            'Africa','Asia','Caribbean','Central America','Central Asia','Eastern Africa','Eastern Asia','Eastern Europe','Europe','Middle Africa','North America','Norther Europe','Northern Africa','Northern America','Oceania','South America','South Eastern Asia','Souther Asia','Southern Africa','Southern Europe','Western Africa','Western Asia','Western Europe',
-            # Ages (18+)
-            'O2: 18-25','O2: 26-35','O2: 36-45','O2: 46-55','O2: 56-65','O2: 65+',
-            # Sex
-            'O3: Female','O3: Male','O3: Non-binary',
-            # Environment
-            'O4: Rural','O4: Suburban','O4: Urban',
-            # Excitement for AI
-            'O5: Equally concerned and excited','O5: More concerned than excited','O5: More excited than concerned',
-            # Religion
-            'O6: Buddhism','O6: Christianity','O6: Hinduism','O6: I do not identify with any religious group or faith','O6: Islam','O6: Judaism','O6: Other religious group','O6: Sikhism',
-        ],
     }
     
     return config
@@ -96,8 +81,8 @@ def load_data(config, debug=False):
     Load and preprocess all necessary data files.
     
     Returns:
-        Tuple of DataFrames and participant IDs:
-        (binary_df, preference_df, thought_labels_df, verbatim_map_df, aggregate_std_df, all_participant_ids)
+        Tuple of DataFrames, participant IDs, and major segments:
+        (binary_df, preference_df, thought_labels_df, verbatim_map_df, aggregate_std_df, all_participant_ids, major_segments)
     """
     print(f"Loading data from {config['DATA_DIR']}...")
     
@@ -175,18 +160,21 @@ def load_data(config, debug=False):
                     lambda x: parse_percentage(x, debug)
                 )
             
-            # Convert percetnage columns to numeric values for all Segment columns
-            # Ignore O7: <countries> for now since there are so many and the longtail of countries are small and sensitive compared to the other segments
-            # TODO: refactor how we do Segment parsing here to make sure we're getting the relevant segments we want for PRI (this may need to involve parsing _segment_counts_by_question.csv)
-            # segment_cols = [col for col in aggregate_std_df.columns if col.startswith(('O1:', 'O2:', 'O3:', 'O4:', 'O5:', 'O6:'))] #, 'O7:'))]
-            segment_cols = [col for col in aggregate_std_df.columns if col.startswith(tuple(config['SEGMENTS']))]
+            # Load major segments from segment counts file
+            major_segments = load_major_segments(config, debug)
+            
+            # Convert percentage columns to numeric values for major segment columns
+            segment_cols = [col for col in aggregate_std_df.columns if col in major_segments]
             if not segment_cols:
                 if debug:
-                    print(f"No segment columns found for analysis")
+                    print(f"No major segment columns found for analysis")
             else:
                 for col in segment_cols:
                     segment_agreement_col = f'{col}_Agreement'
                     aggregate_std_df[segment_agreement_col] = aggregate_std_df[col].apply(lambda x: parse_percentage(x, debug))
+                    
+                if debug:
+                    print(f"Processed {len(segment_cols)} major segment columns for agreement calculation")
 
             print(f"Loaded aggregate data with shape: {aggregate_std_df.shape}")
     except Exception as e:
@@ -197,9 +185,26 @@ def load_data(config, debug=False):
     all_participant_ids = binary_df['Participant ID'].unique()
     print(f"Found {len(all_participant_ids)} unique participants")
     
+    # Data validation checks
+    if debug:
+        # Validate thought IDs exist in both files
+        verbatim_thoughts = set(verbatim_map_df['Thought ID']) if 'Thought ID' in verbatim_map_df.columns else set()
+        aggregate_thoughts = set(aggregate_std_df['Thought ID']) if 'Thought ID' in aggregate_std_df.columns else set()
+        missing_thoughts = verbatim_thoughts - aggregate_thoughts
+        if missing_thoughts:
+            print(f"Warning: {len(missing_thoughts)} thoughts in verbatim_map not found in aggregate data")
+        
+        # Handle participants with no authored thoughts
+        if 'Participant ID' in verbatim_map_df.columns:
+            participant_thought_counts = verbatim_map_df['Participant ID'].value_counts()
+            zero_thought_participants = [pid for pid in all_participant_ids 
+                                       if pid not in participant_thought_counts.index]
+            if zero_thought_participants:
+                print(f"Info: {len(zero_thought_participants)} participants have no authored thoughts")
+    
     return (
         binary_df, preference_df, thought_labels_df, 
-        verbatim_map_df, aggregate_std_df, all_participant_ids
+        verbatim_map_df, aggregate_std_df, all_participant_ids, major_segments
     )
 
 
@@ -227,6 +232,60 @@ def parse_percentage(value, debug=False):
         if debug:
             print(f"Warning: Could not convert '{value}' to float: {e}")
         return np.nan
+
+
+def load_major_segments(config, debug=False):
+    """
+    Load and identify major segments based on participation counts from segment counts file.
+    
+    Args:
+        config: Dictionary with configuration values including SEGMENT_COUNTS_PATH
+        debug: Whether to print debug information
+        
+    Returns:
+        List of segment names that qualify as "major" (have sufficient participation)
+    """
+    try:
+        segment_counts_df = pd.read_csv(config['SEGMENT_COUNTS_PATH'])
+        
+        # Get segment columns (exclude metadata columns)
+        excluded_prefixes = ('Question ID', 'Question Text', 'All', '44+', '55+')
+        segment_cols = [col for col in segment_counts_df.columns 
+                       if not col.startswith(excluded_prefixes) and not col.startswith('O7:')]  # Exclude countries
+        
+        if debug:
+            print(f"Found {len(segment_cols)} potential segment columns")
+        
+        # Calculate average participation per segment across all questions
+        avg_participation = segment_counts_df[segment_cols].mean()
+        
+        # Identify major segments (those with >= min_participants average)
+        min_participants = config['MAJOR_SEGMENT_MIN_PARTICIPANTS']
+        major_segments = avg_participation[avg_participation >= min_participants].index.tolist()
+        
+        if debug:
+            print(f"Identified {len(major_segments)} major segments with >= {min_participants} avg participants")
+            print(f"Major segments: {major_segments}")
+        
+        return major_segments
+        
+    except Exception as e:
+        print(f"Warning: Could not load major segments from {config['SEGMENT_COUNTS_PATH']}: {e}")
+        # Fallback to hardcoded segments if file loading fails
+        return [
+            # Regions
+            'Africa','Asia','Caribbean','Central America','Central Asia','Eastern Africa','Eastern Asia','Eastern Europe','Europe','Middle Africa','North America','Norther Europe','Northern Africa','Northern America','Oceania','South America','South Eastern Asia','Souther Asia','Southern Africa','Southern Europe','Western Africa','Western Asia','Western Europe',
+            # Ages (18+)
+            'O2: 18-25','O2: 26-35','O2: 36-45','O2: 46-55','O2: 56-65','O2: 65+',
+            # Sex
+            'O3: Female','O3: Male','O3: Non-binary',
+            # Environment
+            'O4: Rural','O4: Suburban','O4: Urban',
+            # Excitement for AI
+            'O5: Equally concerned and excited','O5: More concerned than excited','O5: More excited than concerned',
+            # Religion
+            'O6: Buddhism','O6: Christianity','O6: Hinduism','O6: I do not identify with any religious group or faith','O6: Islam','O6: Judaism','O6: Other religious group','O6: Sikhism',
+        ]
 
 
 # --- Signal Calculation Functions ---
@@ -603,7 +662,7 @@ def calculate_all_pri_signals(data_tuple, config, participant_limit=None, debug=
     """
     print("\nCalculating PRI signals for all participants...")
     
-    binary_df, preference_df, thought_labels_df, verbatim_map_df, aggregate_std_df, all_participant_ids = data_tuple
+    binary_df, preference_df, thought_labels_df, verbatim_map_df, aggregate_std_df, all_participant_ids, major_segments = data_tuple
     
     # Apply limit if specified
     if participant_limit is not None:
@@ -647,7 +706,7 @@ def calculate_all_pri_signals(data_tuple, config, participant_limit=None, debug=
             
             # 3. Universal Disagreement Percentage
             universal_disagreement_perc = calculate_universal_disagreement_percentage(
-                participant_id, verbatim_map_df, aggregate_std_df, config, debug
+                participant_id, verbatim_map_df, aggregate_std_df, major_segments, config, debug
             )
             
             # 4. Anti-Social Consensus Score (raw - lower is better)
@@ -699,7 +758,12 @@ def normalize_and_calculate_pri(pri_signals_df, config, debug=False):
     
     # Simple min-max normalization function
     def min_max_normalize(series, invert=False, reasonable_max=None):
-        """Min-max normalization with optional inversion and reasonable maximum"""
+        """
+        Min-max normalization with optional inversion and reasonable maximum cap.
+        
+        For reasonable_max: values above this threshold get normalized score of 1.0,
+        values below get scaled between min_val and reasonable_max.
+        """
         if series.isna().all():
             return series  # Return as-is if all NaN
         
@@ -715,11 +779,11 @@ def normalize_and_calculate_pri(pri_signals_df, config, debug=False):
             normalized = pd.Series(0.5, index=series.index)
         else:
             if reasonable_max is not None and max_val > reasonable_max:
-                normalized = (filled_series <= reasonable_max).astype(float)  # Set values at or above 'reasonable_max' to 1
-                normalized[(filled_series > min_val) & (filled_series <= reasonable_max)] = (filled_series - min_val) / (reasonable_max - min_val)
+                # Cap values above reasonable_max to 1.0, normalize others between min and reasonable_max
+                normalized = (filled_series - min_val) / (reasonable_max - min_val)
+                normalized[filled_series > reasonable_max] = 1.0
             else:
                 normalized = (filled_series - min_val) / (max_val - min_val)
-     
             
         # Invert if needed (for metrics where lower raw value is better)
         if invert:
