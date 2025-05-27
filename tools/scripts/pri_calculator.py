@@ -714,14 +714,16 @@ def calculate_asc_score(participant_id, binary_df, consensus_data, debug=False):
 
 def load_discussion_guide(config, debug=False):
     """
-    Load and parse the discussion guide to identify "Ask Opinion" questions.
+    Load and parse the discussion guide to identify evaluatable questions and build context.
     
     Args:
         config: Dictionary with configuration values including DISCUSSION_GUIDE_PATH
         debug: Whether to print debug information
         
     Returns:
-        Dict mapping question IDs to question content for "ask opinion" questions
+        Tuple of (question_map, full_guide_df) where:
+        - question_map: Dict mapping question IDs to question content for evaluatable questions
+        - full_guide_df: Complete DataFrame for building contextual prompts
     """
     try:
         # Read CSV with flexible column handling to deal with variable column counts
@@ -731,26 +733,26 @@ def load_discussion_guide(config, debug=False):
             print(f"Loaded discussion guide with {len(guide_df)} rows and {len(guide_df.columns)} columns")
             print(f"Columns: {list(guide_df.columns)}")
         
-        # Filter for "ask opinion" questions
+        # Filter for "ask opinion" and "ask experience" questions
+        evaluatable_questions = pd.DataFrame()
         if 'Item type (dropdown)' in guide_df.columns:
             opinion_questions = guide_df[guide_df['Item type (dropdown)'] == 'ask opinion'].copy()
+            experience_questions = guide_df[guide_df['Item type (dropdown)'] == 'ask experience'].copy()
+            evaluatable_questions = pd.concat([opinion_questions, experience_questions], ignore_index=True)
         else:
-            # Fallback: look for any column containing "ask opinion"
-            opinion_questions = None
+            # Fallback: look for any column containing evaluatable question types
             for col in guide_df.columns:
-                if guide_df[col].astype(str).str.contains('ask opinion', case=False, na=False).any():
-                    opinion_questions = guide_df[guide_df[col].astype(str).str.contains('ask opinion', case=False, na=False)].copy()
+                mask = guide_df[col].astype(str).str.contains('ask opinion|ask experience', case=False, na=False)
+                if mask.any():
+                    evaluatable_questions = guide_df[mask].copy()
                     break
-            
-            if opinion_questions is None:
-                opinion_questions = pd.DataFrame()
         
         if debug:
-            print(f"Found {len(opinion_questions)} 'ask opinion' rows")
+            print(f"Found {len(evaluatable_questions)} evaluatable questions (opinion + experience)")
         
         # Create mapping of merge tags to question content
         question_map = {}
-        for _, row in opinion_questions.iterrows():
+        for _, row in evaluatable_questions.iterrows():
             # Try multiple column names for merge tag
             merge_tag = None
             for tag_col in ['Cross Conversation Tag - Polls and Opinions only (Optional)', 'Cross Conversation Tag', 'Tag']:
@@ -766,38 +768,41 @@ def load_discussion_guide(config, debug=False):
                     break
             
             if merge_tag and content:
-                question_map[merge_tag] = content
+                question_map[merge_tag] = {
+                    'content': content,
+                    'type': row.get('Item type (dropdown)', 'unknown')
+                }
                 if debug:
-                    print(f"  {merge_tag}: {content[:50]}...")
+                    print(f"  {merge_tag}: [{row.get('Item type (dropdown)', 'unknown')}] {content[:50]}...")
         
         if debug:
-            print(f"Successfully mapped {len(question_map)} 'ask opinion' questions")
+            print(f"Successfully mapped {len(question_map)} evaluatable questions")
             
-        return question_map
+        return question_map, guide_df
         
     except Exception as e:
         print(f"Warning: Could not load discussion guide from {config['DISCUSSION_GUIDE_PATH']}: {e}")
         if debug:
             import traceback
             traceback.print_exc()
-        return {}
+        return {}, pd.DataFrame()
 
 
-def get_participant_opinion_responses(participant_id, verbatim_map_df, opinion_questions, debug=False):
+def get_participant_evaluatable_responses(participant_id, verbatim_map_df, evaluatable_questions, debug=False):
     """
-    Extract a participant's responses to "Ask Opinion" questions.
+    Extract a participant's responses to evaluatable questions (ask opinion + ask experience).
     
     Args:
         participant_id: Unique ID of the participant
         verbatim_map_df: DataFrame mapping thoughts to participants and questions
-        opinion_questions: Dict mapping question IDs/content to question content
+        evaluatable_questions: Dict mapping question IDs to {'content': str, 'type': str}
         debug: Whether to print debug information
         
     Returns:
         List of dicts with question and response pairs
     """
     if debug:
-        print(f"[LLMJudge {participant_id}] Extracting opinion responses...")
+        print(f"[LLMJudge {participant_id}] Extracting evaluatable responses...")
     
     # Get all thoughts authored by this participant
     participant_thoughts = verbatim_map_df[verbatim_map_df['Participant ID'] == participant_id]
@@ -806,8 +811,8 @@ def get_participant_opinion_responses(participant_id, verbatim_map_df, opinion_q
     
     # Create a mapping of question text to merge tags for easier matching
     text_to_tag = {}
-    for merge_tag, question_content in opinion_questions.items():
-        text_to_tag[question_content.strip().lower()] = merge_tag
+    for merge_tag, question_data in evaluatable_questions.items():
+        text_to_tag[question_data['content'].strip().lower()] = merge_tag
     
     for _, thought_row in participant_thoughts.iterrows():
         question_id = thought_row.get('Question ID')
@@ -815,12 +820,13 @@ def get_participant_opinion_responses(participant_id, verbatim_map_df, opinion_q
         response_text = thought_row.get('Thought Text', thought_row.get('Thought', ''))
         
         # Try direct ID match first
-        if question_id in opinion_questions:
-            question_content = opinion_questions[question_id]
+        if question_id in evaluatable_questions:
+            question_data = evaluatable_questions[question_id]
             if pd.notna(response_text) and len(str(response_text).strip()) > 0:
                 responses.append({
                     'question_id': question_id,
-                    'question': question_content,
+                    'question': question_data['content'],
+                    'question_type': question_data['type'],
                     'response': str(response_text).strip()
                 })
         # Try question text matching
@@ -830,12 +836,13 @@ def get_participant_opinion_responses(participant_id, verbatim_map_df, opinion_q
             # Check for exact match
             if question_text_clean in text_to_tag:
                 merge_tag = text_to_tag[question_text_clean]
-                question_content = opinion_questions[merge_tag]
+                question_data = evaluatable_questions[merge_tag]
                 
                 if pd.notna(response_text) and len(str(response_text).strip()) > 0:
                     responses.append({
                         'question_id': merge_tag,
-                        'question': question_content,
+                        'question': question_data['content'],
+                        'question_type': question_data['type'],
                         'response': str(response_text).strip()
                     })
                     if debug:
@@ -851,12 +858,13 @@ def get_participant_opinion_responses(participant_id, verbatim_map_df, opinion_q
                         if len(words_opinion) > 0:
                             overlap = len(words_opinion.intersection(words_question)) / len(words_opinion)
                             if overlap > 0.7:  # 70% word overlap
-                                question_content = opinion_questions[merge_tag]
+                                question_data = evaluatable_questions[merge_tag]
                                 
                                 if pd.notna(response_text) and len(str(response_text).strip()) > 0:
                                     responses.append({
                                         'question_id': merge_tag,
-                                        'question': question_content,
+                                        'question': question_data['content'],
+                                        'question_type': question_data['type'],
                                         'response': str(response_text).strip()
                                     })
                                     if debug:
@@ -864,15 +872,91 @@ def get_participant_opinion_responses(participant_id, verbatim_map_df, opinion_q
                                     break
     
     if debug:
-        print(f"[LLMJudge {participant_id}] Found {len(responses)} opinion responses")
+        print(f"[LLMJudge {participant_id}] Found {len(responses)} evaluatable responses")
         for resp in responses:
-            print(f"  Q: {resp['question'][:50]}...")
+            print(f"  Q [{resp['question_type']}]: {resp['question'][:50]}...")
             print(f"  A: {resp['response'][:50]}...")
     
     return responses
 
 
-async def call_llm_judge(session, model, participant_responses, config, debug=False):
+def build_contextual_guide(full_guide_df, evaluatable_questions, debug=False):
+    """
+    Build contextual information for evaluatable questions from the full discussion guide.
+    
+    Args:
+        full_guide_df: Complete discussion guide DataFrame
+        evaluatable_questions: Dict of evaluatable questions by merge tag
+        debug: Whether to print debug information
+        
+    Returns:
+        Dict mapping question IDs to contextual information
+    """
+    if debug:
+        print("Building contextual information for evaluatable questions...")
+    
+    contextual_info = {}
+    
+    # Get columns we need
+    item_type_col = 'Item type (dropdown)'
+    content_col = 'Content'
+    tag_col = 'Cross Conversation Tag - Polls and Opinions only (Optional)'
+    section_col = 'Section'
+    
+    # Build context for each evaluatable question
+    for merge_tag, question_data in evaluatable_questions.items():
+        context_items = []
+        
+        # Find the row for this question
+        question_row_idx = None
+        for idx, row in full_guide_df.iterrows():
+            if row.get(tag_col) == merge_tag:
+                question_row_idx = idx
+                break
+        
+        if question_row_idx is None:
+            if debug:
+                print(f"Could not find question row for {merge_tag}")
+            continue
+        
+        # Get section for this question
+        question_section = full_guide_df.iloc[question_row_idx].get(section_col, '')
+        
+        # Look backwards for context in the same section
+        for idx in range(question_row_idx - 1, -1, -1):
+            row = full_guide_df.iloc[idx]
+            row_section = row.get(section_col, '')
+            
+            # Stop if we've moved to a different section
+            if row_section != question_section and row_section != '':
+                break
+            
+            item_type = row.get(item_type_col, '')
+            content = row.get(content_col, '')
+            
+            # Include contextual items (speaks, polls) that provide background
+            if item_type in ['speak', 'poll single select', 'poll multi select'] and pd.notna(content) and content.strip():
+                context_items.append({
+                    'type': item_type,
+                    'content': content.strip()
+                })
+        
+        # Reverse to get chronological order
+        context_items.reverse()
+        
+        contextual_info[merge_tag] = {
+            'question': question_data,
+            'context': context_items,
+            'section': question_section
+        }
+        
+        if debug:
+            print(f"{merge_tag}: Found {len(context_items)} context items in section '{question_section}'")
+    
+    return contextual_info
+
+
+async def call_llm_judge(session, model, participant_responses, config, contextual_info=None, debug=False):
     """
     Make async API call to a single LLM model for participant assessment.
     
@@ -881,14 +965,15 @@ async def call_llm_judge(session, model, participant_responses, config, debug=Fa
         model: Model name for the API call
         participant_responses: ParticipantResponses object
         config: LLMJudgeConfig object
+        contextual_info: Dict mapping question IDs to contextual information
         debug: Whether to print debug information
         
     Returns:
         Tuple of (model_name, confidence_score, reasoning) or (model_name, None, error_msg)
     """
     
-    # Create the prompt
-    prompt = create_llm_judge_prompt(participant_responses.responses)
+    # Create the prompt with contextual information
+    prompt = create_llm_judge_prompt(participant_responses.responses, contextual_info)
     
     headers = {
         "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
@@ -926,15 +1011,42 @@ async def call_llm_judge(session, model, participant_responses, config, debug=Fa
                 result = await response.json()
                 content = result['choices'][0]['message']['content']
                 
-                # Try to parse as JSON
+                # Try to parse as JSON with fallback strategies
                 try:
+                    # First, try direct parsing
                     parsed = json.loads(content)
                     judge_response = LLMJudgeResponse(**parsed)
                     return (model, judge_response.confidence_score, judge_response.reasoning)
                 except (json.JSONDecodeError, ValueError) as parse_error:
+                    # Try to extract JSON from within the response
+                    try:
+                        import re
+                        # Look for JSON-like structure
+                        json_match = re.search(r'\{[^}]*"confidence_score"[^}]*\}', content, re.DOTALL)
+                        if json_match:
+                            json_str = json_match.group()
+                            parsed = json.loads(json_str)
+                            judge_response = LLMJudgeResponse(**parsed)
+                            if debug:
+                                print(f"[LLMJudge] Recovered JSON for {model} using regex")
+                            return (model, judge_response.confidence_score, judge_response.reasoning)
+                        
+                        # Try to find numeric confidence score as fallback
+                        score_match = re.search(r'["\s]*confidence_score["\s]*:?\s*([0-9.]+)', content)
+                        if score_match:
+                            score = float(score_match.group(1))
+                            if 0.0 <= score <= 1.0:
+                                if debug:
+                                    print(f"[LLMJudge] Extracted confidence score {score} for {model}")
+                                return (model, score, "Extracted from partial response")
+                        
+                    except Exception as fallback_error:
+                        if debug:
+                            print(f"[LLMJudge] Fallback parsing also failed for {model}: {fallback_error}")
+                    
                     if debug:
                         print(f"[LLMJudge] JSON parse error for {model}: {parse_error}")
-                        print(f"[LLMJudge] Raw content: {content}")
+                        print(f"[LLMJudge] Raw content: {content[:500]}...")
                     return (model, None, f"Parse error: {str(parse_error)}")
                     
             else:
@@ -947,12 +1059,13 @@ async def call_llm_judge(session, model, participant_responses, config, debug=Fa
         return (model, None, f"Request error: {str(e)}")
 
 
-def create_llm_judge_prompt(responses):
+def create_llm_judge_prompt(responses, contextual_info=None):
     """
-    Create the LLM judge prompt from participant responses.
+    Create the LLM judge prompt from participant responses with optional contextual information.
     
     Args:
         responses: List of response dicts with question and answer pairs
+        contextual_info: Dict mapping question IDs to contextual information
         
     Returns:
         Formatted prompt string
@@ -971,16 +1084,56 @@ Consider factors such as:
 - Evidence of genuine engagement with the questions
 - Appropriate length and detail
 - Coherent reasoning and personal perspective
-
-Participant Responses:
+- Relevance to the provided context and scenarios
 
 """
     
-    for i, resp in enumerate(responses, 1):
-        prompt += f"{i}. Question: {resp['question']}\n"
-        prompt += f"   Response: {resp['response']}\n\n"
+    # Group responses that have context vs those that don't
+    responses_with_context = []
+    responses_without_context = []
     
-    prompt += """Please respond with a JSON object in this exact format:
+    for resp in responses:
+        question_id = resp.get('question_id')
+        if contextual_info and question_id in contextual_info:
+            responses_with_context.append(resp)
+        else:
+            responses_without_context.append(resp)
+    
+    # Add contextual responses first
+    if responses_with_context:
+        prompt += "=== RESPONSES WITH CONTEXT ===\n\n"
+        
+        for i, resp in enumerate(responses_with_context, 1):
+            question_id = resp.get('question_id')
+            context_data = contextual_info[question_id]
+            
+            prompt += f"{i}. SECTION: {context_data['section']}\n\n"
+            
+            # Add context items
+            if context_data['context']:
+                prompt += "   BACKGROUND CONTEXT:\n"
+                for j, context_item in enumerate(context_data['context'], 1):
+                    item_type = context_item['type'].replace('_', ' ').title()
+                    prompt += f"   {j}. [{item_type}] {context_item['content']}\n"
+                prompt += "\n"
+            
+            # Add the question and response
+            prompt += f"   QUESTION [{resp.get('question_type', 'unknown')}]: {resp['question']}\n"
+            prompt += f"   PARTICIPANT RESPONSE: {resp['response']}\n\n"
+    
+    # Add responses without context
+    if responses_without_context:
+        if responses_with_context:
+            prompt += "=== ADDITIONAL RESPONSES ===\n\n"
+        else:
+            prompt += "=== PARTICIPANT RESPONSES ===\n\n"
+        
+        for i, resp in enumerate(responses_without_context, 1):
+            start_num = len(responses_with_context) + i
+            prompt += f"{start_num}. QUESTION [{resp.get('question_type', 'unknown')}]: {resp['question']}\n"
+            prompt += f"   PARTICIPANT RESPONSE: {resp['response']}\n\n"
+    
+    prompt += """Please respond with ONLY a valid JSON object in this exact format (no additional text before or after):
 {
     "confidence_score": 0.X,
     "reasoning": "Brief explanation of your assessment"
@@ -991,19 +1144,22 @@ The confidence_score should be:
 - 0.6-0.8: Generally earnest with good engagement
 - 0.4-0.6: Moderate earnestness, some concerns
 - 0.2-0.4: Low earnestness, significant concerns
-- 0.0-0.2: Very low earnestness, minimal effort"""
+- 0.0-0.2: Very low earnestness, minimal effort
+
+IMPORTANT: Return ONLY the JSON object, no explanation, no markdown formatting, no additional text."""
 
     return prompt
 
 
-async def calculate_llm_judge_score(participant_id, verbatim_map_df, opinion_questions, debug=False):
+async def calculate_llm_judge_score(participant_id, verbatim_map_df, evaluatable_questions, contextual_info, debug=False):
     """
-    Calculate LLM judge score for a single participant using multiple models.
+    Calculate LLM judge score for a single participant using multiple models with contextual information.
     
     Args:
         participant_id: Unique ID of the participant
         verbatim_map_df: DataFrame mapping thoughts to participants and questions
-        opinion_questions: Dict mapping question IDs to question content
+        evaluatable_questions: Dict mapping question IDs to {'content': str, 'type': str}
+        contextual_info: Dict mapping question IDs to contextual information
         debug: Whether to print debug information
         
     Returns:
@@ -1012,12 +1168,12 @@ async def calculate_llm_judge_score(participant_id, verbatim_map_df, opinion_que
     if debug:
         print(f"[LLMJudge {participant_id}] Starting LLM judge assessment...")
     
-    # Get participant's opinion responses
-    responses = get_participant_opinion_responses(participant_id, verbatim_map_df, opinion_questions, debug)
+    # Get participant's evaluatable responses
+    responses = get_participant_evaluatable_responses(participant_id, verbatim_map_df, evaluatable_questions, debug)
     
     if not responses:
         if debug:
-            print(f"[LLMJudge {participant_id}] No opinion responses found")
+            print(f"[LLMJudge {participant_id}] No evaluatable responses found")
         return 0.5, {}  # Neutral score if no responses
     
     # Create participant responses object
@@ -1031,7 +1187,7 @@ async def calculate_llm_judge_score(participant_id, verbatim_map_df, opinion_que
     # Make async calls to all models
     async with aiohttp.ClientSession() as session:
         tasks = [
-            call_llm_judge(session, model, participant_responses, config, debug)
+            call_llm_judge(session, model, participant_responses, config, contextual_info, debug)
             for model in config.models
         ]
         
@@ -1103,14 +1259,18 @@ def calculate_all_pri_signals(data_tuple, config, participant_limit=None, debug=
     # Pre-compute consensus data once for all participants
     consensus_data = precompute_consensus_data(binary_df, verbatim_map_df, aggregate_std_df, config, debug)
     
-    # Load opinion questions for LLM judge if enabled
-    opinion_questions = {}
+    # Load evaluatable questions and context for LLM judge if enabled
+    evaluatable_questions = {}
+    contextual_info = {}
     if enable_llm_judge:
         print("Loading discussion guide for LLM judge assessment...")
-        opinion_questions = load_discussion_guide(config, debug)
-        if not opinion_questions:
-            print("Warning: No opinion questions found. LLM judge will use neutral scores.")
+        evaluatable_questions, full_guide_df = load_discussion_guide(config, debug)
+        if not evaluatable_questions:
+            print("Warning: No evaluatable questions found. LLM judge will use neutral scores.")
             enable_llm_judge = False  # Disable if no questions found
+        else:
+            print("Building contextual information for enhanced LLM prompts...")
+            contextual_info = build_contextual_guide(full_guide_df, evaluatable_questions, debug)
     
     # Pre-filter timestamp data for efficiency
     binary_times_df = binary_df[['Participant ID', 'Timestamp']].copy()
@@ -1153,7 +1313,7 @@ def calculate_all_pri_signals(data_tuple, config, participant_limit=None, debug=
                 try:
                     # Run async function in event loop
                     llm_judge_score, _ = asyncio.run(
-                        calculate_llm_judge_score(participant_id, verbatim_map_df, opinion_questions, debug)
+                        calculate_llm_judge_score(participant_id, verbatim_map_df, evaluatable_questions, contextual_info, debug)
                     )
                 except Exception as llm_error:
                     if debug:
@@ -1566,6 +1726,227 @@ def analyze_llm_correlation(pri_signals_df, debug=False):
     return results
 
 
+def create_comprehensive_correlation_report(pri_signals_df, output_path, debug=False):
+    """
+    Create comprehensive correlation analysis report for all PRI metrics and save to file.
+    
+    Args:
+        pri_signals_df: DataFrame with all PRI scores and components
+        output_path: Path to save the correlation report
+        debug: Whether to print debug information
+        
+    Returns:
+        Dict with all correlation results
+    """
+    if debug:
+        print("Creating comprehensive correlation analysis report...")
+    
+    # Identify all numeric PRI-related columns
+    pri_columns = []
+    for col in pri_signals_df.columns:
+        if any(keyword in col for keyword in ['PRI', 'Duration', 'LowQualityTag', 'UniversalDisagreement', 'ASC', 'LLM_Judge']):
+            if pri_signals_df[col].dtype in ['float64', 'int64']:
+                pri_columns.append(col)
+    
+    if debug:
+        print(f"Found {len(pri_columns)} PRI-related columns: {pri_columns}")
+    
+    # Filter to participants with at least some data
+    analysis_df = pri_signals_df[pri_columns].copy()
+    
+    # Calculate correlation matrices
+    pearson_corr = analysis_df.corr(method='pearson')
+    spearman_corr = analysis_df.corr(method='spearman')
+    
+    # Calculate sample sizes for each correlation pair
+    sample_sizes = pd.DataFrame(index=pri_columns, columns=pri_columns)
+    p_values_pearson = pd.DataFrame(index=pri_columns, columns=pri_columns)
+    p_values_spearman = pd.DataFrame(index=pri_columns, columns=pri_columns)
+    
+    for col1 in pri_columns:
+        for col2 in pri_columns:
+            if col1 == col2:
+                sample_sizes.loc[col1, col2] = len(analysis_df[col1].dropna())
+                p_values_pearson.loc[col1, col2] = 0.0
+                p_values_spearman.loc[col1, col2] = 0.0
+            else:
+                # Calculate sample size and p-values for this pair
+                valid_mask = analysis_df[col1].notna() & analysis_df[col2].notna()
+                n_valid = valid_mask.sum()
+                sample_sizes.loc[col1, col2] = n_valid
+                
+                if n_valid >= 3:  # Minimum for correlation
+                    try:
+                        _, p_pear = pearsonr(analysis_df.loc[valid_mask, col1], analysis_df.loc[valid_mask, col2])
+                        _, p_spear = spearmanr(analysis_df.loc[valid_mask, col1], analysis_df.loc[valid_mask, col2])
+                        p_values_pearson.loc[col1, col2] = p_pear
+                        p_values_spearman.loc[col1, col2] = p_spear
+                    except Exception as e:
+                        if debug:
+                            print(f"Error calculating correlation for {col1} vs {col2}: {e}")
+                        p_values_pearson.loc[col1, col2] = 1.0
+                        p_values_spearman.loc[col1, col2] = 1.0
+                else:
+                    p_values_pearson.loc[col1, col2] = 1.0
+                    p_values_spearman.loc[col1, col2] = 1.0
+    
+    # Create report content
+    report_lines = []
+    report_lines.append("="*80)
+    report_lines.append("COMPREHENSIVE PRI CORRELATION ANALYSIS REPORT")
+    report_lines.append("="*80)
+    report_lines.append(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    report_lines.append(f"Total participants analyzed: {len(pri_signals_df)}")
+    report_lines.append(f"PRI metrics included: {len(pri_columns)}")
+    report_lines.append("")
+    
+    # Summary statistics
+    report_lines.append("SUMMARY STATISTICS")
+    report_lines.append("-" * 40)
+    for col in pri_columns:
+        data = analysis_df[col].dropna()
+        if len(data) > 0:
+            report_lines.append(f"{col:25s}: n={len(data):4d}, mean={data.mean():.3f}, std={data.std():.3f}, range=[{data.min():.3f}, {data.max():.3f}]")
+    report_lines.append("")
+    
+    # Pearson correlations
+    report_lines.append("PEARSON CORRELATION MATRIX")
+    report_lines.append("-" * 40)
+    report_lines.append("Correlations (sample sizes in parentheses)")
+    report_lines.append("")
+    
+    # Create header
+    header = "Metric".ljust(25)
+    for col in pri_columns:
+        header += f"{col[:12]:>14s}"
+    report_lines.append(header)
+    report_lines.append("-" * len(header))
+    
+    # Add correlation rows
+    for row_metric in pri_columns:
+        line = row_metric.ljust(25)
+        for col_metric in pri_columns:
+            corr_val = pearson_corr.loc[row_metric, col_metric]
+            sample_size = int(sample_sizes.loc[row_metric, col_metric])
+            if pd.isna(corr_val):
+                line += "        N/A   "
+            else:
+                line += f"{corr_val:6.3f}({sample_size:3d}) "
+        report_lines.append(line)
+    
+    report_lines.append("")
+    
+    # Spearman correlations
+    report_lines.append("SPEARMAN CORRELATION MATRIX")
+    report_lines.append("-" * 40)
+    report_lines.append("Correlations (p-values in parentheses)")
+    report_lines.append("")
+    
+    # Create header
+    header = "Metric".ljust(25)
+    for col in pri_columns:
+        header += f"{col[:12]:>14s}"
+    report_lines.append(header)
+    report_lines.append("-" * len(header))
+    
+    # Add correlation rows
+    for row_metric in pri_columns:
+        line = row_metric.ljust(25)
+        for col_metric in pri_columns:
+            corr_val = spearman_corr.loc[row_metric, col_metric]
+            p_val = float(p_values_spearman.loc[row_metric, col_metric])
+            if pd.isna(corr_val):
+                line += "        N/A   "
+            else:
+                line += f"{corr_val:6.3f}({p_val:5.3f}) "
+        report_lines.append(line)
+    
+    report_lines.append("")
+    
+    # Key findings
+    report_lines.append("KEY FINDINGS")
+    report_lines.append("-" * 40)
+    
+    # Find strongest correlations (excluding self-correlations)
+    strong_correlations = []
+    for i, col1 in enumerate(pri_columns):
+        for j, col2 in enumerate(pri_columns):
+            if i < j:  # Avoid duplicates and self-correlations
+                corr_val = pearson_corr.loc[col1, col2]
+                if not pd.isna(corr_val) and abs(corr_val) > 0.3:
+                    strong_correlations.append((col1, col2, corr_val))
+    
+    # Sort by absolute correlation strength
+    strong_correlations.sort(key=lambda x: abs(x[2]), reverse=True)
+    
+    if strong_correlations:
+        report_lines.append("Strongest correlations (|r| > 0.3):")
+        for col1, col2, corr in strong_correlations[:10]:  # Top 10
+            direction = "positive" if corr > 0 else "negative"
+            strength = "very strong" if abs(corr) > 0.8 else "strong" if abs(corr) > 0.6 else "moderate"
+            report_lines.append(f"  {col1} ↔ {col2}: r={corr:.3f} ({strength} {direction})")
+    else:
+        report_lines.append("No strong correlations (|r| > 0.3) found between different metrics.")
+    
+    report_lines.append("")
+    
+    # LLM Judge specific analysis if available
+    if 'LLM_Judge_Score' in pri_columns:
+        report_lines.append("LLM JUDGE ANALYSIS")
+        report_lines.append("-" * 40)
+        
+        llm_correlations = []
+        for col in pri_columns:
+            if col != 'LLM_Judge_Score':
+                corr_val = pearson_corr.loc['LLM_Judge_Score', col]
+                if not pd.isna(corr_val):
+                    llm_correlations.append((col, corr_val))
+        
+        llm_correlations.sort(key=lambda x: abs(x[1]), reverse=True)
+        
+        report_lines.append("LLM Judge correlations with other metrics:")
+        for metric, corr in llm_correlations:
+            interpretation = ""
+            if abs(corr) > 0.7:
+                interpretation = "(very strong)"
+            elif abs(corr) > 0.5:
+                interpretation = "(strong)"
+            elif abs(corr) > 0.3:
+                interpretation = "(moderate)"
+            else:
+                interpretation = "(weak)"
+            
+            report_lines.append(f"  {metric:25s}: r={corr:6.3f} {interpretation}")
+    
+    report_lines.append("")
+    report_lines.append("="*80)
+    
+    # Write report to file
+    try:
+        with open(output_path, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(report_lines))
+        print(f"Comprehensive correlation report saved to: {output_path}")
+    except Exception as e:
+        print(f"Error saving correlation report: {e}")
+        if debug:
+            import traceback
+            traceback.print_exc()
+    
+    # Return structured results
+    results = {
+        'pearson_correlations': pearson_corr.to_dict(),
+        'spearman_correlations': spearman_corr.to_dict(),
+        'sample_sizes': sample_sizes.to_dict(),
+        'p_values_pearson': p_values_pearson.to_dict(),
+        'p_values_spearman': p_values_spearman.to_dict(),
+        'strong_correlations': strong_correlations,
+        'total_participants': len(pri_signals_df),
+        'metrics_analyzed': pri_columns
+    }
+    
+    return results
+
+
 def main():
     """Main execution function"""
     start_time = time.time()
@@ -1620,6 +2001,18 @@ def main():
             if debug:
                 import traceback
                 traceback.print_exc()
+    
+    # 3b. Comprehensive correlation report for all metrics
+    try:
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        correlation_report_path = f"{config['DATA_DIR']}/GD{gd_number}_comprehensive_correlation_report_{timestamp}.txt"
+        print(f"Creating comprehensive correlation report...")
+        comprehensive_results = create_comprehensive_correlation_report(pri_signals_df, correlation_report_path, debug)
+    except Exception as e:
+        print(f"Warning: Could not create comprehensive correlation report: {e}")
+        if debug:
+            import traceback
+            traceback.print_exc()
     
     # 4. Print summary statistics
     print("\nPRI Score Statistics:")
