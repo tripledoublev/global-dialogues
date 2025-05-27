@@ -574,7 +574,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Analyze Remesh tag data for Global Dialogues.")
-    parser.add_argument("gd_number", type=int, help="Global Dialogue cadence number (e.g., 3).")
+    parser.add_argument("--gd_number", type=int, help="Global Dialogue cadence number (e.g., 3).")
     # Add other arguments as needed (e.g., input/output directory overrides)
 
     args = parser.parse_args()
