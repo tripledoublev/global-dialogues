@@ -17,7 +17,8 @@ RESET := \033[0m
         analyze-gd1 analyze-gd2 analyze-gd3 analyze-all \
         tag-analysis preprocess-tags \
         download-embeddings download-embeddings-gd1 download-embeddings-gd2 download-embeddings-gd3 download-all-embeddings \
-        run-thematic-ranking run-thematic-ranking-gd1 run-thematic-ranking-gd2 run-thematic-ranking-gd3
+        run-thematic-ranking run-thematic-ranking-gd1 run-thematic-ranking-gd2 run-thematic-ranking-gd3 \
+        pri pri-llm pri-gd1 pri-gd2 pri-gd3 pri-llm-gd1 pri-llm-gd2 pri-llm-gd3
 
 # Default target
 help:
@@ -51,7 +52,12 @@ help:
 	@echo "  $(GREEN)make divergence-gd<N>$(RESET)     - Calculate divergence metrics for GD<N>"
 	@echo "  $(GREEN)make indicators-gd<N>$(RESET)     - Generate indicator heatmaps for GD<N>"
 	@echo "  $(GREEN)make tags-gd<N>$(RESET)           - Analyze tags for GD<N>"
-	@echo "  $(GREEN)make pri-gd<N>$(RESET)            - Calculate participant reliability index for GD<N>"
+	@echo ""
+	@echo "$(BLUE)PRI (Participant Reliability Index) Commands:$(RESET)"
+	@echo "  $(GREEN)make pri GD=<N>$(RESET)           - Calculate PRI for GD<N> (traditional metrics only)"
+	@echo "  $(GREEN)make pri-llm GD=<N>$(RESET)       - Calculate PRI for GD<N> with LLM judge assessment"
+	@echo "  $(GREEN)make pri-gd<N>$(RESET)            - Calculate PRI for specific GD (traditional metrics only)"
+	@echo "  $(GREEN)make pri-llm-gd<N>$(RESET)        - Calculate PRI for specific GD with LLM judge"
 	@echo ""
 	@echo "$(BLUE)Advanced Analysis Commands:$(RESET)"
 	@echo "  $(GREEN)make run-thematic-ranking$(RESET) - Run thematic ranking analysis (requires API key and embeddings)"
@@ -161,23 +167,78 @@ tags-gd3:
 	@echo "$(BLUE)Analyzing tags for GD3...$(RESET)"
 	$(PYTHON) $(TOOLS_DIR)/calculate_tags.py 3
 
+# Generic PRI commands using variables
+pri:
+	@if [ -z "$(GD)" ]; then \
+		echo "$(RED)Error: Please specify GD number$(RESET)"; \
+		echo "$(YELLOW)Usage: make pri GD=<N>$(RESET)"; \
+		echo "$(YELLOW)Example: make pri GD=3$(RESET)"; \
+		exit 1; \
+	fi
+	@echo "$(BLUE)Calculating participant reliability index for GD$(GD) (traditional metrics)...$(RESET)"
+	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py $(GD)
+
+pri-llm:
+	@if [ -z "$(GD)" ]; then \
+		echo "$(RED)Error: Please specify GD number$(RESET)"; \
+		echo "$(YELLOW)Usage: make pri-llm GD=<N>$(RESET)"; \
+		echo "$(YELLOW)Example: make pri-llm GD=3$(RESET)"; \
+		echo "$(YELLOW)NOTE: This requires an OpenRouter API key in .env file$(RESET)"; \
+		exit 1; \
+	fi
+	@if [ ! -f .env ]; then \
+		echo "$(RED)Error: .env file with OPENROUTER_API_KEY not found$(RESET)"; \
+		echo "$(YELLOW)Please create a .env file with your OpenRouter API key$(RESET)"; \
+		echo "$(YELLOW)Example: echo 'OPENROUTER_API_KEY=your_key_here' > .env$(RESET)"; \
+		exit 1; \
+	fi
+	@echo "$(BLUE)Calculating participant reliability index for GD$(GD) with LLM judge...$(RESET)"
+	@echo "$(YELLOW)NOTE: This will use OpenRouter API and incur costs$(RESET)"
+	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py $(GD) --llm-judge
+
+# Specific GD commands (for backwards compatibility)
 pri-gd1:
 	@echo "$(BLUE)Calculating participant reliability index for GD1...$(RESET)"
-	@echo "$(YELLOW)NOTE: Making temporary edits to calculate_pri.py to use GD1 data$(RESET)"
-	sed -i'.bak' 's/GD_NUMBER = 3/GD_NUMBER = 1/' $(TOOLS_DIR)/calculate_pri.py
-	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py
-	mv $(TOOLS_DIR)/calculate_pri.py.bak $(TOOLS_DIR)/calculate_pri.py
+	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py 1
 
 pri-gd2:
 	@echo "$(BLUE)Calculating participant reliability index for GD2...$(RESET)"
-	@echo "$(YELLOW)NOTE: Making temporary edits to calculate_pri.py to use GD2 data$(RESET)"
-	sed -i'.bak' 's/GD_NUMBER = 3/GD_NUMBER = 2/' $(TOOLS_DIR)/calculate_pri.py
-	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py
-	mv $(TOOLS_DIR)/calculate_pri.py.bak $(TOOLS_DIR)/calculate_pri.py
+	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py 2
 
 pri-gd3:
 	@echo "$(BLUE)Calculating participant reliability index for GD3...$(RESET)"
-	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py
+	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py 3
+
+# Specific GD commands with LLM judge
+pri-llm-gd1:
+	@if [ ! -f .env ]; then \
+		echo "$(RED)Error: .env file with OPENROUTER_API_KEY not found$(RESET)"; \
+		echo "$(YELLOW)Please create a .env file with your OpenRouter API key$(RESET)"; \
+		exit 1; \
+	fi
+	@echo "$(BLUE)Calculating participant reliability index for GD1 with LLM judge...$(RESET)"
+	@echo "$(YELLOW)NOTE: This will use OpenRouter API and incur costs$(RESET)"
+	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py 1 --llm-judge
+
+pri-llm-gd2:
+	@if [ ! -f .env ]; then \
+		echo "$(RED)Error: .env file with OPENROUTER_API_KEY not found$(RESET)"; \
+		echo "$(YELLOW)Please create a .env file with your OpenRouter API key$(RESET)"; \
+		exit 1; \
+	fi
+	@echo "$(BLUE)Calculating participant reliability index for GD2 with LLM judge...$(RESET)"
+	@echo "$(YELLOW)NOTE: This will use OpenRouter API and incur costs$(RESET)"
+	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py 2 --llm-judge
+
+pri-llm-gd3:
+	@if [ ! -f .env ]; then \
+		echo "$(RED)Error: .env file with OPENROUTER_API_KEY not found$(RESET)"; \
+		echo "$(YELLOW)Please create a .env file with your OpenRouter API key$(RESET)"; \
+		exit 1; \
+	fi
+	@echo "$(BLUE)Calculating participant reliability index for GD3 with LLM judge...$(RESET)"
+	@echo "$(YELLOW)NOTE: This will use OpenRouter API and incur costs$(RESET)"
+	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py 3 --llm-judge
 
 # Embeddings download
 download-embeddings:

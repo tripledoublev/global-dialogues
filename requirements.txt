@@ -5,3 +5,6 @@ seaborn
 scikit-learn
 openai
 python-dotenv
+aiohttp
+pydantic
+asyncio
