@@ -70,17 +70,17 @@ help:
 # Preprocessing commands (metadata cleanup + standardize aggregate)
 preprocess-gd1:
 	@echo "$(BLUE)Preprocessing GD1 data...$(RESET)"
-	$(PYTHON) $(TOOLS_DIR)/preprocess_cleanup_metadata.py 1
+	$(PYTHON) $(TOOLS_DIR)/preprocess_cleanup_metadata.py --gd_number 1
 	$(PYTHON) $(TOOLS_DIR)/preprocess_aggregate.py --gd_number 1
 
 preprocess-gd2:
 	@echo "$(BLUE)Preprocessing GD2 data...$(RESET)"
-	$(PYTHON) $(TOOLS_DIR)/preprocess_cleanup_metadata.py 2
+	$(PYTHON) $(TOOLS_DIR)/preprocess_cleanup_metadata.py --gd_number 2
 	$(PYTHON) $(TOOLS_DIR)/preprocess_aggregate.py --gd_number 2
 
 preprocess-gd3:
 	@echo "$(BLUE)Preprocessing GD3 data...$(RESET)"
-	$(PYTHON) $(TOOLS_DIR)/preprocess_cleanup_metadata.py 3
+	$(PYTHON) $(TOOLS_DIR)/preprocess_cleanup_metadata.py --gd_number 3
 	$(PYTHON) $(TOOLS_DIR)/preprocess_aggregate.py --gd_number 3
 
 preprocess-all: preprocess-gd1 preprocess-gd2 preprocess-gd3
@@ -105,15 +105,15 @@ preprocess-tags-gd3:
 # Full analysis pipeline
 analyze-gd1:
 	@echo "$(BLUE)Running full analysis pipeline on GD1...$(RESET)"
-	$(PYTHON) $(TOOLS_DIR)/analyze_dialogues.py 1
+	$(PYTHON) $(TOOLS_DIR)/analyze_dialogues.py --gd_number 1
 
 analyze-gd2:
 	@echo "$(BLUE)Running full analysis pipeline on GD2...$(RESET)"
-	$(PYTHON) $(TOOLS_DIR)/analyze_dialogues.py 2
+	$(PYTHON) $(TOOLS_DIR)/analyze_dialogues.py --gd_number 2
 
 analyze-gd3:
 	@echo "$(BLUE)Running full analysis pipeline on GD3...$(RESET)"
-	$(PYTHON) $(TOOLS_DIR)/analyze_dialogues.py 3
+	$(PYTHON) $(TOOLS_DIR)/analyze_dialogues.py --gd_number 3
 
 analyze-all: analyze-gd1 analyze-gd2 analyze-gd3
 	@echo "$(GREEN)All datasets analyzed successfully!$(RESET)"
@@ -157,15 +157,15 @@ indicators-gd3:
 
 tags-gd1:
 	@echo "$(BLUE)Analyzing tags for GD1...$(RESET)"
-	$(PYTHON) $(TOOLS_DIR)/calculate_tags.py 1
+	$(PYTHON) $(TOOLS_DIR)/calculate_tags.py --gd_number 1
 
 tags-gd2:
 	@echo "$(BLUE)Analyzing tags for GD2...$(RESET)"
-	$(PYTHON) $(TOOLS_DIR)/calculate_tags.py 2
+	$(PYTHON) $(TOOLS_DIR)/calculate_tags.py --gd_number 2
 
 tags-gd3:
 	@echo "$(BLUE)Analyzing tags for GD3...$(RESET)"
-	$(PYTHON) $(TOOLS_DIR)/calculate_tags.py 3
+	$(PYTHON) $(TOOLS_DIR)/calculate_tags.py --gd_number 3
 
 # Generic PRI commands using variables
 pri:
@@ -176,7 +176,7 @@ pri:
 		exit 1; \
 	fi
 	@echo "$(BLUE)Calculating participant reliability index for GD$(GD) (traditional metrics)...$(RESET)"
-	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py $(GD)
+	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py --gd_number $(GD)
 
 pri-llm:
 	@if [ -z "$(GD)" ]; then \
@@ -194,20 +194,20 @@ pri-llm:
 	fi
 	@echo "$(BLUE)Calculating participant reliability index for GD$(GD) with LLM judge...$(RESET)"
 	@echo "$(YELLOW)NOTE: This will use OpenRouter API and incur costs$(RESET)"
-	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py $(GD) --llm-judge
+	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py --gd_number $(GD) --llm-judge
 
 # Specific GD commands (for backwards compatibility)
 pri-gd1:
 	@echo "$(BLUE)Calculating participant reliability index for GD1...$(RESET)"
-	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py 1
+	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py --gd_number 1
 
 pri-gd2:
 	@echo "$(BLUE)Calculating participant reliability index for GD2...$(RESET)"
-	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py 2
+	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py --gd_number 2
 
 pri-gd3:
 	@echo "$(BLUE)Calculating participant reliability index for GD3...$(RESET)"
-	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py 3
+	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py --gd_number 3
 
 # Specific GD commands with LLM judge
 pri-llm-gd1:
@@ -218,7 +218,7 @@ pri-llm-gd1:
 	fi
 	@echo "$(BLUE)Calculating participant reliability index for GD1 with LLM judge...$(RESET)"
 	@echo "$(YELLOW)NOTE: This will use OpenRouter API and incur costs$(RESET)"
-	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py 1 --llm-judge
+	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py --gd_number 1 --llm-judge
 
 pri-llm-gd2:
 	@if [ ! -f .env ]; then \
@@ -228,7 +228,7 @@ pri-llm-gd2:
 	fi
 	@echo "$(BLUE)Calculating participant reliability index for GD2 with LLM judge...$(RESET)"
 	@echo "$(YELLOW)NOTE: This will use OpenRouter API and incur costs$(RESET)"
-	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py 2 --llm-judge
+	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py --gd_number 2 --llm-judge
 
 pri-llm-gd3:
 	@if [ ! -f .env ]; then \
@@ -238,7 +238,7 @@ pri-llm-gd3:
 	fi
 	@echo "$(BLUE)Calculating participant reliability index for GD3 with LLM judge...$(RESET)"
 	@echo "$(YELLOW)NOTE: This will use OpenRouter API and incur costs$(RESET)"
-	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py 3 --llm-judge
+	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py --gd_number 3 --llm-judge
 
 # Embeddings download
 download-embeddings:

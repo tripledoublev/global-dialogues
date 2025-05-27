@@ -321,7 +321,7 @@ def save_thematic_rankings(all_rankings, output_dir=DEFAULT_OUTPUT_DIR, top_n=TO
 if __name__ == "__main__":
     # Add command line argument parsing
     parser = argparse.ArgumentParser(description='Run thematic ranking analysis on Global Dialogues data')
-    parser.add_argument('--gd', type=int, choices=[1, 2, 3], required=True,
+    parser.add_argument('--gd', type=int, required=True,
                       help='Global Dialogue number to analyze (1, 2, or 3)')
     parser.add_argument('--themes', type=str, 
                       help='Path to text file containing thematic queries (one per line)')

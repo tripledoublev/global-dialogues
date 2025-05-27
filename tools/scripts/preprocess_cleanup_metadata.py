@@ -403,6 +403,6 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Remove initial metadata rows from raw Remesh CSV files, making the header the first line.")
-    parser.add_argument("gd_number", type=int, help="Global Dialogue cadence number (e.g., 3).")
+    parser.add_argument("--gd_number", type=int, required=True, help="Global Dialogue cadence number (e.g., 3).")
     args = parser.parse_args()
     main(args) 

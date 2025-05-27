@@ -957,7 +957,7 @@ This script acts as a master controller, executing the following steps in order:
 
 Each step uses the specified --gd_number to find input files and determine default output locations within Data/GD<N>/ and analysis_output/GD<N>/ respectively.
 """)
-    parser.add_argument("gd_number", type=int, help="Global Dialogue cadence number (e.g., 1, 2, 3).")
+    parser.add_argument("--gd_number", type=int, required=True, help="Global Dialogue cadence number (e.g., 1, 2, 3).")
     # Add optional arguments if we want to pass overrides down, e.g., output dir, min_segment_size
     # For now, keep it simple and rely on defaults or running scripts individually for customization.
     # parser.add_argument("-o", "--output_dir_base", help="Override the base output directory (default: analysis_output)")

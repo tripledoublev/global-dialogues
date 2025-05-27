@@ -2,10 +2,21 @@
 import os
 import sys
 import csv
+import argparse
 
 def main():
-    # Get directory from command line or use current directory
-    directory = sys.argv[1] if len(sys.argv) > 1 else "."
+    parser = argparse.ArgumentParser(description='Preview CSV files in a GD directory.')
+    parser.add_argument('--gd_number', type=int, help='Global Dialogue cadence number (e.g., 1, 2, 3). Constructs default path.')
+    parser.add_argument('--directory', help='Explicit directory path to preview (overrides --gd_number).')
+    args = parser.parse_args()
+    
+    # Determine directory
+    if args.directory:
+        directory = args.directory
+    elif args.gd_number:
+        directory = f"Data/GD{args.gd_number}"
+    else:
+        parser.error("Either --gd_number or --directory must be specified.")
     
     # Define output file name
     output_filename = "csv_previews.txt"

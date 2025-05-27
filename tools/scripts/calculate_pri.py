@@ -78,7 +78,7 @@ class LLMJudgeConfig(BaseModel):
 def parse_args():
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description='Calculate Participant Reliability Index (PRI) scores.')
-    parser.add_argument('gd_number', type=int, help='The Global Dialogue number (e.g. 1, 2, 3)')
+    parser.add_argument('--gd_number', type=int, required=True, help='The Global Dialogue number (e.g. 1, 2, 3)')
     parser.add_argument('--debug', action='store_true', help='Enable verbose debug output')
     parser.add_argument('--limit', type=int, help='Limit processing to first N participants (for testing)', default=None)
     parser.add_argument('--llm-judge', action='store_true', help='Enable LLM judge assessment (requires API key and costs $)')
