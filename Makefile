@@ -176,7 +176,7 @@ pri:
 		exit 1; \
 	fi
 	@echo "$(BLUE)Calculating participant reliability index for GD$(GD) (traditional metrics)...$(RESET)"
-	$(PYTHON) $(TOOLS_DIR)/pri_calculator.py $(GD)
+	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py $(GD)
 
 pri-llm:
 	@if [ -z "$(GD)" ]; then \
@@ -194,20 +194,20 @@ pri-llm:
 	fi
 	@echo "$(BLUE)Calculating participant reliability index for GD$(GD) with LLM judge...$(RESET)"
 	@echo "$(YELLOW)NOTE: This will use OpenRouter API and incur costs$(RESET)"
-	$(PYTHON) $(TOOLS_DIR)/pri_calculator.py $(GD) --llm-judge
+	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py $(GD) --llm-judge
 
 # Specific GD commands (for backwards compatibility)
 pri-gd1:
 	@echo "$(BLUE)Calculating participant reliability index for GD1...$(RESET)"
-	$(PYTHON) $(TOOLS_DIR)/pri_calculator.py 1
+	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py 1
 
 pri-gd2:
 	@echo "$(BLUE)Calculating participant reliability index for GD2...$(RESET)"
-	$(PYTHON) $(TOOLS_DIR)/pri_calculator.py 2
+	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py 2
 
 pri-gd3:
 	@echo "$(BLUE)Calculating participant reliability index for GD3...$(RESET)"
-	$(PYTHON) $(TOOLS_DIR)/pri_calculator.py 3
+	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py 3
 
 # Specific GD commands with LLM judge
 pri-llm-gd1:
@@ -218,7 +218,7 @@ pri-llm-gd1:
 	fi
 	@echo "$(BLUE)Calculating participant reliability index for GD1 with LLM judge...$(RESET)"
 	@echo "$(YELLOW)NOTE: This will use OpenRouter API and incur costs$(RESET)"
-	$(PYTHON) $(TOOLS_DIR)/pri_calculator.py 1 --llm-judge
+	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py 1 --llm-judge
 
 pri-llm-gd2:
 	@if [ ! -f .env ]; then \
@@ -228,7 +228,7 @@ pri-llm-gd2:
 	fi
 	@echo "$(BLUE)Calculating participant reliability index for GD2 with LLM judge...$(RESET)"
 	@echo "$(YELLOW)NOTE: This will use OpenRouter API and incur costs$(RESET)"
-	$(PYTHON) $(TOOLS_DIR)/pri_calculator.py 2 --llm-judge
+	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py 2 --llm-judge
 
 pri-llm-gd3:
 	@if [ ! -f .env ]; then \
@@ -238,7 +238,7 @@ pri-llm-gd3:
 	fi
 	@echo "$(BLUE)Calculating participant reliability index for GD3 with LLM judge...$(RESET)"
 	@echo "$(YELLOW)NOTE: This will use OpenRouter API and incur costs$(RESET)"
-	$(PYTHON) $(TOOLS_DIR)/pri_calculator.py 3 --llm-judge
+	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py 3 --llm-judge
 
 # Embeddings download
 download-embeddings:

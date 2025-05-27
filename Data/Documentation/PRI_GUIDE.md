@@ -78,7 +78,7 @@ The Participant Reliability Index (PRI) is a composite score designed to assess 
 
 ## Implementation
 
-The PRI is implemented in `tools/scripts/pri_calculator.py`. The script:
+The PRI is implemented in `tools/scripts/calculate_pri.py`. The script:
 1. Loads and processes necessary data files, including dynamic major segment detection
 2. Calculates individual component scores using major segments for Universal Disagreement
 3. Normalizes and weights the components with reasonable maximum capping for Duration
