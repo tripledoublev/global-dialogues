@@ -68,7 +68,7 @@ class LLMJudgeConfig(BaseModel):
     models: List[str] = [
         "anthropic/claude-sonnet-4",
         "openai/gpt-4o-mini", 
-        "google/gemini-2.5-pro-preview"
+        "google/gemini-2.5-flash-preview"
     ]
     api_base_url: str = "https://openrouter.ai/api/v1"
     max_concurrent_requests: int = 10
@@ -1309,16 +1309,18 @@ def calculate_all_pri_signals(data_tuple, config, participant_limit=None, debug=
             
             # 5. LLM Judge Score (if enabled)
             llm_judge_score = np.nan
+            individual_scores = {}
             if enable_llm_judge:
                 try:
                     # Run async function in event loop
-                    llm_judge_score, _ = asyncio.run(
+                    llm_judge_score, individual_scores = asyncio.run(
                         calculate_llm_judge_score(participant_id, verbatim_map_df, evaluatable_questions, contextual_info, debug)
                     )
                 except Exception as llm_error:
                     if debug:
                         print(f"[LLMJudge {participant_id}] Error: {llm_error}")
                     llm_judge_score = 0.5  # Neutral score on error
+                    individual_scores = {}
             
             # Add results
             result_dict = {
@@ -1331,6 +1333,12 @@ def calculate_all_pri_signals(data_tuple, config, participant_limit=None, debug=
             
             if enable_llm_judge:
                 result_dict['LLM_Judge_Score'] = llm_judge_score
+                # Add individual model scores
+                for model_name, score_data in individual_scores.items():
+                    if score_data and 'confidence_score' in score_data:
+                        # Clean model name for column
+                        clean_model_name = model_name.replace('/', '_').replace('-', '_')
+                        result_dict[f'LLM_{clean_model_name}'] = score_data['confidence_score']
                 
             results.append(result_dict)
         except Exception as e:
@@ -1744,7 +1752,7 @@ def create_comprehensive_correlation_report(pri_signals_df, output_path, debug=F
     # Identify all numeric PRI-related columns
     pri_columns = []
     for col in pri_signals_df.columns:
-        if any(keyword in col for keyword in ['PRI', 'Duration', 'LowQualityTag', 'UniversalDisagreement', 'ASC', 'LLM_Judge']):
+        if any(keyword in col for keyword in ['PRI', 'Duration', 'LowQualityTag', 'UniversalDisagreement', 'ASC', 'LLM']):
             if pri_signals_df[col].dtype in ['float64', 'int64']:
                 pri_columns.append(col)
     
@@ -1777,6 +1785,7 @@ def create_comprehensive_correlation_report(pri_signals_df, output_path, debug=F
                 
                 if n_valid >= 3:  # Minimum for correlation
                     try:
+                        from scipy.stats import pearsonr, spearmanr
                         _, p_pear = pearsonr(analysis_df.loc[valid_mask, col1], analysis_df.loc[valid_mask, col2])
                         _, p_spear = spearmanr(analysis_df.loc[valid_mask, col1], analysis_df.loc[valid_mask, col2])
                         p_values_pearson.loc[col1, col2] = p_pear
@@ -1867,14 +1876,27 @@ def create_comprehensive_correlation_report(pri_signals_df, output_path, debug=F
     report_lines.append("KEY FINDINGS")
     report_lines.append("-" * 40)
     
-    # Find strongest correlations (excluding self-correlations)
+    # Find strongest correlations (excluding self-correlations and derived metrics)
     strong_correlations = []
     for i, col1 in enumerate(pri_columns):
         for j, col2 in enumerate(pri_columns):
             if i < j:  # Avoid duplicates and self-correlations
-                corr_val = pearson_corr.loc[col1, col2]
-                if not pd.isna(corr_val) and abs(corr_val) > 0.3:
-                    strong_correlations.append((col1, col2, corr_val))
+                # Skip correlations between raw and normalized versions of the same metric
+                skip_pairs = [
+                    ('Duration_seconds', 'Duration_Norm'),
+                    ('LowQualityTag_Perc', 'LowQualityTag_Norm'), 
+                    ('UniversalDisagreement_Perc', 'UniversalDisagreement_Norm'),
+                    ('ASC_Score_Raw', 'ASC_Norm'),
+                    ('LLM_Judge_Score', 'LLM_Judge_Norm'),
+                    ('PRI_Score', 'PRI_Scale_1_5')
+                ]
+                
+                is_trivial = any((col1, col2) == pair or (col2, col1) == pair for pair in skip_pairs)
+                
+                if not is_trivial:
+                    corr_val = pearson_corr.loc[col1, col2]
+                    if not pd.isna(corr_val) and abs(corr_val) > 0.3:
+                        strong_correlations.append((col1, col2, corr_val))
     
     # Sort by absolute correlation strength
     strong_correlations.sort(key=lambda x: abs(x[2]), reverse=True)
@@ -1889,6 +1911,107 @@ def create_comprehensive_correlation_report(pri_signals_df, output_path, debug=F
         report_lines.append("No strong correlations (|r| > 0.3) found between different metrics.")
     
     report_lines.append("")
+    
+    # LLM Judge Inter-Rater Reliability Analysis
+    llm_model_columns = [col for col in pri_columns if col.startswith('LLM_') and col != 'LLM_Judge_Score' and col != 'LLM_Judge_Norm']
+    
+    if len(llm_model_columns) >= 2:
+        report_lines.append("LLM JUDGE INTER-RATER RELIABILITY ANALYSIS")
+        report_lines.append("-" * 50)
+        
+        # Extract LLM model scores for analysis
+        llm_scores_df = analysis_df[llm_model_columns].copy()
+        
+        # Calculate basic statistics
+        n_participants_with_scores = len(llm_scores_df.dropna())
+        report_lines.append(f"Participants with LLM judge scores: {n_participants_with_scores}")
+        report_lines.append(f"Individual LLM models: {len(llm_model_columns)}")
+        report_lines.append("")
+        
+        # Model-specific statistics
+        report_lines.append("Individual model statistics:")
+        for col in llm_model_columns:
+            scores = llm_scores_df[col].dropna()
+            if len(scores) > 0:
+                model_name = col.replace('LLM_', '').replace('_', '/')
+                report_lines.append(f"  {model_name:30s}: n={len(scores):3d}, mean={scores.mean():.3f}, std={scores.std():.3f}, range=[{scores.min():.3f}, {scores.max():.3f}]")
+        
+        report_lines.append("")
+        
+        # Inter-rater correlations
+        if len(llm_model_columns) >= 2:
+            report_lines.append("Inter-rater correlations (Pearson):")
+            llm_corr_matrix = llm_scores_df.corr(method='pearson')
+            
+            inter_rater_correlations = []
+            for i, col1 in enumerate(llm_model_columns):
+                for j, col2 in enumerate(llm_model_columns):
+                    if i < j:  # Avoid duplicates
+                        corr_val = llm_corr_matrix.loc[col1, col2]
+                        if not pd.isna(corr_val):
+                            model1 = col1.replace('LLM_', '').replace('_', '/')
+                            model2 = col2.replace('LLM_', '').replace('_', '/')
+                            inter_rater_correlations.append((model1, model2, corr_val))
+                            report_lines.append(f"  {model1} ↔ {model2}: r={corr_val:.3f}")
+            
+            # Calculate mean inter-rater correlation
+            if inter_rater_correlations:
+                mean_inter_rater_corr = np.mean([corr for _, _, corr in inter_rater_correlations if not pd.isna(corr)])
+                report_lines.append(f"  Mean inter-rater correlation: r={mean_inter_rater_corr:.3f}")
+                
+                # Interpretation of inter-rater reliability
+                if mean_inter_rater_corr > 0.9:
+                    reliability = "Excellent agreement"
+                elif mean_inter_rater_corr > 0.8:
+                    reliability = "Good agreement"
+                elif mean_inter_rater_corr > 0.7:
+                    reliability = "Acceptable agreement"
+                elif mean_inter_rater_corr > 0.6:
+                    reliability = "Moderate agreement"
+                else:
+                    reliability = "Poor agreement"
+                
+                report_lines.append(f"  Reliability assessment: {reliability}")
+        
+        # Calculate Cronbach's Alpha for internal consistency
+        if len(llm_model_columns) >= 2:
+            try:
+                # Remove rows with any missing values for alpha calculation
+                complete_cases = llm_scores_df.dropna()
+                
+                if len(complete_cases) >= 3:  # Need at least 3 cases for meaningful alpha
+                    # Calculate Cronbach's alpha
+                    n_items = len(llm_model_columns)
+                    item_scores = complete_cases.values
+                    
+                    # Calculate item-total correlations and variances
+                    item_variances = np.var(item_scores, axis=0, ddof=1)
+                    total_variance = np.var(np.sum(item_scores, axis=1), ddof=1)
+                    
+                    # Cronbach's alpha formula
+                    cronbach_alpha = (n_items / (n_items - 1)) * (1 - np.sum(item_variances) / total_variance)
+                    
+                    report_lines.append(f"  Cronbach's Alpha: {cronbach_alpha:.3f}")
+                    
+                    # Alpha interpretation
+                    if cronbach_alpha > 0.9:
+                        alpha_interp = "(Excellent internal consistency)"
+                    elif cronbach_alpha > 0.8:
+                        alpha_interp = "(Good internal consistency)"
+                    elif cronbach_alpha > 0.7:
+                        alpha_interp = "(Acceptable internal consistency)"
+                    elif cronbach_alpha > 0.6:
+                        alpha_interp = "(Questionable internal consistency)"
+                    else:
+                        alpha_interp = "(Poor internal consistency)"
+                    
+                    report_lines.append(f"                     {alpha_interp}")
+                    
+            except Exception as e:
+                if debug:
+                    report_lines.append(f"  Could not calculate Cronbach's Alpha: {e}")
+        
+        report_lines.append("")
     
     # LLM Judge specific analysis if available
     if 'LLM_Judge_Score' in pri_columns:
