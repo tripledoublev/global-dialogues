@@ -385,7 +385,7 @@ def calculate_low_quality_tag_percentage(participant_id, thought_labels_df, debu
     return num_low_quality / total_responses if total_responses > 0 else 0.0
 
 
-def calculate_universal_disagreement_percentage(participant_id, verbatim_map_df, aggregate_std_df, config, debug=False):
+def calculate_universal_disagreement_percentage(participant_id, verbatim_map_df, aggregate_std_df, major_segments, config, debug=False):
     """
     Calculate the percentage of a participant's responses that received widespread disagreement
     across major demographic segments.
@@ -394,6 +394,7 @@ def calculate_universal_disagreement_percentage(participant_id, verbatim_map_df,
         participant_id: Unique ID of the participant
         verbatim_map_df: DataFrame mapping thoughts to participants
         aggregate_std_df: DataFrame with agreement scores
+        major_segments: List of major segment names to evaluate
         config: Dictionary with configuration values
         debug: Whether to print debug information
         
@@ -436,14 +437,19 @@ def calculate_universal_disagreement_percentage(participant_id, verbatim_map_df,
         if question_data.empty:
             continue
 
-        segment_agreement_cols = [f'{col}_Agreement' for col in config['SEGMENTS']]
+        # Use major segments for agreement calculation
+        segment_agreement_cols = [f'{col}_Agreement' for col in major_segments 
+                                if f'{col}_Agreement' in question_data.columns]
 
-        # get the Maximum agreement rate found among any Segment for responses from this Participant on this question
-        max_segment_agreement_value = question_data[segment_agreement_cols].max().max()
+        # Get the Maximum agreement rate found among any major segment for responses from this Participant on this question
+        if segment_agreement_cols:
+            segment_agreements = question_data[segment_agreement_cols]
+            max_segment_agreement_value = segment_agreements.max(axis=1).iloc[0] if not segment_agreements.empty else np.nan
+        else:
+            max_segment_agreement_value = np.nan
         
-        if debug:
-            continue
-            # print(f"[UniversalDisagreement {participant_id}] max_segment_agreement_value: {max_segment_agreement_value} for thought {thought_id}")
+        if debug and len(authored_thought_ids) <= 5:  # Only show debug for first few participants to avoid spam
+            print(f"[UniversalDisagreement {participant_id}] max_segment_agreement_value: {max_segment_agreement_value} for thought {thought_id}")
 
             
         # For now, we'll use the 'All_Agreement' as a proxy for simplicity
