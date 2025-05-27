@@ -25,6 +25,8 @@ import time
 import sys
 from datetime import datetime
 from pathlib import Path
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 
 
 def parse_args():
@@ -62,7 +64,7 @@ def get_config(gd_number):
         'ASC_LOW_THRESHOLD': 0.30,                          # Agreement rate for strong disagreement
         'UNIVERSAL_DISAGREEMENT_THRESHOLD_ALL': 0.30,       # Max agreement for "disagreed" responses for 'All'
         'UNIVERSAL_DISAGREEMENT_THRESHOLD_SEGMENTS': 0.40,  # Max agreement for "disagreed" responses for all individual Segments
-        'MAJOR_SEGMENT_MIN_PARTICIPANTS': 50,               # Min participants required for a segment to be considered "major"
+        'MAJOR_SEGMENT_MIN_PARTICIPANTS': 20,               # Min participants required for a segment to be considered "major"
         'DURATION_REASONABLE_MAX': 60*90,                   # Reasonable max duration to complete survey in seconds
 
         
@@ -860,6 +862,115 @@ def normalize_and_calculate_pri(pri_signals_df, config, debug=False):
     return pri_signals_df
 
 
+def create_pri_distribution_chart(pri_signals_df, gd_number, config, debug=False):
+    """
+    Create a comprehensive PRI score distribution visualization.
+    
+    Args:
+        pri_signals_df: DataFrame with calculated PRI scores
+        gd_number: Global Dialogue number for labeling
+        config: Configuration dictionary with file paths
+        debug: Whether to print debug information
+        
+    Returns:
+        str: Path to the saved visualization file
+    """
+    # Filter out NaN values for visualization
+    valid_scores = pri_signals_df['PRI_Scale_1_5'].dropna()
+    
+    if len(valid_scores) == 0:
+        print("Warning: No valid PRI scores to visualize")
+        return None
+    
+    # Calculate key statistics
+    stats = {
+        'count': len(valid_scores),
+        'mean': valid_scores.mean(),
+        'median': valid_scores.median(),
+        'std': valid_scores.std(),
+        'min': valid_scores.min(),
+        'max': valid_scores.max(),
+        'q25': valid_scores.quantile(0.25),
+        'q75': valid_scores.quantile(0.75)
+    }
+    
+    if debug:
+        print(f"PRI visualization stats: {stats}")
+    
+    # Create the figure and subplots
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10), height_ratios=[3, 1])
+    fig.suptitle(f'Participant Reliability Index (PRI) Distribution - Global Dialogue {gd_number}', 
+                 fontsize=16, fontweight='bold', y=0.95)
+    
+    # Main histogram
+    n_bins = min(50, max(10, int(len(valid_scores) / 10)))  # Adaptive bin count
+    n, bins, patches = ax1.hist(valid_scores, bins=n_bins, alpha=0.7, color='skyblue', 
+                               edgecolor='black', linewidth=0.5)
+    
+    # Add vertical lines for key statistics
+    ax1.axvline(stats['median'], color='red', linestyle='-', linewidth=2, label=f"Median: {stats['median']:.2f}")
+    ax1.axvline(stats['mean'], color='orange', linestyle='--', linewidth=2, label=f"Mean: {stats['mean']:.2f}")
+    ax1.axvline(stats['q25'], color='green', linestyle=':', linewidth=2, label=f"25th Percentile: {stats['q25']:.2f}")
+    ax1.axvline(stats['q75'], color='purple', linestyle=':', linewidth=2, label=f"75th Percentile: {stats['q75']:.2f}")
+    
+    # Formatting for main plot
+    ax1.set_xlabel('PRI Score (1-5 Scale)', fontsize=12, fontweight='bold')
+    ax1.set_ylabel('Number of Participants', fontsize=12, fontweight='bold')
+    ax1.set_xlim(1, 5)
+    ax1.grid(True, alpha=0.3)
+    ax1.legend(loc='upper right', fontsize=10)
+    
+    # Add text box with key statistics
+    stats_text = f"""Summary Statistics:
+    Participants: {stats['count']:,}
+    Mean: {stats['mean']:.3f}
+    Median: {stats['median']:.3f}
+    Std Dev: {stats['std']:.3f}
+    Range: {stats['min']:.2f} - {stats['max']:.2f}
+    IQR: {stats['q25']:.2f} - {stats['q75']:.2f}"""
+    
+    ax1.text(0.02, 0.98, stats_text, transform=ax1.transAxes, fontsize=10,
+             verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+    
+    # Box plot
+    bp = ax2.boxplot(valid_scores, vert=False, patch_artist=True, 
+                     boxprops=dict(facecolor='lightblue', alpha=0.7),
+                     medianprops=dict(color='red', linewidth=2))
+    
+    ax2.set_xlabel('PRI Score (1-5 Scale)', fontsize=12, fontweight='bold')
+    ax2.set_ylabel('Distribution', fontsize=12, fontweight='bold')
+    ax2.set_xlim(1, 5)
+    ax2.grid(True, alpha=0.3)
+    ax2.set_yticks([])  # Remove y-axis ticks for box plot
+    
+    # Add percentile labels on box plot
+    ax2.text(stats['q25'], 1.3, f"Q1\n{stats['q25']:.2f}", ha='center', va='bottom', fontsize=9, fontweight='bold')
+    ax2.text(stats['median'], 1.3, f"Median\n{stats['median']:.2f}", ha='center', va='bottom', fontsize=9, fontweight='bold', color='red')
+    ax2.text(stats['q75'], 1.3, f"Q3\n{stats['q75']:.2f}", ha='center', va='bottom', fontsize=9, fontweight='bold')
+    
+    # Add interpretation guide
+    interpretation_text = """PRI Score Interpretation:
+    4.5-5.0: Highly Reliable  |  3.5-4.5: Reliable  |  2.5-3.5: Moderately Reliable  |  1.5-2.5: Low Reliability  |  1.0-1.5: Very Low Reliability"""
+    
+    fig.text(0.5, 0.02, interpretation_text, ha='center', va='bottom', fontsize=10, 
+             bbox=dict(boxstyle='round', facecolor='lightyellow', alpha=0.8))
+    
+    # Adjust layout
+    plt.tight_layout()
+    plt.subplots_adjust(top=0.92, bottom=0.12)
+    
+    # Save the chart
+    chart_path = f"Data/GD{gd_number}/GD{gd_number}_pri_distribution.png"
+    plt.savefig(chart_path, dpi=300, bbox_inches='tight', facecolor='white')
+    
+    if debug:
+        print(f"PRI distribution chart saved to: {chart_path}")
+    
+    plt.close()  # Close the figure to free memory
+    
+    return chart_path
+
+
 def main():
     """Main execution function"""
     start_time = time.time()
@@ -911,7 +1022,18 @@ def main():
     pri_signals_df.to_csv(output_path, index=False)
     print(f"\nResults saved to {output_path}")
     
-    # 7. Print execution time
+    # 7. Generate PRI distribution visualization
+    try:
+        chart_path = create_pri_distribution_chart(pri_signals_df, gd_number, config, debug)
+        if chart_path:
+            print(f"PRI distribution chart saved to {chart_path}")
+    except Exception as e:
+        print(f"Warning: Could not generate PRI distribution chart: {e}")
+        if debug:
+            import traceback
+            traceback.print_exc()
+    
+    # 8. Print execution time
     end_time = time.time()
     elapsed_time = end_time - start_time
     print(f"\nExecution completed in {elapsed_time:.2f} seconds ({elapsed_time/60:.2f} minutes)")
