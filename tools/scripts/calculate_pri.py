@@ -2201,6 +2201,205 @@ async def batch_process_llm_judge(participant_ids, verbatim_map_df, evaluatable_
     return results
 
 
+def extract_open_ended_responses(verbatim_map_df, discussion_guide_df, participant_ids, debug=False):
+    """
+    Extract all open-ended (Ask Opinion, Ask Experience) responses for specific participants.
+    
+    Args:
+        verbatim_map_df: DataFrame with participant responses
+        discussion_guide_df: DataFrame with question types  
+        participant_ids: List of participant IDs to extract responses for
+        debug: Whether to print debug information
+        
+    Returns:
+        DataFrame with participant responses pivoted into columns
+    """
+    if debug:
+        print(f"Extracting open-ended responses for {len(participant_ids)} participants...")
+    
+    # Find Ask Opinion and Ask Experience questions from discussion guide
+    open_ended_questions = discussion_guide_df[
+        discussion_guide_df['Item type (dropdown)'].str.contains('ask opinion|ask experience', case=False, na=False)
+    ]['Cross Conversation Tag - Polls and Opinions only (Optional)'].tolist()
+    
+    if debug:
+        print(f"Found {len(open_ended_questions)} open-ended questions: {open_ended_questions}")
+    
+    # Filter verbatim responses for target participants and open-ended questions
+    responses_df = verbatim_map_df[
+        (verbatim_map_df['Participant ID'].isin(participant_ids)) &
+        (verbatim_map_df['Question ID'].isin(open_ended_questions))
+    ].copy()
+    
+    if debug:
+        print(f"Found {len(responses_df)} total responses for target participants")
+    
+    # Create a mapping of Question ID to Question Text for column names
+    question_mapping = dict(zip(responses_df['Question ID'], responses_df['Question Text']))
+    
+    # Group by participant and question, concatenate multiple thoughts if any
+    grouped_responses = responses_df.groupby(['Participant ID', 'Question ID'])['Thought Text'].agg(
+        lambda x: ' | '.join(x.astype(str)) if len(x) > 1 else x.iloc[0] if len(x) == 1 else ''
+    ).reset_index()
+    
+    # Pivot to get one column per question
+    pivoted_df = grouped_responses.pivot(index='Participant ID', columns='Question ID', values='Thought Text')
+    
+    # Rename columns to use question text instead of question ID
+    pivoted_df.columns = [question_mapping.get(col, col) for col in pivoted_df.columns]
+    
+    # Reset index to make Participant ID a regular column
+    pivoted_df = pivoted_df.reset_index()
+    
+    # Fill NaN values with empty strings
+    pivoted_df = pivoted_df.fillna('')
+    
+    if debug:
+        print(f"Extracted responses for {len(pivoted_df)} participants across {len(pivoted_df.columns)-1} questions")
+    
+    return pivoted_df
+
+
+def identify_unreliable_participants(pri_signals_df, method='outliers', threshold=None, debug=False):
+    """
+    Identify participants who should be considered unreliable based on PRI scores.
+    
+    Args:
+        pri_signals_df: DataFrame with calculated PRI scores
+        method: Method to use ('outliers', 'percentile', 'threshold')
+        threshold: Specific threshold value (used with 'threshold' or 'percentile' methods)
+        debug: Whether to print debug information
+        
+    Returns:
+        List of participant IDs identified as unreliable
+    """
+    valid_scores = pri_signals_df['PRI_Scale_1_5'].dropna()
+    
+    if len(valid_scores) == 0:
+        print("Warning: No valid PRI scores to analyze")
+        return []
+    
+    unreliable_participants = []
+    
+    if method == 'outliers':
+        # Use boxplot outlier calculation (1.5 * IQR rule)
+        q1 = valid_scores.quantile(0.25)
+        q3 = valid_scores.quantile(0.75)
+        iqr = q3 - q1
+        lower_bound = q1 - 1.5 * iqr
+        upper_bound = q3 + 1.5 * iqr
+        
+        # Identify outliers (focusing on low scores as unreliable)
+        outlier_mask = (pri_signals_df['PRI_Scale_1_5'] < lower_bound) | (pri_signals_df['PRI_Scale_1_5'] > upper_bound)
+        low_outlier_mask = pri_signals_df['PRI_Scale_1_5'] < lower_bound
+        
+        unreliable_participants = pri_signals_df[low_outlier_mask]['Participant ID'].tolist()
+        
+        if debug:
+            print(f"Outlier analysis: Q1={q1:.3f}, Q3={q3:.3f}, IQR={iqr:.3f}")
+            print(f"Lower bound: {lower_bound:.3f}, Upper bound: {upper_bound:.3f}")
+            print(f"Total outliers: {outlier_mask.sum()}, Low outliers (unreliable): {low_outlier_mask.sum()}")
+    
+    elif method == 'percentile':
+        if threshold is None:
+            threshold = 10  # Default to bottom 10th percentile
+        
+        percentile_threshold = valid_scores.quantile(threshold / 100)
+        unreliable_mask = pri_signals_df['PRI_Scale_1_5'] <= percentile_threshold
+        unreliable_participants = pri_signals_df[unreliable_mask]['Participant ID'].tolist()
+        
+        if debug:
+            print(f"Percentile analysis: Bottom {threshold}th percentile threshold = {percentile_threshold:.3f}")
+            print(f"Participants below threshold: {unreliable_mask.sum()}")
+    
+    elif method == 'threshold':
+        if threshold is None:
+            threshold = 2.5  # Default threshold for "Low Reliability" 
+        
+        unreliable_mask = pri_signals_df['PRI_Scale_1_5'] <= threshold
+        unreliable_participants = pri_signals_df[unreliable_mask]['Participant ID'].tolist()
+        
+        if debug:
+            print(f"Hard threshold analysis: Threshold = {threshold}")
+            print(f"Participants below threshold: {unreliable_mask.sum()}")
+    
+    else:
+        raise ValueError(f"Unknown method: {method}. Use 'outliers', 'percentile', or 'threshold'")
+    
+    if debug:
+        print(f"Identified {len(unreliable_participants)} unreliable participants using method '{method}'")
+    
+    return unreliable_participants
+
+
+def export_unreliable_participants_csv(pri_signals_df, verbatim_map_df, discussion_guide_df, 
+                                      output_path, method='outliers', threshold=None, debug=False):
+    """
+    Export a CSV of unreliable participants with their PRI scores and all open-ended responses.
+    
+    Args:
+        pri_signals_df: DataFrame with calculated PRI scores
+        verbatim_map_df: DataFrame with participant responses
+        discussion_guide_df: DataFrame with question types
+        output_path: Path where to save the CSV file
+        method: Method to identify unreliable participants
+        threshold: Threshold value for identification
+        debug: Whether to print debug information
+        
+    Returns:
+        str: Path to the exported CSV file
+    """
+    if debug:
+        print(f"Exporting unreliable participants using method '{method}'...")
+    
+    # 1. Identify unreliable participants
+    unreliable_participant_ids = identify_unreliable_participants(
+        pri_signals_df, method=method, threshold=threshold, debug=debug
+    )
+    
+    if len(unreliable_participant_ids) == 0:
+        print("No unreliable participants identified.")
+        return None
+    
+    # 2. Get PRI score information for unreliable participants
+    unreliable_pri_df = pri_signals_df[
+        pri_signals_df['Participant ID'].isin(unreliable_participant_ids)
+    ][['Participant ID', 'PRI_Score', 'PRI_Scale_1_5']].copy()
+    
+    # 3. Extract open-ended responses for these participants
+    responses_df = extract_open_ended_responses(
+        verbatim_map_df, discussion_guide_df, unreliable_participant_ids, debug=debug
+    )
+    
+    # 4. Merge PRI scores with responses
+    if len(responses_df) > 0:
+        final_df = unreliable_pri_df.merge(responses_df, on='Participant ID', how='left')
+    else:
+        final_df = unreliable_pri_df
+        if debug:
+            print("Warning: No open-ended responses found for unreliable participants")
+    
+    # 5. Sort by PRI score (lowest first)
+    final_df = final_df.sort_values('PRI_Scale_1_5', ascending=True)
+    
+    # 6. Add metadata columns
+    final_df.insert(0, 'Recommended_Action', 'IGNORE')
+    final_df.insert(1, 'Identification_Method', method)
+    if threshold is not None:
+        final_df.insert(2, 'Threshold_Used', threshold)
+    else:
+        final_df.insert(2, 'Threshold_Used', 'N/A')
+    
+    # 7. Export to CSV
+    final_df.to_csv(output_path, index=False)
+    
+    if debug:
+        print(f"Exported {len(final_df)} unreliable participants to {output_path}")
+        print(f"Columns in export: {list(final_df.columns)}")
+    
+    return output_path
+
+
 def main():
     """Main execution function"""
     start_time = time.time()
@@ -2295,7 +2494,41 @@ def main():
             import traceback
             traceback.print_exc()
     
-    # 8. Print execution time
+    # 8. Export unreliable participants CSV with open-ended responses
+    try:
+        # Extract data components from the data_tuple
+        binary_df, preference_df, thought_labels_df, verbatim_map_df, aggregate_std_df, all_participant_ids, major_segments = data_tuple
+        
+        # Load discussion guide for question type identification
+        discussion_guide_df = pd.read_csv(config['DISCUSSION_GUIDE_PATH'], encoding='utf-8-sig')
+        
+        # Export using outliers method by default
+        unreliable_csv_path = f"{config['OUTPUT_DIR']}/GD{gd_number}_unreliable_participants_outliers.csv"
+        export_path = export_unreliable_participants_csv(
+            pri_signals_df, verbatim_map_df, discussion_guide_df, 
+            unreliable_csv_path, method='outliers', debug=debug
+        )
+        
+        if export_path:
+            print(f"Unreliable participants (outliers) CSV saved to {export_path}")
+        
+        # Also export using 10th percentile method
+        unreliable_csv_path_percentile = f"{config['OUTPUT_DIR']}/GD{gd_number}_unreliable_participants_bottom10pct.csv"
+        export_path_percentile = export_unreliable_participants_csv(
+            pri_signals_df, verbatim_map_df, discussion_guide_df, 
+            unreliable_csv_path_percentile, method='percentile', threshold=10, debug=debug
+        )
+        
+        if export_path_percentile:
+            print(f"Unreliable participants (bottom 10%) CSV saved to {export_path_percentile}")
+            
+    except Exception as e:
+        print(f"Warning: Could not export unreliable participants CSV: {e}")
+        if debug:
+            import traceback
+            traceback.print_exc()
+    
+    # 9. Print execution time
     end_time = time.time()
     elapsed_time = end_time - start_time
     print(f"\nExecution completed in {elapsed_time:.2f} seconds ({elapsed_time/60:.2f} minutes)")

@@ -18,7 +18,8 @@ RESET := \033[0m
         tag-analysis preprocess-tags \
         download-embeddings download-embeddings-gd1 download-embeddings-gd2 download-embeddings-gd3 download-all-embeddings \
         run-thematic-ranking run-thematic-ranking-gd1 run-thematic-ranking-gd2 run-thematic-ranking-gd3 \
-        pri pri-llm pri-gd1 pri-gd2 pri-gd3 pri-llm-gd1 pri-llm-gd2 pri-llm-gd3
+        pri pri-llm pri-gd1 pri-gd2 pri-gd3 pri-llm-gd1 pri-llm-gd2 pri-llm-gd3 \
+        export-unreliable export-unreliable-gd1 export-unreliable-gd2 export-unreliable-gd3
 
 # Default target
 help:
@@ -58,6 +59,8 @@ help:
 	@echo "  $(GREEN)make pri-llm GD=<N>$(RESET)       - Calculate PRI for GD<N> with LLM judge assessment"
 	@echo "  $(GREEN)make pri-gd<N>$(RESET)            - Calculate PRI for specific GD (traditional metrics only)"
 	@echo "  $(GREEN)make pri-llm-gd<N>$(RESET)        - Calculate PRI for specific GD with LLM judge"
+	@echo "  $(GREEN)make export-unreliable GD=<N>$(RESET) - Export unreliable participants CSV for GD<N>"
+	@echo "  $(GREEN)make export-unreliable-gd<N>$(RESET) - Export unreliable participants CSV for specific GD"
 	@echo ""
 	@echo "$(BLUE)Advanced Analysis Commands:$(RESET)"
 	@echo "  $(GREEN)make run-thematic-ranking$(RESET) - Run thematic ranking analysis (requires API key and embeddings)"
@@ -239,6 +242,36 @@ pri-llm-gd3:
 	@echo "$(BLUE)Calculating participant reliability index for GD3 with LLM judge...$(RESET)"
 	@echo "$(YELLOW)NOTE: This will use OpenRouter API and incur costs$(RESET)"
 	$(PYTHON) $(TOOLS_DIR)/calculate_pri.py --gd_number 3 --llm-judge
+
+# Export unreliable participants
+export-unreliable:
+	@if [ -z "$(GD)" ]; then \
+		echo "$(RED)Error: Please specify GD number$(RESET)"; \
+		echo "$(YELLOW)Usage: make export-unreliable GD=<N>$(RESET)"; \
+		echo "$(YELLOW)Example: make export-unreliable GD=3$(RESET)"; \
+		echo "$(YELLOW)Optional: METHOD=outliers|percentile|threshold THRESHOLD=<value>$(RESET)"; \
+		exit 1; \
+	fi
+	@echo "$(BLUE)Exporting unreliable participants for GD$(GD)...$(RESET)"
+	@if [ -n "$(METHOD)" ] && [ -n "$(THRESHOLD)" ]; then \
+		$(PYTHON) $(TOOLS_DIR)/export_unreliable_participants.py $(GD) --method $(METHOD) --threshold $(THRESHOLD); \
+	elif [ -n "$(METHOD)" ]; then \
+		$(PYTHON) $(TOOLS_DIR)/export_unreliable_participants.py $(GD) --method $(METHOD); \
+	else \
+		$(PYTHON) $(TOOLS_DIR)/export_unreliable_participants.py $(GD); \
+	fi
+
+export-unreliable-gd1:
+	@echo "$(BLUE)Exporting unreliable participants for GD1...$(RESET)"
+	$(PYTHON) $(TOOLS_DIR)/export_unreliable_participants.py 1
+
+export-unreliable-gd2:
+	@echo "$(BLUE)Exporting unreliable participants for GD2...$(RESET)"
+	$(PYTHON) $(TOOLS_DIR)/export_unreliable_participants.py 2
+
+export-unreliable-gd3:
+	@echo "$(BLUE)Exporting unreliable participants for GD3...$(RESET)"
+	$(PYTHON) $(TOOLS_DIR)/export_unreliable_participants.py 3
 
 # Embeddings download
 download-embeddings:
