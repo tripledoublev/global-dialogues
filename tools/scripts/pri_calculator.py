@@ -23,10 +23,56 @@ import numpy as np
 import argparse
 import time
 import sys
+import os
+import asyncio
+import json
 from datetime import datetime
 from pathlib import Path
+from typing import List, Dict, Optional, Tuple
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+from dotenv import load_dotenv
+import aiohttp
+from pydantic import BaseModel, Field
+from scipy.stats import pearsonr, spearmanr
+
+# Load environment variables
+load_dotenv()
+
+
+# --- Pydantic Models for LLM Judge ---
+
+class LLMJudgeResponse(BaseModel):
+    """Pydantic model for LLM judge response parsing."""
+    confidence_score: float = Field(
+        ..., 
+        ge=0.0, 
+        le=1.0, 
+        description="Confidence score from 0.0 to 1.0 on participant earnestness"
+    )
+    reasoning: str = Field(
+        ..., 
+        min_length=10, 
+        description="Brief explanation of the confidence score"
+    )
+
+
+class ParticipantResponses(BaseModel):
+    """Pydantic model for participant response data."""
+    participant_id: str
+    responses: List[Dict[str, str]]  # List of {question: response} pairs
+    
+
+class LLMJudgeConfig(BaseModel):
+    """Configuration for LLM judge assessment."""
+    models: List[str] = [
+        "anthropic/claude-sonnet-4",
+        "openai/gpt-4o-mini", 
+        "google/gemini-2.5-pro-preview"
+    ]
+    api_base_url: str = "https://openrouter.ai/api/v1"
+    max_concurrent_requests: int = 10
+    timeout_seconds: int = 60
 
 
 def parse_args():
@@ -35,6 +81,7 @@ def parse_args():
     parser.add_argument('gd_number', type=int, help='The Global Dialogue number (e.g. 1, 2, 3)')
     parser.add_argument('--debug', action='store_true', help='Enable verbose debug output')
     parser.add_argument('--limit', type=int, help='Limit processing to first N participants (for testing)', default=None)
+    parser.add_argument('--llm-judge', action='store_true', help='Enable LLM judge assessment (requires API key and costs $)')
     return parser.parse_args()
 
 
@@ -57,6 +104,7 @@ def get_config(gd_number):
         'AGGREGATE_STD_PATH': str(data_dir / f"GD{gd_number}_aggregate_standardized.csv"),
         'SEGMENT_COUNTS_PATH': str(data_dir / f"GD{gd_number}_segment_counts_by_question.csv"),
         'THOUGHT_LABELS_PATH': str(tags_dir / "all_thought_labels.csv"),
+        'DISCUSSION_GUIDE_PATH': str(data_dir / f"GD{gd_number}_discussion_guide.csv"),
         'OUTPUT_PATH': str(data_dir / f"GD{gd_number}_pri_scores.csv"),
         
         # PRI Parameters (per documentation)
@@ -68,11 +116,18 @@ def get_config(gd_number):
         'DURATION_REASONABLE_MAX': 60*90,                   # Reasonable max duration to complete survey in seconds
 
         
-        # Component weights for final PRI score
+        # Component weights for final PRI score (without LLM judge)
         'DURATION_WEIGHT': 0.30,
         'LOW_QUALITY_TAG_WEIGHT': 0.30,
         'UNIVERSAL_DISAGREEMENT_WEIGHT': 0.20,
         'ASC_WEIGHT': 0.20,
+        
+        # Component weights for final PRI score (with LLM judge)
+        'DURATION_WEIGHT_LLM': 0.20,
+        'LOW_QUALITY_TAG_WEIGHT_LLM': 0.20,
+        'UNIVERSAL_DISAGREEMENT_WEIGHT_LLM': 0.15,
+        'ASC_WEIGHT_LLM': 0.15,
+        'LLM_JUDGE_WEIGHT': 0.30,
     }
     
     return config
@@ -655,7 +710,367 @@ def calculate_asc_score(participant_id, binary_df, consensus_data, debug=False):
     return asc_score
 
 
-def calculate_all_pri_signals(data_tuple, config, participant_limit=None, debug=False):
+# --- LLM Judge Functions ---
+
+def load_discussion_guide(config, debug=False):
+    """
+    Load and parse the discussion guide to identify "Ask Opinion" questions.
+    
+    Args:
+        config: Dictionary with configuration values including DISCUSSION_GUIDE_PATH
+        debug: Whether to print debug information
+        
+    Returns:
+        Dict mapping question IDs to question content for "ask opinion" questions
+    """
+    try:
+        # Read CSV with flexible column handling to deal with variable column counts
+        guide_df = pd.read_csv(config['DISCUSSION_GUIDE_PATH'], quotechar='"', skipinitialspace=True, on_bad_lines='skip')
+        
+        if debug:
+            print(f"Loaded discussion guide with {len(guide_df)} rows and {len(guide_df.columns)} columns")
+            print(f"Columns: {list(guide_df.columns)}")
+        
+        # Filter for "ask opinion" questions
+        if 'Item type (dropdown)' in guide_df.columns:
+            opinion_questions = guide_df[guide_df['Item type (dropdown)'] == 'ask opinion'].copy()
+        else:
+            # Fallback: look for any column containing "ask opinion"
+            opinion_questions = None
+            for col in guide_df.columns:
+                if guide_df[col].astype(str).str.contains('ask opinion', case=False, na=False).any():
+                    opinion_questions = guide_df[guide_df[col].astype(str).str.contains('ask opinion', case=False, na=False)].copy()
+                    break
+            
+            if opinion_questions is None:
+                opinion_questions = pd.DataFrame()
+        
+        if debug:
+            print(f"Found {len(opinion_questions)} 'ask opinion' rows")
+        
+        # Create mapping of merge tags to question content
+        question_map = {}
+        for _, row in opinion_questions.iterrows():
+            # Try multiple column names for merge tag
+            merge_tag = None
+            for tag_col in ['Cross Conversation Tag - Polls and Opinions only (Optional)', 'Cross Conversation Tag', 'Tag']:
+                if tag_col in row and pd.notna(row.get(tag_col)):
+                    merge_tag = row[tag_col]
+                    break
+            
+            # Try multiple column names for content
+            content = None
+            for content_col in ['Content', 'Question', 'Text']:
+                if content_col in row and pd.notna(row.get(content_col)):
+                    content = row[content_col]
+                    break
+            
+            if merge_tag and content:
+                question_map[merge_tag] = content
+                if debug:
+                    print(f"  {merge_tag}: {content[:50]}...")
+        
+        if debug:
+            print(f"Successfully mapped {len(question_map)} 'ask opinion' questions")
+            
+        return question_map
+        
+    except Exception as e:
+        print(f"Warning: Could not load discussion guide from {config['DISCUSSION_GUIDE_PATH']}: {e}")
+        if debug:
+            import traceback
+            traceback.print_exc()
+        return {}
+
+
+def get_participant_opinion_responses(participant_id, verbatim_map_df, opinion_questions, debug=False):
+    """
+    Extract a participant's responses to "Ask Opinion" questions.
+    
+    Args:
+        participant_id: Unique ID of the participant
+        verbatim_map_df: DataFrame mapping thoughts to participants and questions
+        opinion_questions: Dict mapping question IDs/content to question content
+        debug: Whether to print debug information
+        
+    Returns:
+        List of dicts with question and response pairs
+    """
+    if debug:
+        print(f"[LLMJudge {participant_id}] Extracting opinion responses...")
+    
+    # Get all thoughts authored by this participant
+    participant_thoughts = verbatim_map_df[verbatim_map_df['Participant ID'] == participant_id]
+    
+    responses = []
+    
+    # Create a mapping of question text to merge tags for easier matching
+    text_to_tag = {}
+    for merge_tag, question_content in opinion_questions.items():
+        text_to_tag[question_content.strip().lower()] = merge_tag
+    
+    for _, thought_row in participant_thoughts.iterrows():
+        question_id = thought_row.get('Question ID')
+        question_text = thought_row.get('Question Text', '')
+        response_text = thought_row.get('Thought Text', thought_row.get('Thought', ''))
+        
+        # Try direct ID match first
+        if question_id in opinion_questions:
+            question_content = opinion_questions[question_id]
+            if pd.notna(response_text) and len(str(response_text).strip()) > 0:
+                responses.append({
+                    'question_id': question_id,
+                    'question': question_content,
+                    'response': str(response_text).strip()
+                })
+        # Try question text matching
+        elif pd.notna(question_text):
+            question_text_clean = str(question_text).strip().lower()
+            
+            # Check for exact match
+            if question_text_clean in text_to_tag:
+                merge_tag = text_to_tag[question_text_clean]
+                question_content = opinion_questions[merge_tag]
+                
+                if pd.notna(response_text) and len(str(response_text).strip()) > 0:
+                    responses.append({
+                        'question_id': merge_tag,
+                        'question': question_content,
+                        'response': str(response_text).strip()
+                    })
+                    if debug:
+                        print(f"[LLMJudge {participant_id}] Matched question: {question_text[:50]}...")
+            else:
+                # Try partial matching for questions that might have slight differences
+                for opinion_text, merge_tag in text_to_tag.items():
+                    if len(opinion_text) > 20:  # Only try for reasonably long questions
+                        # Check if the question text contains most of the opinion question text
+                        words_opinion = set(opinion_text.split())
+                        words_question = set(question_text_clean.split())
+                        
+                        if len(words_opinion) > 0:
+                            overlap = len(words_opinion.intersection(words_question)) / len(words_opinion)
+                            if overlap > 0.7:  # 70% word overlap
+                                question_content = opinion_questions[merge_tag]
+                                
+                                if pd.notna(response_text) and len(str(response_text).strip()) > 0:
+                                    responses.append({
+                                        'question_id': merge_tag,
+                                        'question': question_content,
+                                        'response': str(response_text).strip()
+                                    })
+                                    if debug:
+                                        print(f"[LLMJudge {participant_id}] Partial match ({overlap:.2f}): {question_text[:50]}...")
+                                    break
+    
+    if debug:
+        print(f"[LLMJudge {participant_id}] Found {len(responses)} opinion responses")
+        for resp in responses:
+            print(f"  Q: {resp['question'][:50]}...")
+            print(f"  A: {resp['response'][:50]}...")
+    
+    return responses
+
+
+async def call_llm_judge(session, model, participant_responses, config, debug=False):
+    """
+    Make async API call to a single LLM model for participant assessment.
+    
+    Args:
+        session: aiohttp ClientSession
+        model: Model name for the API call
+        participant_responses: ParticipantResponses object
+        config: LLMJudgeConfig object
+        debug: Whether to print debug information
+        
+    Returns:
+        Tuple of (model_name, confidence_score, reasoning) or (model_name, None, error_msg)
+    """
+    
+    # Create the prompt
+    prompt = create_llm_judge_prompt(participant_responses.responses)
+    
+    headers = {
+        "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://github.com/your-username/global-dialogues",
+        "X-Title": "Global Dialogues PRI Assessment"
+    }
+    
+    payload = {
+        "model": model,
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are an expert survey quality assessor. Your task is to evaluate participant responses for earnestness and quality. Respond with a JSON object containing 'confidence_score' (0.0-1.0) and 'reasoning' (brief explanation)."
+            },
+            {
+                "role": "user", 
+                "content": prompt
+            }
+        ],
+        "temperature": 0.1,
+        "max_tokens": 500
+    }
+    
+    try:
+        timeout = aiohttp.ClientTimeout(total=config.timeout_seconds)
+        async with session.post(
+            f"{config.api_base_url}/chat/completions",
+            headers=headers,
+            json=payload,
+            timeout=timeout
+        ) as response:
+            
+            if response.status == 200:
+                result = await response.json()
+                content = result['choices'][0]['message']['content']
+                
+                # Try to parse as JSON
+                try:
+                    parsed = json.loads(content)
+                    judge_response = LLMJudgeResponse(**parsed)
+                    return (model, judge_response.confidence_score, judge_response.reasoning)
+                except (json.JSONDecodeError, ValueError) as parse_error:
+                    if debug:
+                        print(f"[LLMJudge] JSON parse error for {model}: {parse_error}")
+                        print(f"[LLMJudge] Raw content: {content}")
+                    return (model, None, f"Parse error: {str(parse_error)}")
+                    
+            else:
+                error_text = await response.text()
+                return (model, None, f"HTTP {response.status}: {error_text}")
+                
+    except asyncio.TimeoutError:
+        return (model, None, "Request timeout")
+    except Exception as e:
+        return (model, None, f"Request error: {str(e)}")
+
+
+def create_llm_judge_prompt(responses):
+    """
+    Create the LLM judge prompt from participant responses.
+    
+    Args:
+        responses: List of response dicts with question and answer pairs
+        
+    Returns:
+        Formatted prompt string
+    """
+    
+    if not responses:
+        return "No responses to evaluate. Please return confidence_score: 0.0"
+    
+    prompt = """Given this participant's responses to the following open-ended questions from a global survey about AI, give an overall confidence score from 0.0 to 1.0 on how confident the survey administrators can be that the participant was being earnest in their responses.
+
+This is a global survey across languages that involved some automated translation - therefore some grammatical errors may be present, so do not penalize incorrect grammar if there is clearly effort to communicate a coherent meaning.
+
+Consider factors such as:
+- Thoughtfulness and depth of responses
+- Consistency across answers
+- Evidence of genuine engagement with the questions
+- Appropriate length and detail
+- Coherent reasoning and personal perspective
+
+Participant Responses:
+
+"""
+    
+    for i, resp in enumerate(responses, 1):
+        prompt += f"{i}. Question: {resp['question']}\n"
+        prompt += f"   Response: {resp['response']}\n\n"
+    
+    prompt += """Please respond with a JSON object in this exact format:
+{
+    "confidence_score": 0.X,
+    "reasoning": "Brief explanation of your assessment"
+}
+
+The confidence_score should be:
+- 0.8-1.0: Highly earnest, thoughtful responses
+- 0.6-0.8: Generally earnest with good engagement
+- 0.4-0.6: Moderate earnestness, some concerns
+- 0.2-0.4: Low earnestness, significant concerns
+- 0.0-0.2: Very low earnestness, minimal effort"""
+
+    return prompt
+
+
+async def calculate_llm_judge_score(participant_id, verbatim_map_df, opinion_questions, debug=False):
+    """
+    Calculate LLM judge score for a single participant using multiple models.
+    
+    Args:
+        participant_id: Unique ID of the participant
+        verbatim_map_df: DataFrame mapping thoughts to participants and questions
+        opinion_questions: Dict mapping question IDs to question content
+        debug: Whether to print debug information
+        
+    Returns:
+        Tuple of (average_confidence_score, individual_scores_dict)
+    """
+    if debug:
+        print(f"[LLMJudge {participant_id}] Starting LLM judge assessment...")
+    
+    # Get participant's opinion responses
+    responses = get_participant_opinion_responses(participant_id, verbatim_map_df, opinion_questions, debug)
+    
+    if not responses:
+        if debug:
+            print(f"[LLMJudge {participant_id}] No opinion responses found")
+        return 0.5, {}  # Neutral score if no responses
+    
+    # Create participant responses object
+    participant_responses = ParticipantResponses(
+        participant_id=participant_id,
+        responses=responses
+    )
+    
+    config = LLMJudgeConfig()
+    
+    # Make async calls to all models
+    async with aiohttp.ClientSession() as session:
+        tasks = [
+            call_llm_judge(session, model, participant_responses, config, debug)
+            for model in config.models
+        ]
+        
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+    
+    # Process results
+    valid_scores = []
+    individual_scores = {}
+    
+    for result in results:
+        if isinstance(result, Exception):
+            if debug:
+                print(f"[LLMJudge {participant_id}] Exception: {result}")
+            continue
+            
+        model_name, confidence_score, reasoning = result
+        individual_scores[model_name] = {
+            'confidence_score': confidence_score,
+            'reasoning': reasoning
+        }
+        
+        if confidence_score is not None:
+            valid_scores.append(confidence_score)
+            if debug:
+                print(f"[LLMJudge {participant_id}] {model_name}: {confidence_score:.3f} - {reasoning}")
+    
+    # Calculate average score
+    if valid_scores:
+        avg_score = sum(valid_scores) / len(valid_scores)
+        if debug:
+            print(f"[LLMJudge {participant_id}] Average score: {avg_score:.3f} from {len(valid_scores)} models")
+        return avg_score, individual_scores
+    else:
+        if debug:
+            print(f"[LLMJudge {participant_id}] No valid scores obtained, using neutral score")
+        return 0.5, individual_scores  # Neutral score if all models failed
+
+
+def calculate_all_pri_signals(data_tuple, config, participant_limit=None, debug=False, enable_llm_judge=False):
     """
     Calculate all PRI signals for all participants.
     
@@ -664,11 +1079,14 @@ def calculate_all_pri_signals(data_tuple, config, participant_limit=None, debug=
         config: Dictionary with configuration values
         participant_limit: Limit processing to first N participants (for testing)
         debug: Whether to print debug information
+        enable_llm_judge: Whether to enable LLM judge assessment (costs money)
         
     Returns:
         DataFrame containing calculated PRI signals for each participant
     """
     print("\nCalculating PRI signals for all participants...")
+    if enable_llm_judge:
+        print("LLM judge assessment enabled - this will cost money and take longer!")
     
     binary_df, preference_df, thought_labels_df, verbatim_map_df, aggregate_std_df, all_participant_ids, major_segments = data_tuple
     
@@ -684,6 +1102,15 @@ def calculate_all_pri_signals(data_tuple, config, participant_limit=None, debug=
     
     # Pre-compute consensus data once for all participants
     consensus_data = precompute_consensus_data(binary_df, verbatim_map_df, aggregate_std_df, config, debug)
+    
+    # Load opinion questions for LLM judge if enabled
+    opinion_questions = {}
+    if enable_llm_judge:
+        print("Loading discussion guide for LLM judge assessment...")
+        opinion_questions = load_discussion_guide(config, debug)
+        if not opinion_questions:
+            print("Warning: No opinion questions found. LLM judge will use neutral scores.")
+            enable_llm_judge = False  # Disable if no questions found
     
     # Pre-filter timestamp data for efficiency
     binary_times_df = binary_df[['Participant ID', 'Timestamp']].copy()
@@ -720,24 +1147,47 @@ def calculate_all_pri_signals(data_tuple, config, participant_limit=None, debug=
             # 4. Anti-Social Consensus Score (raw - lower is better)
             asc_raw = calculate_asc_score(participant_id, binary_df, consensus_data, debug)
             
+            # 5. LLM Judge Score (if enabled)
+            llm_judge_score = np.nan
+            if enable_llm_judge:
+                try:
+                    # Run async function in event loop
+                    llm_judge_score, _ = asyncio.run(
+                        calculate_llm_judge_score(participant_id, verbatim_map_df, opinion_questions, debug)
+                    )
+                except Exception as llm_error:
+                    if debug:
+                        print(f"[LLMJudge {participant_id}] Error: {llm_error}")
+                    llm_judge_score = 0.5  # Neutral score on error
+            
             # Add results
-            results.append({
+            result_dict = {
                 'Participant ID': participant_id,
                 'Duration_seconds': duration.total_seconds() if pd.notna(duration) else np.nan,
                 'LowQualityTag_Perc': low_quality_perc,
                 'UniversalDisagreement_Perc': universal_disagreement_perc,
                 'ASC_Score_Raw': asc_raw,
-            })
+            }
+            
+            if enable_llm_judge:
+                result_dict['LLM_Judge_Score'] = llm_judge_score
+                
+            results.append(result_dict)
         except Exception as e:
             print(f"Error processing participant {participant_id}: {e}")
             # Add empty results to maintain participant count
-            results.append({
+            error_dict = {
                 'Participant ID': participant_id,
                 'Duration_seconds': np.nan,
                 'LowQualityTag_Perc': np.nan,
                 'UniversalDisagreement_Perc': np.nan,
                 'ASC_Score_Raw': np.nan,
-            })
+            }
+            
+            if enable_llm_judge:
+                error_dict['LLM_Judge_Score'] = np.nan
+                
+            results.append(error_dict)
     
     results_df = pd.DataFrame(results)
     print("Signal calculation complete.")
@@ -815,45 +1265,90 @@ def normalize_and_calculate_pri(pri_signals_df, config, debug=False):
     
     # 4. Anti-Social Consensus (lower score is better, so invert)
     asc_available = not pri_signals_df['ASC_Score_Raw'].isna().all()
+    llm_judge_available = 'LLM_Judge_Score' in pri_signals_df.columns and not pri_signals_df['LLM_Judge_Score'].isna().all()
     
     if asc_available:
-        # Normal calculation with ASC
         pri_signals_df['ASC_Norm'] = min_max_normalize(pri_signals_df['ASC_Score_Raw'], invert=True)
-        
-        # Define weights for each component
-        weights = {
-            'Duration_Norm': config['DURATION_WEIGHT'],
-            'LowQualityTag_Norm': config['LOW_QUALITY_TAG_WEIGHT'],
-            'UniversalDisagreement_Norm': config['UNIVERSAL_DISAGREEMENT_WEIGHT'],
-            'ASC_Norm': config['ASC_WEIGHT']
-        }
-        
-        # Calculate final weighted PRI score with all components
-        pri_signals_df['PRI_Score'] = (
-            pri_signals_df['Duration_Norm'] * weights['Duration_Norm'] +
-            pri_signals_df['LowQualityTag_Norm'] * weights['LowQualityTag_Norm'] +
-            pri_signals_df['UniversalDisagreement_Norm'] * weights['UniversalDisagreement_Norm'] +
-            pri_signals_df['ASC_Norm'] * weights['ASC_Norm']
-        )
+    
+    # 5. LLM Judge Score (higher score is better, no inversion needed)
+    if llm_judge_available:
+        pri_signals_df['LLM_Judge_Norm'] = min_max_normalize(pri_signals_df['LLM_Judge_Score'])
+        print(f"LLM judge scores available for PRI calculation")
+    
+    # Choose weights based on available components
+    if llm_judge_available:
+        # Use LLM-enhanced weights
+        if asc_available:
+            weights = {
+                'Duration_Norm': config['DURATION_WEIGHT_LLM'],
+                'LowQualityTag_Norm': config['LOW_QUALITY_TAG_WEIGHT_LLM'],
+                'UniversalDisagreement_Norm': config['UNIVERSAL_DISAGREEMENT_WEIGHT_LLM'],
+                'ASC_Norm': config['ASC_WEIGHT_LLM'],
+                'LLM_Judge_Norm': config['LLM_JUDGE_WEIGHT']
+            }
+            print("Calculating PRI with LLM judge and all traditional components")
+            
+            pri_signals_df['PRI_Score'] = (
+                pri_signals_df['Duration_Norm'] * weights['Duration_Norm'] +
+                pri_signals_df['LowQualityTag_Norm'] * weights['LowQualityTag_Norm'] +
+                pri_signals_df['UniversalDisagreement_Norm'] * weights['UniversalDisagreement_Norm'] +
+                pri_signals_df['ASC_Norm'] * weights['ASC_Norm'] +
+                pri_signals_df['LLM_Judge_Norm'] * weights['LLM_Judge_Norm']
+            )
+        else:
+            # LLM judge available but no ASC - redistribute ASC weight
+            print("Warning: No valid ASC scores available. Calculating PRI with LLM judge but without ASC component.")
+            asc_weight_redistribution = config['ASC_WEIGHT_LLM'] / 4  # Distribute equally among remaining components
+            
+            weights = {
+                'Duration_Norm': config['DURATION_WEIGHT_LLM'] + asc_weight_redistribution,
+                'LowQualityTag_Norm': config['LOW_QUALITY_TAG_WEIGHT_LLM'] + asc_weight_redistribution,
+                'UniversalDisagreement_Norm': config['UNIVERSAL_DISAGREEMENT_WEIGHT_LLM'] + asc_weight_redistribution,
+                'LLM_Judge_Norm': config['LLM_JUDGE_WEIGHT'] + asc_weight_redistribution
+            }
+            
+            pri_signals_df['PRI_Score'] = (
+                pri_signals_df['Duration_Norm'] * weights['Duration_Norm'] +
+                pri_signals_df['LowQualityTag_Norm'] * weights['LowQualityTag_Norm'] +
+                pri_signals_df['UniversalDisagreement_Norm'] * weights['UniversalDisagreement_Norm'] +
+                pri_signals_df['LLM_Judge_Norm'] * weights['LLM_Judge_Norm']
+            )
     else:
-        # Adjusted calculation without ASC
-        print("Warning: No valid ASC scores available. Calculating PRI without ASC component.")
-        
-        # Adjust weights to distribute ASC's weight to other components
-        total_weight = config['DURATION_WEIGHT'] + config['LOW_QUALITY_TAG_WEIGHT'] + config['UNIVERSAL_DISAGREEMENT_WEIGHT']
-        
-        adjusted_weights = {
-            'Duration_Norm': config['DURATION_WEIGHT'] / total_weight,
-            'LowQualityTag_Norm': config['LOW_QUALITY_TAG_WEIGHT'] / total_weight,
-            'UniversalDisagreement_Norm': config['UNIVERSAL_DISAGREEMENT_WEIGHT'] / total_weight
-        }
-        
-        # Calculate final weighted PRI score without ASC
-        pri_signals_df['PRI_Score'] = (
-            pri_signals_df['Duration_Norm'] * adjusted_weights['Duration_Norm'] +
-            pri_signals_df['LowQualityTag_Norm'] * adjusted_weights['LowQualityTag_Norm'] +
-            pri_signals_df['UniversalDisagreement_Norm'] * adjusted_weights['UniversalDisagreement_Norm']
-        )
+        # Traditional PRI calculation without LLM judge
+        if asc_available:
+            # Normal calculation with ASC
+            weights = {
+                'Duration_Norm': config['DURATION_WEIGHT'],
+                'LowQualityTag_Norm': config['LOW_QUALITY_TAG_WEIGHT'],
+                'UniversalDisagreement_Norm': config['UNIVERSAL_DISAGREEMENT_WEIGHT'],
+                'ASC_Norm': config['ASC_WEIGHT']
+            }
+            print("Calculating traditional PRI with all components")
+            
+            pri_signals_df['PRI_Score'] = (
+                pri_signals_df['Duration_Norm'] * weights['Duration_Norm'] +
+                pri_signals_df['LowQualityTag_Norm'] * weights['LowQualityTag_Norm'] +
+                pri_signals_df['UniversalDisagreement_Norm'] * weights['UniversalDisagreement_Norm'] +
+                pri_signals_df['ASC_Norm'] * weights['ASC_Norm']
+            )
+        else:
+            # Adjusted calculation without ASC
+            print("Warning: No valid ASC scores available. Calculating PRI without ASC component.")
+            
+            # Adjust weights to distribute ASC's weight to other components
+            total_weight = config['DURATION_WEIGHT'] + config['LOW_QUALITY_TAG_WEIGHT'] + config['UNIVERSAL_DISAGREEMENT_WEIGHT']
+            
+            adjusted_weights = {
+                'Duration_Norm': config['DURATION_WEIGHT'] / total_weight,
+                'LowQualityTag_Norm': config['LOW_QUALITY_TAG_WEIGHT'] / total_weight,
+                'UniversalDisagreement_Norm': config['UNIVERSAL_DISAGREEMENT_WEIGHT'] / total_weight
+            }
+            
+            pri_signals_df['PRI_Score'] = (
+                pri_signals_df['Duration_Norm'] * adjusted_weights['Duration_Norm'] +
+                pri_signals_df['LowQualityTag_Norm'] * adjusted_weights['LowQualityTag_Norm'] +
+                pri_signals_df['UniversalDisagreement_Norm'] * adjusted_weights['UniversalDisagreement_Norm']
+            )
     
     # Create a 1-5 scale version for easier interpretation
     pri_signals_df['PRI_Scale_1_5'] = pri_signals_df['PRI_Score'] * 4 + 1
@@ -971,6 +1466,106 @@ def create_pri_distribution_chart(pri_signals_df, gd_number, config, debug=False
     return chart_path
 
 
+def analyze_llm_correlation(pri_signals_df, debug=False):
+    """
+    Analyze correlation between LLM judge scores and traditional PRI components.
+    
+    Args:
+        pri_signals_df: DataFrame with PRI scores including LLM judge
+        debug: Whether to print debug information
+        
+    Returns:
+        Dict with correlation analysis results
+    """
+    if 'LLM_Judge_Score' not in pri_signals_df.columns:
+        print("No LLM judge scores available for correlation analysis")
+        return {}
+    
+    print("\n=== LLM Judge Correlation Analysis ===")
+    
+    # Calculate traditional PRI without LLM judge for comparison
+    traditional_components = ['Duration_Norm', 'LowQualityTag_Norm', 'UniversalDisagreement_Norm']
+    if 'ASC_Norm' in pri_signals_df.columns:
+        traditional_components.append('ASC_Norm')
+    
+    # Create traditional PRI score for comparison
+    weights_sum = sum([0.30, 0.30, 0.20, 0.20])  # Default weights
+    traditional_pri = (
+        pri_signals_df['Duration_Norm'] * (0.30 / weights_sum) +
+        pri_signals_df['LowQualityTag_Norm'] * (0.30 / weights_sum) +
+        pri_signals_df['UniversalDisagreement_Norm'] * (0.20 / weights_sum)
+    )
+    
+    if 'ASC_Norm' in pri_signals_df.columns:
+        traditional_pri += pri_signals_df['ASC_Norm'] * (0.20 / weights_sum)
+    
+    # Filter out NaN values for correlation calculation
+    valid_mask = (
+        pri_signals_df['LLM_Judge_Score'].notna() & 
+        traditional_pri.notna()
+    )
+    
+    if valid_mask.sum() < 10:
+        print("Insufficient data for meaningful correlation analysis")
+        return {}
+    
+    llm_scores = pri_signals_df.loc[valid_mask, 'LLM_Judge_Score']
+    traditional_scores = traditional_pri.loc[valid_mask]
+    
+    # Calculate correlations
+    pearson_corr, pearson_p = pearsonr(llm_scores, traditional_scores)
+    spearman_corr, spearman_p = spearmanr(llm_scores, traditional_scores)
+    
+    print(f"Correlation between LLM Judge and Traditional PRI:")
+    print(f"  Pearson correlation:  {pearson_corr:.3f} (p={pearson_p:.3f})")
+    print(f"  Spearman correlation: {spearman_corr:.3f} (p={spearman_p:.3f})")
+    print(f"  Sample size: {len(llm_scores)} participants")
+    
+    # Component-wise correlations
+    print(f"\nComponent-wise correlations with LLM Judge:")
+    component_correlations = {}
+    
+    for component in traditional_components:
+        if component in pri_signals_df.columns:
+            comp_valid_mask = (
+                pri_signals_df['LLM_Judge_Score'].notna() & 
+                pri_signals_df[component].notna()
+            )
+            
+            if comp_valid_mask.sum() >= 10:
+                comp_llm = pri_signals_df.loc[comp_valid_mask, 'LLM_Judge_Score']
+                comp_values = pri_signals_df.loc[comp_valid_mask, component]
+                
+                comp_pearson, comp_p = pearsonr(comp_llm, comp_values)
+                component_correlations[component] = comp_pearson
+                print(f"  {component}: {comp_pearson:.3f} (p={comp_p:.3f})")
+    
+    # Summary interpretation
+    print(f"\nInterpretation:")
+    if abs(pearson_corr) > 0.7:
+        interpretation = "Strong correlation - LLM judge aligns well with traditional metrics"
+    elif abs(pearson_corr) > 0.5:
+        interpretation = "Moderate correlation - LLM judge provides complementary information"
+    elif abs(pearson_corr) > 0.3:
+        interpretation = "Weak correlation - LLM judge captures different aspects of quality"
+    else:
+        interpretation = "Very weak correlation - LLM judge measures different quality dimensions"
+    
+    print(f"  {interpretation}")
+    
+    results = {
+        'pearson_correlation': pearson_corr,
+        'pearson_p_value': pearson_p,
+        'spearman_correlation': spearman_corr,
+        'spearman_p_value': spearman_p,
+        'sample_size': len(llm_scores),
+        'component_correlations': component_correlations,
+        'interpretation': interpretation
+    }
+    
+    return results
+
+
 def main():
     """Main execution function"""
     start_time = time.time()
@@ -980,11 +1575,21 @@ def main():
     gd_number = args.gd_number
     debug = args.debug
     participant_limit = args.limit
+    enable_llm_judge = getattr(args, 'llm_judge', False)
     
     print(f"Calculating PRI for Global Dialogue {gd_number}")
     print(f"Debug mode: {'Enabled' if debug else 'Disabled'}")
+    print(f"LLM judge: {'Enabled' if enable_llm_judge else 'Disabled'}")
     if participant_limit:
         print(f"Limiting to first {participant_limit} participants for testing")
+    
+    # Check API key if LLM judge is enabled
+    if enable_llm_judge:
+        api_key = os.getenv('OPENROUTER_API_KEY')
+        if not api_key:
+            print("Error: OPENROUTER_API_KEY not found in environment variables")
+            print("Please add your OpenRouter API key to the .env file to use LLM judge functionality")
+            sys.exit(1)
     
     # Get configuration for this GD
     try:
@@ -1001,10 +1606,20 @@ def main():
         sys.exit(1)
     
     # 2. Calculate raw PRI signals for all participants
-    pri_signals_df = calculate_all_pri_signals(data_tuple, config, participant_limit, debug)
+    pri_signals_df = calculate_all_pri_signals(data_tuple, config, participant_limit, debug, enable_llm_judge)
     
     # 3. Normalize and calculate final PRI score
     pri_signals_df = normalize_and_calculate_pri(pri_signals_df, config, debug)
+    
+    # 3a. LLM Judge correlation analysis (if enabled)
+    if enable_llm_judge:
+        try:
+            correlation_results = analyze_llm_correlation(pri_signals_df, debug)
+        except Exception as e:
+            print(f"Warning: Could not complete LLM judge correlation analysis: {e}")
+            if debug:
+                import traceback
+                traceback.print_exc()
     
     # 4. Print summary statistics
     print("\nPRI Score Statistics:")

@@ -57,9 +57,23 @@ The Participant Reliability Index (PRI) is a composite score designed to assess 
 - **Description**: Time from seeing Response options and selecting a vote (Agree/Disagree or Preference). Can also compute on Poll Options especially for longer questions. Requires dataset with timestamps on loading Response options and voting (not yet available).
 - **Status**: Requires additional timestamp data not currently available
 
-### 7. LLM Judgment of Question Responses (Not implemented)
-- **Description**: Given combination of the entire dialogue guide and the participant's responses to open-ended questions, give a confidence score from 0.0 to 1.0 on how confident the survey administrators can be that the participant was being earnest in their responses.
-- **Status**: Could be implemented as future enhancement using language models
+### 7. LLM Judgment of Question Responses (Implemented)
+- **Metric**: `LLM_Judge_Score`
+- **Description**: Multi-model LLM assessment of participant earnestness based on responses to "Ask Opinion" questions
+- **Purpose**: Provides qualitative assessment of response authenticity and engagement quality
+- **Calculation**: 
+  - Extracts participant responses to open-ended "Ask Opinion" questions from discussion guide
+  - Submits responses to multiple high-quality LLM models for assessment
+  - Models evaluate earnestness, thoughtfulness, consistency, and engagement
+  - Returns confidence score (0.0-1.0) with reasoning
+  - Final score is average across all model assessments
+- **Models Used**:
+  - Anthropic Claude Sonnet 4
+  - OpenAI GPT-4o-mini
+  - Google Gemini 2.5 Pro Preview
+- **API Integration**: OpenRouter.ai with async processing for efficiency
+- **Toggle**: Enabled via `--llm-judge` flag (costs money and takes longer)
+- **Correlation Analysis**: Automatically analyzes correlation with traditional PRI components
 
 
 ## Implementation
@@ -71,16 +85,26 @@ The PRI is implemented in `tools/scripts/pri_calculator.py`. The script:
 4. Produces a final composite score (0-1 scale) and 1-5 scale version
 
 ### Component Weights
+
+**Traditional PRI (without LLM judge):**
 - Duration: 30%
 - Low Quality Tags: 30% 
 - Universal Disagreement: 20%
 - Anti-Social Consensus: 20%
+
+**Enhanced PRI (with LLM judge):**
+- Duration: 20%
+- Low Quality Tags: 20%
+- Universal Disagreement: 15%
+- Anti-Social Consensus: 15%
+- LLM Judge: 30%
 
 ### Normalization
 - **Duration**: Min-max normalization with 90-minute reasonable maximum (longer is better)
 - **Low Quality Tags**: Min-max normalization, inverted (lower percentage is better)
 - **Universal Disagreement**: Min-max normalization, inverted (lower percentage is better)
 - **Anti-Social Consensus**: Min-max normalization, inverted (lower score is better)
+- **LLM Judge**: Min-max normalization (higher score is better, no inversion needed)
 
 ## Usage
 
@@ -98,7 +122,13 @@ The PRI calculator requires the following files:
 - `GD{N}_verbatim_map.csv`: Mapping of thoughts to participants and questions
 - `GD{N}_aggregate_standardized.csv`: Agreement scores by segment
 - `GD{N}_segment_counts_by_question.csv`: Participation counts by segment (for major segment detection)
+- `GD{N}_discussion_guide.csv`: Survey structure with question types (required for LLM judge)
 - `tags/all_thought_labels.csv`: Quality tags for responses (optional)
+
+### Additional Requirements for LLM Judge
+- OpenRouter.ai API key in `.env` file as `OPENROUTER_API_KEY`
+- Internet connection for API calls
+- Additional dependencies: `aiohttp`, `pydantic`
 
 ## Future Improvements
 
