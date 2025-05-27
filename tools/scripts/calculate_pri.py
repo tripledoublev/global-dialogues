@@ -89,15 +89,20 @@ def get_config(gd_number):
     """Define file paths and PRI parameters based on GD number."""
     data_dir = Path(f"Data/GD{gd_number}")
     tags_dir = data_dir / "tags"
+    output_dir = Path(f"analysis_output/GD{gd_number}/pri")
     
     # Ensure directories exist
     if not data_dir.exists():
         raise FileNotFoundError(f"Data directory not found: {data_dir}")
     
+    # Create output directory if it doesn't exist
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
     # File paths
     config = {
         'DATA_DIR': str(data_dir),
         'TAGS_DIR': str(tags_dir),
+        'OUTPUT_DIR': str(output_dir),
         'VERBATIM_MAP_PATH': str(data_dir / f"GD{gd_number}_verbatim_map.csv"),
         'BINARY_PATH': str(data_dir / f"GD{gd_number}_binary.csv"),
         'PREFERENCE_PATH': str(data_dir / f"GD{gd_number}_preference.csv"),
@@ -105,7 +110,7 @@ def get_config(gd_number):
         'SEGMENT_COUNTS_PATH': str(data_dir / f"GD{gd_number}_segment_counts_by_question.csv"),
         'THOUGHT_LABELS_PATH': str(tags_dir / "all_thought_labels.csv"),
         'DISCUSSION_GUIDE_PATH': str(data_dir / f"GD{gd_number}_discussion_guide.csv"),
-        'OUTPUT_PATH': str(data_dir / f"GD{gd_number}_pri_scores.csv"),
+        'OUTPUT_PATH': str(output_dir / f"GD{gd_number}_pri_scores.csv"),
         
         # PRI Parameters (per documentation)
         'ASC_HIGH_THRESHOLD': 0.70,                         # Agreement rate for strong agreement
@@ -1664,7 +1669,7 @@ def create_pri_distribution_chart(pri_signals_df, gd_number, config, debug=False
     plt.subplots_adjust(top=0.92, bottom=0.12)
     
     # Save the chart
-    chart_path = f"Data/GD{gd_number}/GD{gd_number}_pri_distribution.png"
+    chart_path = f"{config['OUTPUT_DIR']}/GD{gd_number}_pri_distribution.png"
     plt.savefig(chart_path, dpi=300, bbox_inches='tight', facecolor='white')
     
     if debug:
@@ -2254,7 +2259,7 @@ def main():
     # 3b. Comprehensive correlation report for all metrics
     try:
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        correlation_report_path = f"{config['DATA_DIR']}/GD{gd_number}_comprehensive_correlation_report_{timestamp}.txt"
+        correlation_report_path = f"{config['OUTPUT_DIR']}/GD{gd_number}_comprehensive_correlation_report_{timestamp}.txt"
         print(f"Creating comprehensive correlation report...")
         comprehensive_results = create_comprehensive_correlation_report(pri_signals_df, correlation_report_path, debug)
     except Exception as e:
