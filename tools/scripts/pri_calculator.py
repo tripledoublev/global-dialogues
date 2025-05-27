@@ -1312,10 +1312,9 @@ def calculate_all_pri_signals(data_tuple, config, participant_limit=None, debug=
             individual_scores = {}
             if enable_llm_judge:
                 try:
-                    # Run async function in event loop
-                    llm_judge_score, individual_scores = asyncio.run(
-                        calculate_llm_judge_score(participant_id, verbatim_map_df, evaluatable_questions, contextual_info, debug)
-                    )
+                    # Store participant for batch processing (will be handled below)
+                    llm_judge_score = np.nan
+                    individual_scores = {}
                 except Exception as llm_error:
                     if debug:
                         print(f"[LLMJudge {participant_id}] Error: {llm_error}")
@@ -1356,6 +1355,39 @@ def calculate_all_pri_signals(data_tuple, config, participant_limit=None, debug=
                 error_dict['LLM_Judge_Score'] = np.nan
                 
             results.append(error_dict)
+    
+    # Batch process LLM judge scores for efficiency
+    if enable_llm_judge:
+        print(f"\nRunning batch LLM judge assessment for {len(results)} participants...")
+        print("This will significantly speed up the LLM assessment process!")
+        
+        # Extract participant IDs from results
+        participant_ids_for_llm = [r['Participant ID'] for r in results]
+        
+        # Run batch async LLM processing
+        llm_results = asyncio.run(
+            batch_process_llm_judge(
+                participant_ids_for_llm, verbatim_map_df, evaluatable_questions, 
+                contextual_info, debug
+            )
+        )
+        
+        # Update results with LLM scores
+        for i, result_dict in enumerate(results):
+            participant_id = result_dict['Participant ID']
+            if participant_id in llm_results:
+                llm_score, individual_scores = llm_results[participant_id]
+                result_dict['LLM_Judge_Score'] = llm_score
+                
+                # Add individual model scores
+                for model_name, score_data in individual_scores.items():
+                    if score_data and 'confidence_score' in score_data:
+                        clean_model_name = model_name.replace('/', '_').replace('-', '_')
+                        result_dict[f'LLM_{clean_model_name}'] = score_data['confidence_score']
+            else:
+                result_dict['LLM_Judge_Score'] = 0.5  # Fallback score
+        
+        print("Batch LLM judge assessment completed!")
     
     results_df = pd.DataFrame(results)
     print("Signal calculation complete.")
@@ -2067,6 +2099,77 @@ def create_comprehensive_correlation_report(pri_signals_df, output_path, debug=F
         'metrics_analyzed': pri_columns
     }
     
+    return results
+
+
+async def batch_process_llm_judge(participant_ids, verbatim_map_df, evaluatable_questions, contextual_info, debug=False):
+    """
+    Process LLM judge scores for multiple participants in parallel batches for maximum efficiency.
+    
+    Args:
+        participant_ids: List of participant IDs to process
+        verbatim_map_df: DataFrame mapping thoughts to participants and questions
+        evaluatable_questions: Dict mapping question IDs to {'content': str, 'type': str}
+        contextual_info: Dict mapping question IDs to contextual information
+        debug: Whether to print debug information
+        
+    Returns:
+        Dict mapping participant_id to (average_score, individual_scores_dict)
+    """
+    print(f"Starting efficient batch LLM processing for {len(participant_ids)} participants...")
+    
+    # Configuration for batching
+    BATCH_SIZE = 50  # Process 50 participants concurrently
+    MAX_CONCURRENT_REQUESTS = 100  # Limit concurrent API requests
+    
+    semaphore = asyncio.Semaphore(MAX_CONCURRENT_REQUESTS)
+    results = {}
+    
+    async def process_participant_with_semaphore(participant_id):
+        async with semaphore:
+            try:
+                return await calculate_llm_judge_score(
+                    participant_id, verbatim_map_df, evaluatable_questions, contextual_info, debug
+                )
+            except Exception as e:
+                if debug:
+                    print(f"[BatchLLM] Error processing {participant_id}: {e}")
+                return 0.5, {}
+    
+    # Process participants in batches
+    total_batches = (len(participant_ids) + BATCH_SIZE - 1) // BATCH_SIZE
+    
+    for batch_idx in range(total_batches):
+        start_idx = batch_idx * BATCH_SIZE
+        end_idx = min(start_idx + BATCH_SIZE, len(participant_ids))
+        batch_participants = participant_ids[start_idx:end_idx]
+        
+        print(f"Processing batch {batch_idx + 1}/{total_batches} ({len(batch_participants)} participants)...")
+        
+        # Create tasks for this batch
+        tasks = [
+            process_participant_with_semaphore(participant_id)
+            for participant_id in batch_participants
+        ]
+        
+        # Wait for all tasks in this batch to complete
+        batch_results = await asyncio.gather(*tasks, return_exceptions=True)
+        
+        # Store results
+        for participant_id, result in zip(batch_participants, batch_results):
+            if isinstance(result, Exception):
+                if debug:
+                    print(f"[BatchLLM] Exception for {participant_id}: {result}")
+                results[participant_id] = (0.5, {})
+            else:
+                results[participant_id] = result
+        
+        # Progress update
+        processed_count = end_idx
+        progress_pct = (processed_count / len(participant_ids)) * 100
+        print(f"Completed {processed_count}/{len(participant_ids)} participants ({progress_pct:.1f}%)")
+    
+    print(f"Batch LLM processing completed! Processed {len(results)} participants.")
     return results
 
 
