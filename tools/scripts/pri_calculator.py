@@ -1475,80 +1475,89 @@ def normalize_and_calculate_pri(pri_signals_df, config, debug=False):
         pri_signals_df['LLM_Judge_Norm'] = min_max_normalize(pri_signals_df['LLM_Judge_Score'])
         print(f"LLM judge scores available for PRI calculation")
     
-    # Choose weights based on available components
+    # Calculate heuristic-only PRI score (always calculated for comparison)
+    print("Calculating heuristic-only PRI score...")
+    if asc_available:
+        heuristic_weights = {
+            'Duration_Norm': config['DURATION_WEIGHT'],
+            'LowQualityTag_Norm': config['LOW_QUALITY_TAG_WEIGHT'],
+            'UniversalDisagreement_Norm': config['UNIVERSAL_DISAGREEMENT_WEIGHT'],
+            'ASC_Norm': config['ASC_WEIGHT']
+        }
+        
+        pri_signals_df['PRI_Score_Heuristic'] = (
+            pri_signals_df['Duration_Norm'] * heuristic_weights['Duration_Norm'] +
+            pri_signals_df['LowQualityTag_Norm'] * heuristic_weights['LowQualityTag_Norm'] +
+            pri_signals_df['UniversalDisagreement_Norm'] * heuristic_weights['UniversalDisagreement_Norm'] +
+            pri_signals_df['ASC_Norm'] * heuristic_weights['ASC_Norm']
+        )
+        print("Heuristic PRI calculated with all components (Duration: 30%, Tags: 30%, UnivDisagree: 20%, ASC: 20%)")
+    else:
+        # Redistribute ASC weight when not available
+        print("Warning: No valid ASC scores available. Redistributing ASC weight in heuristic PRI.")
+        asc_redistribution = config['ASC_WEIGHT'] / 3  # Distribute among remaining 3 components
+        
+        heuristic_weights = {
+            'Duration_Norm': config['DURATION_WEIGHT'] + asc_redistribution,
+            'LowQualityTag_Norm': config['LOW_QUALITY_TAG_WEIGHT'] + asc_redistribution,
+            'UniversalDisagreement_Norm': config['UNIVERSAL_DISAGREEMENT_WEIGHT'] + asc_redistribution
+        }
+        
+        pri_signals_df['PRI_Score_Heuristic'] = (
+            pri_signals_df['Duration_Norm'] * heuristic_weights['Duration_Norm'] +
+            pri_signals_df['LowQualityTag_Norm'] * heuristic_weights['LowQualityTag_Norm'] +
+            pri_signals_df['UniversalDisagreement_Norm'] * heuristic_weights['UniversalDisagreement_Norm']
+        )
+        print(f"Heuristic PRI calculated without ASC (weights redistributed: Duration: {heuristic_weights['Duration_Norm']:.2f}, Tags: {heuristic_weights['LowQualityTag_Norm']:.2f}, UnivDisagree: {heuristic_weights['UniversalDisagreement_Norm']:.2f})")
+    
+    # Calculate final PRI score based on available components
     if llm_judge_available:
+        print("\nCalculating LLM-enhanced PRI score...")
         # Use LLM-enhanced weights
         if asc_available:
-            weights = {
+            enhanced_weights = {
                 'Duration_Norm': config['DURATION_WEIGHT_LLM'],
                 'LowQualityTag_Norm': config['LOW_QUALITY_TAG_WEIGHT_LLM'],
                 'UniversalDisagreement_Norm': config['UNIVERSAL_DISAGREEMENT_WEIGHT_LLM'],
                 'ASC_Norm': config['ASC_WEIGHT_LLM'],
                 'LLM_Judge_Norm': config['LLM_JUDGE_WEIGHT']
             }
-            print("Calculating PRI with LLM judge and all traditional components")
+            print("LLM-enhanced PRI with all heuristic components (Duration: 20%, Tags: 20%, UnivDisagree: 15%, ASC: 15%, LLM: 30%)")
             
-            pri_signals_df['PRI_Score'] = (
-                pri_signals_df['Duration_Norm'] * weights['Duration_Norm'] +
-                pri_signals_df['LowQualityTag_Norm'] * weights['LowQualityTag_Norm'] +
-                pri_signals_df['UniversalDisagreement_Norm'] * weights['UniversalDisagreement_Norm'] +
-                pri_signals_df['ASC_Norm'] * weights['ASC_Norm'] +
-                pri_signals_df['LLM_Judge_Norm'] * weights['LLM_Judge_Norm']
+            pri_signals_df['PRI_Score_Enhanced'] = (
+                pri_signals_df['Duration_Norm'] * enhanced_weights['Duration_Norm'] +
+                pri_signals_df['LowQualityTag_Norm'] * enhanced_weights['LowQualityTag_Norm'] +
+                pri_signals_df['UniversalDisagreement_Norm'] * enhanced_weights['UniversalDisagreement_Norm'] +
+                pri_signals_df['ASC_Norm'] * enhanced_weights['ASC_Norm'] +
+                pri_signals_df['LLM_Judge_Norm'] * enhanced_weights['LLM_Judge_Norm']
             )
         else:
             # LLM judge available but no ASC - redistribute ASC weight
-            print("Warning: No valid ASC scores available. Calculating PRI with LLM judge but without ASC component.")
+            print("Warning: No valid ASC scores available. Redistributing ASC weight in LLM-enhanced PRI.")
             asc_weight_redistribution = config['ASC_WEIGHT_LLM'] / 4  # Distribute equally among remaining components
             
-            weights = {
+            enhanced_weights = {
                 'Duration_Norm': config['DURATION_WEIGHT_LLM'] + asc_weight_redistribution,
                 'LowQualityTag_Norm': config['LOW_QUALITY_TAG_WEIGHT_LLM'] + asc_weight_redistribution,
                 'UniversalDisagreement_Norm': config['UNIVERSAL_DISAGREEMENT_WEIGHT_LLM'] + asc_weight_redistribution,
                 'LLM_Judge_Norm': config['LLM_JUDGE_WEIGHT'] + asc_weight_redistribution
             }
             
-            pri_signals_df['PRI_Score'] = (
-                pri_signals_df['Duration_Norm'] * weights['Duration_Norm'] +
-                pri_signals_df['LowQualityTag_Norm'] * weights['LowQualityTag_Norm'] +
-                pri_signals_df['UniversalDisagreement_Norm'] * weights['UniversalDisagreement_Norm'] +
-                pri_signals_df['LLM_Judge_Norm'] * weights['LLM_Judge_Norm']
+            pri_signals_df['PRI_Score_Enhanced'] = (
+                pri_signals_df['Duration_Norm'] * enhanced_weights['Duration_Norm'] +
+                pri_signals_df['LowQualityTag_Norm'] * enhanced_weights['LowQualityTag_Norm'] +
+                pri_signals_df['UniversalDisagreement_Norm'] * enhanced_weights['UniversalDisagreement_Norm'] +
+                pri_signals_df['LLM_Judge_Norm'] * enhanced_weights['LLM_Judge_Norm']
             )
+            print(f"LLM-enhanced PRI calculated without ASC (weights redistributed across remaining components)")
+            
+        # Use Enhanced score as the primary PRI_Score when LLM is available
+        pri_signals_df['PRI_Score'] = pri_signals_df['PRI_Score_Enhanced']
+        print("PRI_Score set to LLM-enhanced version")
     else:
-        # Traditional PRI calculation without LLM judge
-        if asc_available:
-            # Normal calculation with ASC
-            weights = {
-                'Duration_Norm': config['DURATION_WEIGHT'],
-                'LowQualityTag_Norm': config['LOW_QUALITY_TAG_WEIGHT'],
-                'UniversalDisagreement_Norm': config['UNIVERSAL_DISAGREEMENT_WEIGHT'],
-                'ASC_Norm': config['ASC_WEIGHT']
-            }
-            print("Calculating traditional PRI with all components")
-            
-            pri_signals_df['PRI_Score'] = (
-                pri_signals_df['Duration_Norm'] * weights['Duration_Norm'] +
-                pri_signals_df['LowQualityTag_Norm'] * weights['LowQualityTag_Norm'] +
-                pri_signals_df['UniversalDisagreement_Norm'] * weights['UniversalDisagreement_Norm'] +
-                pri_signals_df['ASC_Norm'] * weights['ASC_Norm']
-            )
-        else:
-            # Adjusted calculation without ASC
-            print("Warning: No valid ASC scores available. Calculating PRI without ASC component.")
-            
-            # Adjust weights to distribute ASC's weight to other components
-            total_weight = config['DURATION_WEIGHT'] + config['LOW_QUALITY_TAG_WEIGHT'] + config['UNIVERSAL_DISAGREEMENT_WEIGHT']
-            
-            adjusted_weights = {
-                'Duration_Norm': config['DURATION_WEIGHT'] / total_weight,
-                'LowQualityTag_Norm': config['LOW_QUALITY_TAG_WEIGHT'] / total_weight,
-                'UniversalDisagreement_Norm': config['UNIVERSAL_DISAGREEMENT_WEIGHT'] / total_weight
-            }
-            
-            pri_signals_df['PRI_Score'] = (
-                pri_signals_df['Duration_Norm'] * adjusted_weights['Duration_Norm'] +
-                pri_signals_df['LowQualityTag_Norm'] * adjusted_weights['LowQualityTag_Norm'] +
-                pri_signals_df['UniversalDisagreement_Norm'] * adjusted_weights['UniversalDisagreement_Norm']
-            )
+        # Use heuristic-only score as the primary PRI_Score when no LLM
+        pri_signals_df['PRI_Score'] = pri_signals_df['PRI_Score_Heuristic']
+        print("PRI_Score set to heuristic-only version")
     
     # Create a 1-5 scale version for easier interpretation
     pri_signals_df['PRI_Scale_1_5'] = pri_signals_df['PRI_Score'] * 4 + 1
@@ -1668,7 +1677,7 @@ def create_pri_distribution_chart(pri_signals_df, gd_number, config, debug=False
 
 def analyze_llm_correlation(pri_signals_df, debug=False):
     """
-    Analyze correlation between LLM judge scores and traditional PRI components.
+    Analyze correlation between LLM judge scores and heuristic-only PRI components.
     
     Args:
         pri_signals_df: DataFrame with PRI scores including LLM judge
@@ -1681,28 +1690,17 @@ def analyze_llm_correlation(pri_signals_df, debug=False):
         print("No LLM judge scores available for correlation analysis")
         return {}
     
-    print("\n=== LLM Judge Correlation Analysis ===")
+    print("\n=== LLM Judge vs Heuristic PRI Correlation Analysis ===")
     
-    # Calculate traditional PRI without LLM judge for comparison
-    traditional_components = ['Duration_Norm', 'LowQualityTag_Norm', 'UniversalDisagreement_Norm']
-    if 'ASC_Norm' in pri_signals_df.columns:
-        traditional_components.append('ASC_Norm')
-    
-    # Create traditional PRI score for comparison
-    weights_sum = sum([0.30, 0.30, 0.20, 0.20])  # Default weights
-    traditional_pri = (
-        pri_signals_df['Duration_Norm'] * (0.30 / weights_sum) +
-        pri_signals_df['LowQualityTag_Norm'] * (0.30 / weights_sum) +
-        pri_signals_df['UniversalDisagreement_Norm'] * (0.20 / weights_sum)
-    )
-    
-    if 'ASC_Norm' in pri_signals_df.columns:
-        traditional_pri += pri_signals_df['ASC_Norm'] * (0.20 / weights_sum)
+    # Use the existing heuristic-only PRI score that was calculated earlier
+    if 'PRI_Score_Heuristic' not in pri_signals_df.columns:
+        print("Warning: PRI_Score_Heuristic column not found. This should have been calculated earlier.")
+        return {}
     
     # Filter out NaN values for correlation calculation
     valid_mask = (
         pri_signals_df['LLM_Judge_Score'].notna() & 
-        traditional_pri.notna()
+        pri_signals_df['PRI_Score_Heuristic'].notna()
     )
     
     if valid_mask.sum() < 10:
@@ -1710,22 +1708,26 @@ def analyze_llm_correlation(pri_signals_df, debug=False):
         return {}
     
     llm_scores = pri_signals_df.loc[valid_mask, 'LLM_Judge_Score']
-    traditional_scores = traditional_pri.loc[valid_mask]
+    heuristic_scores = pri_signals_df.loc[valid_mask, 'PRI_Score_Heuristic']
     
     # Calculate correlations
-    pearson_corr, pearson_p = pearsonr(llm_scores, traditional_scores)
-    spearman_corr, spearman_p = spearmanr(llm_scores, traditional_scores)
+    pearson_corr, pearson_p = pearsonr(llm_scores, heuristic_scores)
+    spearman_corr, spearman_p = spearmanr(llm_scores, heuristic_scores)
     
-    print(f"Correlation between LLM Judge and Traditional PRI:")
+    print(f"Correlation between LLM Judge and Heuristic-Only PRI:")
     print(f"  Pearson correlation:  {pearson_corr:.3f} (p={pearson_p:.3f})")
     print(f"  Spearman correlation: {spearman_corr:.3f} (p={spearman_p:.3f})")
     print(f"  Sample size: {len(llm_scores)} participants")
     
     # Component-wise correlations
-    print(f"\nComponent-wise correlations with LLM Judge:")
+    print(f"\nIndividual component correlations with LLM Judge:")
     component_correlations = {}
     
-    for component in traditional_components:
+    heuristic_components = ['Duration_Norm', 'LowQualityTag_Norm', 'UniversalDisagreement_Norm']
+    if 'ASC_Norm' in pri_signals_df.columns:
+        heuristic_components.append('ASC_Norm')
+    
+    for component in heuristic_components:
         if component in pri_signals_df.columns:
             comp_valid_mask = (
                 pri_signals_df['LLM_Judge_Score'].notna() & 
@@ -1743,7 +1745,7 @@ def analyze_llm_correlation(pri_signals_df, debug=False):
     # Summary interpretation
     print(f"\nInterpretation:")
     if abs(pearson_corr) > 0.7:
-        interpretation = "Strong correlation - LLM judge aligns well with traditional metrics"
+        interpretation = "Strong correlation - LLM judge aligns well with heuristic metrics"
     elif abs(pearson_corr) > 0.5:
         interpretation = "Moderate correlation - LLM judge provides complementary information"
     elif abs(pearson_corr) > 0.3:
@@ -2072,6 +2074,27 @@ def create_comprehensive_correlation_report(pri_signals_df, output_path, debug=F
                 interpretation = "(weak)"
             
             report_lines.append(f"  {metric:25s}: r={corr:6.3f} {interpretation}")
+        
+        # Special highlight for heuristic PRI vs LLM Judge correlation
+        if 'PRI_Score_Heuristic' in pri_columns:
+            heuristic_llm_corr = pearson_corr.loc['LLM_Judge_Score', 'PRI_Score_Heuristic']
+            if not pd.isna(heuristic_llm_corr):
+                report_lines.append("")
+                report_lines.append("*** KEY CORRELATION HIGHLIGHT ***")
+                report_lines.append(f"Heuristic-Only PRI vs LLM Judge: r={heuristic_llm_corr:.3f}")
+                
+                # Detailed interpretation
+                if abs(heuristic_llm_corr) > 0.7:
+                    interp = "STRONG agreement - LLM judge aligns well with heuristic metrics"
+                elif abs(heuristic_llm_corr) > 0.5:
+                    interp = "MODERATE agreement - LLM judge provides complementary information"
+                elif abs(heuristic_llm_corr) > 0.3:
+                    interp = "WEAK agreement - LLM judge captures different quality aspects"
+                else:
+                    interp = "MINIMAL agreement - LLM judge measures distinct quality dimensions"
+                
+                report_lines.append(f"Interpretation: {interp}")
+                report_lines.append("This correlation shows how well traditional heuristics predict LLM-assessed earnestness.")
     
     report_lines.append("")
     report_lines.append("="*80)
