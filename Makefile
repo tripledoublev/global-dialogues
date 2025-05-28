@@ -48,10 +48,7 @@ help:
 	@echo "$(BLUE)PRI (Participant Reliability Index) Commands:$(RESET)"
 	@echo "  $(GREEN)make pri GD=<N>$(RESET)           - Calculate PRI for GD<N> (traditional metrics only)"
 	@echo "  $(GREEN)make pri-llm GD=<N>$(RESET)       - Calculate PRI for GD<N> with LLM judge assessment"
-	@echo "  $(GREEN)make pri-gd<N>$(RESET)            - Calculate PRI for specific GD (traditional metrics only)"
-	@echo "  $(GREEN)make pri-llm-gd<N>$(RESET)        - Calculate PRI for specific GD with LLM judge"
 	@echo "  $(GREEN)make export-unreliable GD=<N>$(RESET) - Export unreliable participants CSV for GD<N>"
-	@echo "  $(GREEN)make export-unreliable-gd<N>$(RESET) - Export unreliable participants CSV for specific GD"
 	@echo ""
 	@echo "$(BLUE)Advanced Analysis Commands:$(RESET)"
 	@echo "  $(GREEN)make run-thematic-ranking GD=<N>$(RESET) - Run thematic ranking for GD<N> (requires API key and embeddings)"
@@ -154,7 +151,7 @@ tags:
 	@echo "$(BLUE)Analyzing tags for GD$(GD)...$(RESET)"
 	$(PYTHON) $(TOOLS_DIR)/calculate_tags.py --gd_number $(GD)
 
-# Generic PRI commands using variables
+# PRI commands using variables
 pri:
 	@if [ -z "$(GD)" ]; then \
 		echo "$(RED)Error: Please specify GD number$(RESET)"; \
