@@ -28,7 +28,9 @@ Starting with `GD3`, *Global Dialogues Indicators* are recurring Poll questions 
 
 ## Data Files
 
-### **`discussion_guide.csv`**
+**Note:** All data files follow the naming convention `GD<N>_filename.csv` where `<N>` is the Global Dialogue number (e.g., GD3, GD4).
+
+### **`GD<N>_discussion_guide.csv`**
 
 This file outlines the structure and content of the dialogue as experienced by participants, in chronological order.
 
@@ -42,7 +44,7 @@ This file outlines the structure and content of the dialogue as experienced by p
 | `Add 'None of the above' as an option`           | Indicates if a 'None of the above' option was available for polls (`yes`/`no`).                                                                                                                                                                                                         |
 | `Poll or Category Option 1`, `...Option N`       | Predefined response options for `poll single select` questions.                                                                                                                                                                                                                       |
 
-### **`aggregate_standardized.csv`**
+### **`GD<N>_aggregate_standardized.csv`**
 
 This is the primary data file for analysis, created by preprocessing the raw `aggregate.csv` file. It provides a standardized format with consistent headers across all question types and segments expressed as percentages.
 
@@ -60,12 +62,12 @@ This is the primary data file for analysis, created by preprocessing the raw `ag
 | `Language`            | For Ask Opinion questions: Original language of the response.                                                     |
 | `Sample ID`           | Platform-specific ID related to the participant's sample source.                                                  |
 | `Participant ID`      | Unique ID for the participant who authored the response.                                                          |
-| `All`                 | Agreement rate among ALL participants as a percentage (formatted without the % symbol).                          |
+| `All`                 | Agreement rate among ALL participants as a percentage (numeric value without % symbol, e.g., 75.5).              |
 | *Segment Columns*     | Various segment columns (regions, demographics, etc.) showing agreement rates as percentages.                    |
 
-**Note:** This standardized format is the primary source for all analysis scripts. Segment names appear as column headers directly (without the `(N)` participant count suffix found in the raw file), and agreement rates are expressed as percentages (e.g., `75.5%`).
+**Note:** This standardized format is the primary source for all analysis scripts. Segment names appear as column headers directly (without the `(N)` participant count suffix found in the raw file), and agreement rates are expressed as percentages (e.g., `75.5`).
 
-### **`aggregate.csv`** (Raw Data)
+### **`GD<N>_aggregate.csv`** (Raw Data)
 
 This is the raw export file from Remesh.ai that compiles Global Dialogue data aggregated by question, showing the breakdown of each Segment's agreement rate with each question response.
 
@@ -91,13 +93,13 @@ This is the raw export file from Remesh.ai that compiles Global Dialogue data ag
 | `O7: <country> (N)`   | Agreement rate among participants segmented by country.                                                                                                                                                                                                                                                                          |
 | `<Region> (N)`        | Agreement rate among participants grouped by region.                                                                                                                                                                                                                                                                             |
 
-**Note:** This raw file format is processed by the `preprocess_aggregate.py` script to create the standardized `aggregate_standardized.csv` file, which should be used for all analyses.
+**Note:** This raw file format is processed by the `preprocess_aggregate.py` script to create the standardized `GD<N>_aggregate_standardized.csv` file, which should be used for all analyses.
 
 \* **Agreement Rate Definition:**
 -   For *Poll* Questions: The percentage of participants who selected a specific response.
 -   For *Ask Opinion* Questions: An estimated measure of the percentage of participants who indicated "Agree" with the given response (vs. "Disagree"). Due to the impracticality of all participants voting on every response, a prediction algorithm (~85% accuracy) imputes votes based on a limited sample (5 votes per participant per question).
 
-### **`binary.csv`**
+### **`GD<N>_binary.csv`**
 
 This file documents all individual votes cast on *Ask Opinion* question responses.
 
@@ -109,7 +111,7 @@ This file documents all individual votes cast on *Ask Opinion* question response
 | `Vote`           | The vote cast: `agree`, `disagree`, or `neutral`.                             |
 | `Timestamp`      | Timestamp of when the vote was cast.                                          |
 
-### **`participants.csv`**
+### **`GD<N>_participants.csv`**
 
 This file contains responses to every question, organized by participant.
 
@@ -117,11 +119,9 @@ This file contains responses to every question, organized by participant.
 | :------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `Participant Id`     | Unique ID for the participant in the survey.                                                                                                                                                                                                                                                            |
 | `Sample Provider Id` | Unique ID linking the participant to the originating survey platform (Prolific).                                                                                                                                                                                                                        |
-| *Subsequent Columns* | Each subsequent column represents a question text in the order presented during the dialogue. Rows contain the participant's response. <br> - *Poll* questions show the selected response directly. <br> - *Ask Opinion* responses are shown in `(English)` (translated/verbatim) and `(Original)` columns. |
-| `Sentiment`          | (Follows *Ask Opinion* columns) Automated sentiment analysis score for the text response.                                                                                                                                                                                                             |
-| `All (%agree)`       | (Follows *Ask Opinion* columns) Estimated percentage agreement among all participants for this specific response.                                                                                                                                                                                       |
+| *Subsequent Columns* | Each subsequent column represents a question in chronological order. Column headers show the question text. <br> - *Poll* questions: Shows the selected response option. <br> - *Ask Opinion* questions: Shows the participant's text response in the original language. <br> - Additional columns with `(English)` suffix contain English translations of non-English responses. <br> - Columns with `All (%agree)` suffix show the estimated agreement percentage for that participant's response. |
 
-### **`preference.csv`**
+### **`GD<N>_preference.csv`**
 
 This file documents participant preferences between pairs of *Ask Opinion* responses, collected via pairwise comparison tasks. This data helps inform the machine learning algorithm used for calculating agreement rates.
 
@@ -134,7 +134,7 @@ This file documents participant preferences between pairs of *Ask Opinion* respo
 | `Vote`           | The preference indicated: `Thought A`, `Thought B`, `I agree with both`, `I disagree with both`. |
 | `Timestamp`      | Timestamp of when the preference vote was cast.                                    |
 
-### **`verbatim_map.csv`**
+### **`GD<N>_verbatim_map.csv`**
 
 This file maps *Ask Opinion* question responses (thoughts) to their authors and the corresponding question.
 
@@ -146,7 +146,7 @@ This file maps *Ask Opinion* question responses (thoughts) to their authors and 
 | `Thought ID`     | Unique ID for the response (thought).                           |
 | `Thought Text`   | Verbatim text of the participant's response to the question.    |
 
-### **`summary.csv`**
+### **`GD<N>_summary.csv`**
 
 This file provides LLM-generated summaries for the dialogue as a whole and for each individual question included in the dataset.
 
@@ -161,6 +161,64 @@ This file provides LLM-generated summaries for the dialogue as a whole and for e
 | `Question Type`       | The type of question (e.g., `Poll`, `Ask Opinion`).                                               |
 | `Question Text`       | The full text of the question presented to participants.                                         |
 | `Question Summary`    | An LLM-generated summary paragraph describing the responses and findings for that specific question. |
+
+### **`GD<N>_sanity_upload.csv`**
+
+This file contains a subset of *Ask Opinion* questions and responses used for data quality verification.
+
+| Column             | Description                                                                                      |
+| :----------------- | :----------------------------------------------------------------------------------------------- |
+| `Question`         | Text of the *Ask Opinion* question.                                                              |
+| `English Response` | Participant's response, machine-translated to English if necessary.                             |
+| `Agreement`        | Percentage agreement rate for this response among all participants.                              |
+| *Segment Columns*  | Various demographic and geographic segments (e.g., `Male`, `Female`, `China`, etc.) with agreement rates. |
+
+### **`GD<N>_segment_counts_by_question.csv`**
+
+This file provides participant counts for each segment broken down by question, useful for understanding sample sizes and segment representation.
+
+| Column         | Description                                                     |
+| :------------- | :-------------------------------------------------------------- |
+| `Question ID`  | Unique ID for the question.                                     |
+| `Segment Name` | Name of the segment (matches column headers in aggregate files). |
+| `Count`        | Number of participants in this segment who answered the question. |
+
+### **`GD<N>_embeddings.json`**
+
+This large JSON file contains semantic embeddings for questions and responses, enabling advanced analysis like thematic clustering and semantic similarity calculations. Due to its size (typically >500MB), this file is not stored in the Git repository and must be downloaded separately.
+
+Structure:
+- Contains question texts, response texts, and their corresponding embedding vectors
+- Used by advanced analysis scripts like `thematic_ranking.py`
+- Requires API key for regeneration if not available
+
+### **Tag Data Files**
+
+Starting with GD3, tagged categorizations of open-ended responses are collected. These appear in two directories:
+
+#### **`tag_codes_raw/`**
+
+Contains raw export files from the Remesh platform with timestamps. Multiple versions may exist for each question:
+- `*_Tag_Categories.csv`: High-level category assignments for responses
+- `*_Thought_Labels.csv`: Detailed labels for individual responses
+
+#### **`tags/`** 
+
+Contains processed tag files organized by Question ID after running `preprocess_tag_files.py`:
+- `<question_id>_tag_categories.csv`: Category groupings for the question
+- `<question_id>_thought_labels.csv`: Individual response labels
+- `all_tag_categories.csv`: Consolidated categories across all questions
+- `all_thought_labels.csv`: Consolidated labels across all responses
+
+Tag file structure:
+
+| Column          | Description                                                  |
+| :-------------- | :----------------------------------------------------------- |
+| `question_id`   | Unique ID linking to the *Ask Opinion* question.             |
+| `category`      | High-level category name for grouping responses.             |
+| `label`         | Specific label assigned to a response within the category.   |
+| `thought_id`    | Unique ID for the response being labeled.                    |
+| `thought_text`  | Text of the response being categorized.                      |
 
 
 
