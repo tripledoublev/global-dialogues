@@ -162,17 +162,6 @@ This file provides LLM-generated summaries for the dialogue as a whole and for e
 | `Question Text`       | The full text of the question presented to participants.                                         |
 | `Question Summary`    | An LLM-generated summary paragraph describing the responses and findings for that specific question. |
 
-### **`GD<N>_sanity_upload.csv`**
-
-This file contains a subset of *Ask Opinion* questions and responses used for data quality verification.
-
-| Column             | Description                                                                                      |
-| :----------------- | :----------------------------------------------------------------------------------------------- |
-| `Question`         | Text of the *Ask Opinion* question.                                                              |
-| `English Response` | Participant's response, machine-translated to English if necessary.                             |
-| `Agreement`        | Percentage agreement rate for this response among all participants.                              |
-| *Segment Columns*  | Various demographic and geographic segments (e.g., `Male`, `Female`, `China`, etc.) with agreement rates. |
-
 ### **`GD<N>_segment_counts_by_question.csv`**
 
 This file provides participant counts for each segment broken down by question, useful for understanding sample sizes and segment representation.
