@@ -235,7 +235,7 @@ run-thematic-ranking:
 		echo "$(YELLOW)Please download this file as described in the README$(RESET)"; \
 		exit 1; \
 	fi
-	$(PYTHON) $(ANALYSIS_DIR)/thematic_ranking.py --gd $(GD)
+	$(PYTHON) $(TOOLS_DIR)/thematic_ranking.py --gd $(GD)
 
 # CSV preview using variables
 preview-csvs:
