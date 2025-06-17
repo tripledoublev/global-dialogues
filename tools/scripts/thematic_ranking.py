@@ -338,7 +338,7 @@ if __name__ == "__main__":
         thematic_queries = load_thematic_queries(args.themes)
         if not thematic_queries:
             print("No thematic queries found. Exiting.")
-            return
+            exit(1)
         
         print(f"\n--- Starting Thematic Ranking with {len(thematic_queries)} themes ---")
         all_rankings = {}
