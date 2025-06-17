@@ -97,7 +97,7 @@ You can also use the Makefile commands (recommended):
 
 ```bash
 make download-embeddings        # Show available files
-make download-embeddings-gd3    # Download for GD3
+make download-embeddings GD=3    # Download for GD3
 make download-all-embeddings    # Download all
 ```
 
