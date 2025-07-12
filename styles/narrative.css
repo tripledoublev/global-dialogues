@@ -307,6 +307,11 @@ body.dark .theme-tag:focus {
 
 .answer {
     margin-top: 2em;
+    font-weight: 600;
+}
+
+.question {
+    font-style: italic;
 }
 
 .reaction {
