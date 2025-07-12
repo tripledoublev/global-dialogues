@@ -149,6 +149,15 @@ Analysis scripts and notebooks can be found in the `/tools` directory.
 
 The PRI is a composite score that assesses participant response quality and reliability. It combines multiple signals including duration, response quality tags, universal disagreement rates, and consensus voting patterns. For detailed documentation, see [PRI_GUIDE.md](Data/Documentation/PRI_GUIDE.md).
 
+## Web Interface
+
+An interactive web experience has been created to explore the Global Dialogues data through a narrative engine. The web interface features:
+
+- **Narrative Explorer**: An immersive storytelling experience that presents survey themes and insights
+- **Responsive Design**: Works across desktop and mobile devices
+
+To access the web interface, open `index.html` in your browser. The interface loads data and provides an alternative way to engage with the survey results beyond traditional analysis tools.
+
  
 
 
