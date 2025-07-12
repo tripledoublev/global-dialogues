@@ -1,7 +1,8 @@
 class ArtisticTypewriter {
   constructor(element, options = {}) {
     this.element = element;
-    this.speed = options.speed || 30; // ms per character
+    this.speed = options.speed || 30; // ms per character for answers
+    this.questionSpeed = options.questionSpeed || (this.speed / 2); // 2x faster for questions
     this.pauseAfterSentence = options.pauseAfterSentence || 500;
     this.pauseAfterParagraph = options.pauseAfterParagraph || 1000;
     this.isPlaying = false;
@@ -27,12 +28,16 @@ class ArtisticTypewriter {
       const content = clonedElement.textContent;
       let typed = '';
       
+      // Determine if this is a question or answer based on the class
+      const isQuestion = clonedElement.classList.contains('question');
+      const currentSpeed = isQuestion ? this.questionSpeed : this.speed;
+      
       // Clear the element and type the content
       clonedElement.textContent = '';
       for (let char of content) {
         typed += char;
         clonedElement.textContent = typed;
-        await this.sleep(this.speed);
+        await this.sleep(currentSpeed);
       }
     } else {
       // Fallback to the original span-based approach
@@ -43,10 +48,14 @@ class ArtisticTypewriter {
       styledSpan.className = spanClass;
       this.element.appendChild(styledSpan);
       let typed = '';
+      
+      // Use appropriate speed based on whether it's a question or answer
+      const currentSpeed = isQuestion ? this.questionSpeed : this.speed;
+      
       for (let char of content) {
         typed += char;
         styledSpan.textContent = typed;
-        await this.sleep(this.speed);
+        await this.sleep(currentSpeed);
       }
     }
   }

@@ -68,7 +68,7 @@ class NarrativeEngine {
         textContent.innerHTML = '';
         this.applyThemeStyle(this.currentNarrative.visual_style);
         atmosphere.setMood(this.currentNarrative.visual_style.mood);
-        this.typewriter = new ArtisticTypewriter(textContent, { speed: 30, pauseAfterSentence: 500, pauseAfterParagraph: 1000 });
+        this.typewriter = new ArtisticTypewriter(textContent, { speed: 30, questionSpeed: 15, pauseAfterSentence: 500, pauseAfterParagraph: 1000 });
         this.typewriter.play();
         await this.playNextSnippet();
     }
@@ -136,7 +136,7 @@ class NarrativeEngine {
         this.currentNarrative.currentSegmentIndex = 0;
         this.applyThemeStyle(this.currentNarrative.visual_style);
         atmosphere.setMood(this.currentNarrative.visual_style.mood);
-        this.typewriter = new ArtisticTypewriter(textContent, { speed: 30, pauseAfterSentence: 500, pauseAfterParagraph: 1000 });
+        this.typewriter = new ArtisticTypewriter(textContent, { speed: 30, questionSpeed: 15, pauseAfterSentence: 500, pauseAfterParagraph: 1000 });
         this.typewriter.play();
         await this.playNextSnippet();
     }
