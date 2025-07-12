@@ -13,7 +13,22 @@
     <script src="js/typewriter.js" defer></script>
 </head>
 <body>
-    <div class="narrative-canvas">
+    <!-- Introductory Screen -->
+    <div id="intro-screen" class="intro-screen">
+        <div class="intro-content">
+            <h1 class="intro-title">Global Dialogues</h1>
+            <h2 class="intro-subtitle">Narrative Engine</h2>
+            <div class="intro-text">
+                <p>The Global Dialogues is a survey conducted by the Collective Intelligence Project.</p>
+                <p>The survey consisted of open-ended opinion questions about the future of AI.</p>
+                <p>We asked AI to react to the survey results.</p>
+            </div>
+            <button id="start-experience-btn" class="start-btn">Begin Experience</button>
+        </div>
+    </div>
+
+    <!-- Main Experience (initially hidden) -->
+    <div id="main-experience" class="narrative-canvas" style="display: none;">
         <div id="theme-constellation" class="theme-constellation">
             <!-- Themes populated dynamically -->
         </div>
@@ -27,5 +42,18 @@
         </div>
     </div>
     <div aria-live="polite" id="sr-announcements" style="position: absolute; left: -10000px;"></div>
+
+    <script>
+        // Handle start button click
+        document.getElementById('start-experience-btn').addEventListener('click', function() {
+            document.getElementById('intro-screen').style.display = 'none';
+            document.getElementById('main-experience').style.display = 'block';
+            
+            // Initialize the narrative engine after showing the main experience
+            if (window.narrativeEngine) {
+                window.narrativeEngine.init();
+            }
+        });
+    </script>
 </body>
 </html> 
