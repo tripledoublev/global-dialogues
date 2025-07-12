@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Dialogues Narrative Explorer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/narrative.css">
+    <script src="js/narrative_engine.js" defer></script>
+    <script src="js/atmospheric_effects.js" defer></script>
+    <script src="js/typewriter.js" defer></script>
+</head>
+<body>
+    <div class="narrative-canvas">
+        <div id="theme-constellation" class="theme-constellation">
+            <!-- Themes populated dynamically -->
+        </div>
+        <div id="story-viewport" class="story-viewport"></div>
+        <div class="narrative-controls">
+            <button class="control-btn" id="theme-toggle" aria-label="Toggle dark/light mode">🌙</button>
+
+        </div>
+        <div class="narrative-progress">
+            <div class="progress-bar"></div>
+        </div>
+    </div>
+    <div aria-live="polite" id="sr-announcements" style="position: absolute; left: -10000px;"></div>
+</body>
+</html> 

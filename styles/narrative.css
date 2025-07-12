@@ -1,0 +1,300 @@
+/* Font Stack */
+body {
+    font-family: 'Inter', sans-serif;
+    color: #1a1a1a; /* Deep charcoal */
+    background: #fefefe; /* Warm white */
+    transition: background 0.3s, color 0.3s;
+}
+
+h1, h2, h3 {
+    font-family: 'Playfair Display', serif;
+}
+
+/* Dark mode */
+body.dark {
+    color: #fefefe;
+    background: #0a0a0a; /* Rich dark */
+}
+
+/* Color Palette */
+:root {
+    --primary: #1a1a1a;
+    --background: #fefefe;
+    --accent: #ff6b6b; /* Soft coral */
+    --muted-light: #ccc;
+    --muted-medium: #999;
+    --muted-dark: #666;
+}
+
+body.dark {
+    --primary: #fefefe;
+    --background: #0a0a0a;
+    --accent: #ff6b6b;
+    --muted-light: #666;
+    --muted-medium: #999;
+    --muted-dark: #ccc;
+}
+
+/* Layout & Spacing */
+.narrative-canvas {
+    min-height: 100vh;
+    padding: 4rem;
+    max-width: 96ch; /* Optimal line length */
+    margin: 0 auto;
+}
+
+/* Theme Constellation */
+.theme-constellation {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    padding: 4rem 2rem;
+    perspective: 1000px;
+}
+
+.theme-tag {
+    background: linear-gradient(135deg, #ff6b6b, #ffd93d);
+    border-radius: 25px;
+    padding: 12px 24px;
+    margin: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    animation: float 6s ease-in-out infinite;
+    transform-style: preserve-3d;
+}
+
+.theme-tag:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+}
+
+.theme-tag:nth-child(2n) {
+    animation-delay: -2s;
+}
+
+.theme-tag:nth-child(3n) {
+    animation-delay: -4s;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotateX(0deg); }
+    50% { transform: translateY(-10px) rotateX(5deg); }
+}
+
+/* Story Viewport */
+.story-viewport {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s ease;
+    line-height: 1.8;
+    font-size: 1.1rem;
+    padding: 4rem 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.story-viewport.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Narrative Controls */
+.narrative-controls {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 1rem;
+    background: rgba(255,255,255,0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 30px;
+    backdrop-filter: blur(10px);
+}
+
+.control-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: var(--primary);
+}
+
+.speed-slider {
+    width: 100px;
+}
+
+/* Progress Visualization */
+.narrative-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: rgba(255, 107, 107, 0.2);
+    z-index: 1000;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #ff6b6b, #ffd93d);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+/* Typewriter Cursor */
+.typewriter-cursor::after {
+    content: '|';
+    animation: blink 1s infinite;
+    color: var(--primary);
+    margin-left: 2px;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+/* Quote Emphasis */
+.quote {
+    color: var(--accent);
+    font-style: italic;
+    position: relative;
+    padding: 0 0.5rem;
+}
+
+.quote::before {
+    content: '"';
+    position: absolute;
+    left: -0.5rem;
+    top: -0.5rem;
+    font-size: 1.5em;
+    color: var(--primary);
+    opacity: 0.3;
+}
+
+/* Emotional Highlights */
+.emotional-highlight {
+    background: linear-gradient(120deg, transparent 0%, var(--accent) 0%);
+    background-size: 100% 0.2em;
+    background-repeat: no-repeat;
+    background-position: 0 88%;
+    transition: background-size 0.3s ease;
+}
+
+.emotional-highlight.revealed {
+    background-size: 100% 100%;
+}
+
+.branching-choices {
+    flex-direction: column;
+    margin-top: 6rem;
+}
+
+/* Mobile Optimization */
+@media (max-width: 768px) {
+    .narrative-canvas {
+        padding: 2rem 1rem;
+    }
+    
+    .theme-constellation {
+        padding: 2rem 1rem;
+        gap: 0.5rem;
+    }
+    
+    .theme-tag {
+        font-size: 0.9rem;
+        padding: 8px 16px;
+    }
+    
+    .story-viewport {
+        padding: 2rem 1rem;
+        font-size: 1rem;
+        line-height: 1.7;
+    }
+    
+    .narrative-controls {
+        bottom: 1rem;
+        left: 1rem;
+        right: 1rem;
+        transform: none;
+    }
+    
+    .control-btn {
+        font-size: 1rem;
+    }
+    
+    .speed-slider {
+        width: 80px;
+    }
+} 
+
+@media (max-width: 768px) {
+    .branching-choices {
+        flex-direction: column;
+    }
+    .theme-constellation {
+        flex-direction: column;
+    }
+    #text-content {
+        font-size: 1.2em;
+    }
+}
+
+.choice-btn:hover, .theme-tag:hover {
+    animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+#text-content.fade-in {
+    opacity: 0;
+    animation: fadeIn 0.5s ease-in forwards;
+}
+
+@keyframes fadeIn {
+    to { opacity: 1; }
+} 
+
+.question {
+    font-weight: bold;
+    font-style: italic;
+    color: #333;
+}
+
+.answer {
+    color: #000;
+    line-height: 1.5;
+    margin-top: 2em;
+} 
+
+.fade-background {
+    animation: fadeFromBlack 2s ease-in forwards;
+}
+
+@keyframes fadeFromBlack {
+    from { background-color: black; }
+    to { background-color: white; }
+}
+
+.branching-choices {
+    animation: fadeIn 1s ease-in;
+} 
+
+.theme-tag, .choice-btn {
+    --anim-speed: 5s; /* Default */
+    background-size: 200% 200%;
+    animation: gradientShift var(--anim-speed) ease infinite;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+} 
