@@ -3,7 +3,7 @@ class NarrativeEngine {
         this.themes = {};
         this.currentNarrative = null;
         this.typewriter = null;
-        this.init();
+        // Don't auto-initialize - wait for user to click start
     }
     
     async init() {
@@ -38,7 +38,9 @@ class NarrativeEngine {
             const themeEl = document.createElement('div');
             themeEl.className = 'theme-tag';
             themeEl.textContent = themeName;
-            themeEl.style.background = `linear-gradient(135deg, ${theme.visual_style.primary_color}, ${theme.visual_style.accent_color})`;
+            // Apply theme colors to CSS variables for clean styling
+            themeEl.style.setProperty('--theme-primary', theme.visual_style.primary_color);
+            themeEl.style.setProperty('--theme-accent', theme.visual_style.accent_color);
             themeEl.setAttribute('role', 'button');
             themeEl.setAttribute('tabindex', '0');
             themeEl.setAttribute('aria-label', `Explore theme: ${themeName}`);
@@ -93,36 +95,41 @@ class NarrativeEngine {
         const viewport = document.getElementById('story-viewport');
         const choicesDiv = document.createElement('div');
         choicesDiv.className = 'branching-choices';
-        const otherThemes = Object.keys(this.themes).filter(t => t !== this.currentNarrative.themeName).sort(() => Math.random() - 0.5).slice(0,3);
+        
+        // Randomize number of choices between 2-4
+        const numChoices = Math.floor(Math.random() * 3) + 2; // 2, 3, or 4
+        
+        const otherThemes = Object.keys(this.themes).filter(t => t !== this.currentNarrative.themeName).sort(() => Math.random() - 0.5).slice(0, numChoices);
         const subChoices = [];
         otherThemes.forEach(themeName => {
             const sub = this.themes[themeName].subthemes[Math.floor(Math.random() * this.themes[themeName].subthemes.length)];
             subChoices.push({theme: themeName, subName: sub.name});
         });
-        subChoices.forEach(choice => {
-            const btn = document.createElement('div');
-            btn.className = 'theme-tag choice-btn';
-            btn.textContent = choice.subName;
-            const theme = this.themes[choice.theme];
-            const angle = Math.floor(Math.random() * 90) + 90;
-            const blendFactor = Math.random();
-            const midColor = '#' + Math.floor((parseInt(theme.visual_style.primary_color.slice(1),16) * blendFactor + parseInt(theme.visual_style.accent_color.slice(1),16) * (1 - blendFactor))).toString(16);
-            const thirdColor = '#' + Math.floor(Math.random()*16777215).toString(16); // Random color
-            btn.style.background = `linear-gradient(${angle}deg, ${theme.visual_style.primary_color}, ${midColor}, ${thirdColor}, ${theme.visual_style.accent_color})`;
-            const animSpeed = (Math.random() * 4 + 3).toFixed(1) + 's';
-            btn.style.setProperty('--anim-speed', animSpeed);
-            btn.setAttribute('role', 'button');
-            btn.setAttribute('tabindex', '0');
-            btn.setAttribute('aria-label', `Branch to subtheme: ${choice.subName} in ${choice.theme}`);
-            btn.addEventListener('click', () => this.handleChoice(choice.theme, choice.subName));
-            btn.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    this.handleChoice(choice.theme, choice.subName);
-                }
-            });
-            choicesDiv.appendChild(btn);
-        });
+        
         viewport.appendChild(choicesDiv);
+        
+        // Show buttons one after another with delay
+        subChoices.forEach((choice, index) => {
+            setTimeout(() => {
+                const btn = document.createElement('div');
+                btn.className = 'theme-tag choice-btn';
+                btn.textContent = choice.subName;
+                const theme = this.themes[choice.theme];
+                // Apply theme colors to CSS variables for clean styling
+                btn.style.setProperty('--theme-primary', theme.visual_style.primary_color);
+                btn.style.setProperty('--theme-accent', theme.visual_style.accent_color);
+                btn.setAttribute('role', 'button');
+                btn.setAttribute('tabindex', '0');
+                btn.setAttribute('aria-label', `Branch to subtheme: ${choice.subName} in ${choice.theme}`);
+                btn.addEventListener('click', () => this.handleChoice(choice.theme, choice.subName));
+                btn.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        this.handleChoice(choice.theme, choice.subName);
+                    }
+                });
+                choicesDiv.appendChild(btn);
+            }, index * 800); // 800ms delay between each button appearance
+        });
     }
 
     async handleChoice(themeName, subName) {
@@ -144,7 +151,12 @@ class NarrativeEngine {
     applyThemeStyle(style) {
         document.documentElement.style.setProperty('--theme-primary', style.primary_color);
         document.documentElement.style.setProperty('--theme-accent', style.accent_color);
+        // Preserve dark mode state when applying theme
+        const isDarkMode = document.body.classList.contains('dark');
         document.body.className = `theme-${style.mood}`;
+        if (isDarkMode) {
+            document.body.classList.add('dark');
+        }
     }
     
     setupEventListeners() {
@@ -204,15 +216,32 @@ class NarrativeEngine {
         theme.segments = [];
         const sub = theme.subthemes.find(s => s.name === subName) || theme.subthemes[0];
         theme.segments.push({text: `<div class='question'>${sub.question}</div>`, pause_after: 500});
-        const randomSnippet = sub.snippets[Math.floor(Math.random() * sub.snippets.length)];
-        theme.segments.push({text: `<div class='answer'>${randomSnippet}</div>`, pause_after: 1000});
+        
+        // Handle new response_reactions structure or fallback to old snippets structure
+        if (sub.response_reactions && sub.response_reactions.length > 0) {
+            // New structure: each response has its own reaction
+            const randomResponseReaction = sub.response_reactions[Math.floor(Math.random() * sub.response_reactions.length)];
+            theme.segments.push({text: `<div class='answer'>${randomResponseReaction.response}</div>`, pause_after: 1000});
+            theme.segments.push({text: `<div class='reaction'>${randomResponseReaction.reaction}</div>`, pause_after: 1500});
+        } else if (sub.snippets && sub.snippets.length > 0) {
+            // Fallback to old structure
+            const randomSnippet = sub.snippets[Math.floor(Math.random() * sub.snippets.length)];
+            theme.segments.push({text: `<div class='answer'>${randomSnippet}</div>`, pause_after: 1000});
+            
+            // Add AI reaction if available
+            if (sub.reaction) {
+                theme.segments.push({text: `<div class='reaction'>${sub.reaction}</div>`, pause_after: 1500});
+            }
+        }
+        
         return theme;
     }
 }
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    new NarrativeEngine();
+    // Create the narrative engine instance but don't auto-initialize
+    window.narrativeEngine = new NarrativeEngine();
     
     // Load dark mode preference
     if (localStorage.getItem('darkMode') === 'true') {
