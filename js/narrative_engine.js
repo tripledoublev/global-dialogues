@@ -203,9 +203,9 @@ class NarrativeEngine {
         let theme = this.themes[themeName];
         theme.segments = [];
         const sub = theme.subthemes.find(s => s.name === subName) || theme.subthemes[0];
-        theme.segments.push({text: `<span class='question'>${sub.question}:</span>`, pause_after: 500});
+        theme.segments.push({text: `<div class='question'>${sub.question}</div>`, pause_after: 500});
         const randomSnippet = sub.snippets[Math.floor(Math.random() * sub.snippets.length)];
-        theme.segments.push({text: `<span class='answer'>${randomSnippet}</span>`, pause_after: 1000});
+        theme.segments.push({text: `<div class='answer'>${randomSnippet}</div>`, pause_after: 1000});
         return theme;
     }
 }

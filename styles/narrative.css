@@ -216,10 +216,11 @@ body.dark {
     }
     
     .narrative-controls {
-        bottom: 1rem;
+        top: 1rem;
         left: 1rem;
-        right: 1rem;
         transform: none;
+        width: fit-content;
+        height: fit-content;
     }
     
     .control-btn {
@@ -265,11 +266,11 @@ body.dark {
 .question {
     font-weight: bold;
     font-style: italic;
-    color: #333;
+    color: var(--primary);
 }
 
 .answer {
-    color: #000;
+    color: var(--primary);
     line-height: 1.5;
     margin-top: 2em;
 } 

@@ -12,21 +12,44 @@ class ArtisticTypewriter {
   }
 
   async typeText(html) {
-    const temp = document.createElement('span');
+    // Create a temporary container to parse the HTML
+    const temp = document.createElement('div');
     temp.innerHTML = html;
-    const isQuestion = html.includes('class=\'question\'');
-    const spanClass = isQuestion ? 'question' : 'answer';
-    const content = temp.textContent;
-    const styledSpan = document.createElement('span');
-    styledSpan.className = spanClass;
-    this.container.appendChild(styledSpan);
-    let typed = '';
-    for (let char of content) {
+    
+    // If the HTML contains a div with class, use it directly
+    const hasDivWithClass = html.includes('<div class=');
+    if (hasDivWithClass) {
+      // Clone the parsed element and append it
+      const clonedElement = temp.firstElementChild.cloneNode(true);
+      this.element.appendChild(clonedElement);
+      
+      // Get the text content for typewriter effect
+      const content = clonedElement.textContent;
+      let typed = '';
+      
+      // Clear the element and type the content
+      clonedElement.textContent = '';
+      for (let char of content) {
+        typed += char;
+        clonedElement.textContent = typed;
+        await this.sleep(this.speed);
+      }
+    } else {
+      // Fallback to the original span-based approach
+      const isQuestion = html.includes('class=\'question\'');
+      const spanClass = isQuestion ? 'question' : 'answer';
+      const content = temp.textContent;
+      const styledSpan = document.createElement('span');
+      styledSpan.className = spanClass;
+      this.element.appendChild(styledSpan);
+      let typed = '';
+      for (let char of content) {
         typed += char;
         styledSpan.textContent = typed;
-        await this.sleep(this.options.speed);
+        await this.sleep(this.speed);
+      }
     }
-}
+  }
 
   formatText(text) {
     return text
