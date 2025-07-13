@@ -1,8 +1,9 @@
 class ArtisticTypewriter {
   constructor(element, options = {}) {
     this.element = element;
-    this.speed = options.speed || 30; // ms per character for answers
-    this.questionSpeed = options.questionSpeed || (this.speed / 2); // 2x faster for questions
+    this.speed = options.speed || 25; // ms per character for answers
+    this.questionSpeed = options.questionSpeed || (this.speed / 3); // 3x faster for questions
+    this.reactionSpeed = options.reactionSpeed || (this.speed / 2); // 2x faster for reactions
     this.pauseAfterSentence = options.pauseAfterSentence || 500;
     this.pauseAfterParagraph = options.pauseAfterParagraph || 1000;
     this.isPlaying = false;
@@ -28,9 +29,16 @@ class ArtisticTypewriter {
       const content = clonedElement.textContent;
       let typed = '';
       
-      // Determine if this is a question or answer based on the class
+      // Determine if this is a question, answer, or reaction based on the class
       const isQuestion = clonedElement.classList.contains('question');
-      const currentSpeed = isQuestion ? this.questionSpeed : this.speed;
+      const isReaction = clonedElement.classList.contains('reaction');
+      let currentSpeed = this.speed; // default speed for answers
+      
+      if (isQuestion) {
+        currentSpeed = this.questionSpeed;
+      } else if (isReaction) {
+        currentSpeed = this.reactionSpeed;
+      }
       
       // Clear the element and type the content
       clonedElement.textContent = '';
@@ -42,15 +50,23 @@ class ArtisticTypewriter {
     } else {
       // Fallback to the original span-based approach
       const isQuestion = html.includes('class=\'question\'');
-      const spanClass = isQuestion ? 'question' : 'answer';
+      const isReaction = html.includes('class=\'reaction\'');
+      let spanClass = 'answer'; // default
+      let currentSpeed = this.speed; // default speed
+      
+      if (isQuestion) {
+        spanClass = 'question';
+        currentSpeed = this.questionSpeed;
+      } else if (isReaction) {
+        spanClass = 'reaction';
+        currentSpeed = this.reactionSpeed;
+      }
+      
       const content = temp.textContent;
       const styledSpan = document.createElement('span');
       styledSpan.className = spanClass;
       this.element.appendChild(styledSpan);
       let typed = '';
-      
-      // Use appropriate speed based on whether it's a question or answer
-      const currentSpeed = isQuestion ? this.questionSpeed : this.speed;
       
       for (let char of content) {
         typed += char;
