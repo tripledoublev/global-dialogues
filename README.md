@@ -151,7 +151,7 @@ The PRI is a composite score that assesses participant response quality and reli
 
 ## Web Interface
 
-An interactive web experience has been created to explore the Global Dialogues data through a narrative engine. The web interface features:
+An interactive web experience has been created to explore the Global Dialogues data through a narrative engine. The narrative engine took the data and prompt AI to react. The web interface features:
 
 - **Narrative Explorer**: An immersive storytelling experience that presents survey themes and insights
 - **Responsive Design**: Works across desktop and mobile devices
