@@ -679,3 +679,19 @@ body.dark .theme-tag:focus {
         font-size: 1.1rem;
     }
 }
+.bottom-links {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: var(--background);
+    padding: 1rem;
+    text-align: center;
+}
+.bottom-links a {
+    color: var(--primary);
+    text-decoration: none;
+}
+.bottom-links a:hover {
+    text-decoration: underline;
+}

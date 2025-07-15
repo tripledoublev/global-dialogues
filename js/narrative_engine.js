@@ -273,7 +273,7 @@ class NarrativeEngine {
         
         this.applyThemeStyle(this.currentNarrative.visual_style);
         atmosphere.setMood(this.currentNarrative.visual_style.mood);
-        this.typewriter = new ArtisticTypewriter(textContent, { speed: 30, questionSpeed: 15, reactionSpeed: 45, pauseAfterSentence: 500, pauseAfterParagraph: 1000 });
+        this.typewriter = new ArtisticTypewriter(textContent, { speed: 25, questionSpeed: 8, reactionSpeed: 16, pauseAfterSentence: 500, pauseAfterParagraph: 1000 });
         this.typewriter.play();
         this.isPlaying = true;
         await this.playNextSnippet();
