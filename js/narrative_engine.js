@@ -4,16 +4,23 @@ class NarrativeEngine {
         this.currentNarrative = null;
         this.typewriter = null;
         this.isPlaying = false;
+        this.sessionId = 0; // increments per play to prevent overlap
         // Don't auto-initialize - wait for user to click start
     }
     
     // Method to stop current processes
     stopCurrentProcesses() {
         if (this.typewriter) {
-            this.typewriter.pause();
+            if (typeof this.typewriter.cancel === 'function') {
+                this.typewriter.cancel();
+            } else {
+                this.typewriter.pause();
+            }
             this.typewriter = null;
         }
         this.isPlaying = false;
+        // invalidate any in-flight play loops
+        this.sessionId++;
         
         // Clear any existing choices
         const viewport = document.getElementById('story-viewport');
@@ -274,15 +281,18 @@ class NarrativeEngine {
         this.applyThemeStyle(this.currentNarrative.visual_style);
         atmosphere.setMood(this.currentNarrative.visual_style.mood);
         this.typewriter = new ArtisticTypewriter(textContent, { speed: 25, questionSpeed: 8, reactionSpeed: 16, pauseAfterSentence: 500, pauseAfterParagraph: 1000 });
-        this.typewriter.play();
+        const localTypewriter = this.typewriter; // capture instance for this session
+        localTypewriter.play();
         this.isPlaying = true;
-        await this.playNextSnippet();
+        const runId = this.sessionId; // capture session id
+        await this.playNextSnippet(localTypewriter, runId);
         
         // Populate subthemes sidebar for the selected theme
         this.populateSubthemesSidebar(themeName);
     }
 
-    async playNextSnippet() {
+    async playNextSnippet(typewriter, runId) {
+        if (runId !== this.sessionId) return; // a new session started
         const narrative = this.currentNarrative;
         if (!narrative.currentSegmentIndex) narrative.currentSegmentIndex = 0;
         const segment = narrative.segments[narrative.currentSegmentIndex];
@@ -292,16 +302,19 @@ class NarrativeEngine {
         }
         const textContent = document.getElementById('text-content');
         textContent.classList.remove('fade-in');
-        await this.typewriter.typeText(segment.text);
-        await this.typewriter.sleep(segment.pause_after);
+        await typewriter.typeText(segment.text);
+        if (runId !== this.sessionId) return;
+        await typewriter.sleep(segment.pause_after);
+        if (runId !== this.sessionId) return;
         narrative.currentSegmentIndex++;
-        await this.playNextSnippet();
+        await this.playNextSnippet(typewriter, runId);
     }
 
     showBranchingChoices() {
         const viewport = document.getElementById('story-viewport');
         const choicesDiv = document.createElement('div');
         choicesDiv.className = 'branching-choices';
+        const runId = this.sessionId; // guard against later navigations
         
         // Randomize number of choices between 1-3
         const numChoices = Math.floor(Math.random() * 3) + 1;
@@ -318,6 +331,8 @@ class NarrativeEngine {
         // Show buttons one after another with delay
         subChoices.forEach((choice, index) => {
             setTimeout(() => {
+                if (runId !== this.sessionId) return; // session changed
+                if (!document.body.contains(choicesDiv)) return; // container removed
                 const btn = document.createElement('div');
                 btn.className = 'theme-tag choice-btn';
                 btn.textContent = choice.subName;
@@ -367,9 +382,11 @@ class NarrativeEngine {
         this.applyThemeStyle(this.currentNarrative.visual_style);
         atmosphere.setMood(this.currentNarrative.visual_style.mood);
         this.typewriter = new ArtisticTypewriter(textContent, { speed: 30, questionSpeed: 15, reactionSpeed: 45, pauseAfterSentence: 500, pauseAfterParagraph: 1000 });
-        this.typewriter.play();
+        const localTypewriter = this.typewriter;
+        localTypewriter.play();
         this.isPlaying = true;
-        await this.playNextSnippet();
+        const runId = this.sessionId; // use current session id after stopCurrentProcesses bump
+        await this.playNextSnippet(localTypewriter, runId);
     }
     
     applyThemeStyle(style) {

@@ -11,9 +11,13 @@ class ArtisticTypewriter {
     this.queue = [];
     this.progressCallback = options.progressCallback || (() => {});
     this.announceCallback = options.announceCallback || (() => {});
+    // cancellation and timers tracking
+    this._cancelled = false;
+    this._currentTimeout = null;
   }
 
   async typeText(html) {
+    if (this._cancelled) return; // bail fast if cancelled
     // Create a temporary container to parse the HTML
     const temp = document.createElement('div');
     temp.innerHTML = html;
@@ -43,6 +47,7 @@ class ArtisticTypewriter {
       // Clear the element and type the content
       clonedElement.textContent = '';
       for (let char of content) {
+        if (this._cancelled || !this.isPlaying) break;
         typed += char;
         clonedElement.textContent = typed;
         await this.sleep(currentSpeed);
@@ -69,6 +74,7 @@ class ArtisticTypewriter {
       let typed = '';
       
       for (let char of content) {
+        if (this._cancelled || !this.isPlaying) break;
         typed += char;
         styledSpan.textContent = typed;
         await this.sleep(currentSpeed);
@@ -88,11 +94,35 @@ class ArtisticTypewriter {
     return emotionalWords.includes(word.toLowerCase());
   }
 
-  play() { this.isPlaying = true; }
+  play() { this._cancelled = false; this.isPlaying = true; }
   pause() { this.isPlaying = false; }
+  cancel() {
+    // fully cancel any ongoing animations/sleeps
+    this._cancelled = true;
+    this.isPlaying = false;
+    if (this._currentTimeout) {
+      clearTimeout(this._currentTimeout.id);
+      // resolve the pending promise early if available
+      if (this._currentTimeout.resolve) {
+        this._currentTimeout.resolve();
+      }
+      this._currentTimeout = null;
+    }
+  }
   setSpeed(speed) { this.speed = speed; }
   
   sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    if (this._cancelled || !this.isPlaying) return Promise.resolve();
+    return new Promise(resolve => {
+      const id = setTimeout(() => {
+        // if cancelled during the timeout, resolve anyway to allow callers to bail
+        resolve();
+        // clear reference after completion
+        if (this._currentTimeout && this._currentTimeout.id === id) {
+          this._currentTimeout = null;
+        }
+      }, ms);
+      this._currentTimeout = { id, resolve };
+    });
   }
-} 
+}
